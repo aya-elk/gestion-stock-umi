@@ -139,8 +139,8 @@ const MainPage = () => {
           <p className="subheading fade-in hidden">Transforming ideas into exceptional digital experiences</p>
           
           <div className="hero-actions">
-            <a href="#contact" className="cta-button pulse hidden">Get in Touch</a>
-            <a href="#services" className="secondary-button fade-in hidden">Explore Services</a>
+            <a href="#contact" className="cta-button fade-in">Get in Touch</a>
+            <a href="#services" className="secondary-button fade-in">Explore Services</a>
           </div>
           
           <div className="hero-stats fade-in hidden">
@@ -265,7 +265,7 @@ const MainPage = () => {
         <div className="testimonials-container">
           <div className="testimonial-card fade-in hidden">
             <div className="testimonial-rating">★★★★★</div>
-            <p className="testimonial-text">"GP transformed our business with their innovative approach to digital solutions. Their team exceeded our expectations at every turn."</p>
+            <p className="testimonial-text">GP transformed our business with their innovative approach to digital solutions. Their team exceeded our expectations at every turn.</p>
             <div className="testimonial-author">
               <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Tarik" className="author-image" />
               <div className="author-details">
@@ -277,7 +277,7 @@ const MainPage = () => {
           
           <div className="testimonial-card fade-in hidden">
             <div className="testimonial-rating">★★★★★</div>
-            <p className="testimonial-text">"Working with GP was a game-changer for our marketing strategy. The results were immediate and impressive."</p>
+            <p className="testimonial-text">Working with GP was a game-changer for our marketing strategy. The results were immediate and impressive.</p>
             <div className="testimonial-author">
               <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Aya" className="author-image" />
               <div className="author-details">
@@ -289,7 +289,7 @@ const MainPage = () => {
           
           <div className="testimonial-card fade-in hidden">
             <div className="testimonial-rating">★★★★★</div>
-            <p className="testimonial-text">"The team at GP consistently delivers high-quality work with attention to detail that sets them apart from other agencies."</p>
+            <p className="testimonial-text">The team at GP consistently delivers high-quality work with attention to detail that sets them apart from other agencies.</p>
             <div className="testimonial-author">
               <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Mariam" className="author-image" />
               <div className="author-details">
