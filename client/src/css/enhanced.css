@@ -1,0 +1,185 @@
+body {
+  scroll-behavior: smooth;
+}
+
+.sticky-header {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.hero {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)) no-repeat center center/cover;
+  color: white;
+  text-align: center;
+  padding: 100px 20px;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  animation: fadeIn 2s ease-in-out;
+}
+
+.hero .btn {
+  margin-top: 20px;
+  animation: bounce 2s infinite;
+}
+
+.about-section, .services-section {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.about-section h2, .services-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.feature {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+#back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #6c2bd9;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#back-to-top:hover {
+  background: #ff6f00;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+ /* Animations */
+ @keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Add animations for bounce and zoom */
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-zoom {
+  animation: zoomIn 0.8s ease-in-out forwards;
+}
+
+.animate-bounce {
+  animation: bounceIn 0.8s ease-out forwards;
+}
+
+.hidden {
+  opacity: 0;
+  transform: translateY(50px); /* Initial state for bounce */
+}
+
+/* Hero Section */
+.hero h1.fade-in {
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+.hero p.fade-in-delay {
+  animation: fadeIn 2s ease-in-out;
+}
+
+.hero .btn.bounce {
+  animation: bounce 2s infinite;
+}
+
+/* Stats Section */
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 30px;
+}
+
+.stat h3 {
+  font-size: 2.5rem;
+  color: #6c2bd9;
+}
+
+/* Features */
+.feature.slide-in {
+  animation: slideIn 1s ease-in-out;
+}

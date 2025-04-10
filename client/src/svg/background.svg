@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 800" preserveAspectRatio="none">
+  <defs>
+    <!-- Gradient Definitions -->
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6c2bd9" />
+      <stop offset="50%" stop-color="#ff6a00" />
+      <stop offset="100%" stop-color="#febb00" />
+    </linearGradient>
+    <radialGradient id="circle-gradient" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background Gradient -->
+  <rect width="1440" height="800" fill="url(#bg-gradient)" />
+
+  <!-- Abstract Shapes -->
+  <circle cx="300" cy="200" r="250" fill="url(#circle-gradient)" />
+  <circle cx="1200" cy="600" r="300" fill="url(#circle-gradient)" />
+  <ellipse cx="800" cy="400" rx="600" ry="300" fill="rgba(255, 255, 255, 0.05)" />
+
+  <!-- Dynamic Waves -->
+  <path d="M0,600 Q360,500 720,600 T1440,600" fill="none" stroke="#ffffff" stroke-width="80" opacity="0.1" />
+  <path d="M0,700 Q360,600 720,700 T1440,700" fill="none" stroke="#ffffff" stroke-width="40" opacity="0.2" />
+
+  <!-- Floating Dots -->
+  <circle cx="200" cy="700" r="10" fill="#ffffff" opacity="0.5" />
+  <circle cx="400" cy="500" r="15" fill="#ffffff" opacity="0.3" />
+  <circle cx="1000" cy="300" r="20" fill="#ffffff" opacity="0.4" />
+  <circle cx="1300" cy="100" r="25" fill="#ffffff" opacity="0.2" />
+</svg>

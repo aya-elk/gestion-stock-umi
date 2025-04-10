@@ -1,0 +1,194 @@
+/* Add to src/css/login.css */
+.equipment-section, .reservations-section {
+  margin: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.equipment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  max-width: 600px;
+}
+
+.equipment-form input, 
+.equipment-form textarea, 
+.equipment-form select {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  color: #1e2a39;
+  font-size: 1rem;
+}
+
+.equipment-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.button-group button {
+  background: linear-gradient(135deg, #ff6a00, #febb00);
+  color: #fff;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  min-width: 100px;
+}
+
+.button-group button:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.button-group button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+table th, table td {
+  padding: 12px 15px;
+  text-align: left;
+  border: 1px solid #e0e0e0;
+}
+
+table th {
+  background-color: #f8f8f8;
+  color: #333;
+  font-weight: 600;
+}
+
+table tr:hover {
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+.selected-row {
+  background-color: #e6f7ff !important;
+}
+
+.filter-container {
+  margin-top: 5px;
+}
+
+.filter-container select {
+  width: 100%;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+
+.error-message {
+  color: #d32f2f;
+  background-color: #fde8e8;
+  border: 1px solid #ffd3d3;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+h1, h2, h3 {
+  color: #6c2bd9;
+  margin-bottom: 20px;
+}
+
+/* Add additional styles for the technicien page */
+.equipment-section, .reservations-section {
+    margin: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .equipment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .equipment-form input, 
+  .equipment-form textarea, 
+  .equipment-form select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  
+  .button-group button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #6c2bd9;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .button-group button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .equipment-table, .reservations-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .equipment-table th, .equipment-table td,
+  .reservations-table th, .reservations-table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+  }
+  
+  .equipment-table th, .reservations-table th {
+    background-color: #f2f2f2;
+  }
+  
+  .selected-row {
+    background-color: #e6f7ff;
+  }
+  
+  .filter-container {
+    margin-top: 5px;
+  }
+  
+  .filter-container select {
+    width: 100%;
+    padding: 5px;
+  }
+  
+  .error-message {
+    color: red;
+    margin-bottom: 10px;
+  }

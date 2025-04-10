@@ -1,0 +1,335 @@
+/* ===== Base Styles ===== */
+:root {
+  --primary-color: #3498db;
+  --primary-dark: #2980b9;
+  --secondary-color: #2ecc71;
+  --accent-color: #9b59b6;
+  --text-color: #34495e;
+  --light-text: #7f8c8d;
+  --light-bg: #f9f9f9;
+  --dark-bg: #2c3e50;
+  --danger-color: #e74c3c;
+  --warning-color: #f39c12;
+  --success-color: #27ae60;
+  --border-color: #ddd;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  color: var(--text-color);
+  line-height: 1.6;
+  background-color: #f5f7fa;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Header Styles ===== */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--dark-bg);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: -1px;
+}
+
+.logo span {
+  color: var(--primary-color);
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li {
+  margin: 0 0.75rem;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.nav-links a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sticky-header h1 {
+  text-align: center;
+  margin: 1rem 0 0.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+/* ===== Section Styles ===== */
+.equipment-section {
+  background: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  margin: 2rem auto;
+  max-width: 1200px;
+  padding: 2rem;
+}
+
+.equipment-section h2 {
+  color: var(--dark-bg);
+  font-size: 1.8rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 0.75rem;
+  position: relative;
+}
+
+/* ===== Calendar Styles ===== */
+.rbc-calendar {
+  font-family: inherit;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.rbc-toolbar button {
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.rbc-toolbar button:hover {
+  background-color: var(--light-bg);
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.rbc-event {
+  background-color: var(--primary-color);
+  border-radius: 4px;
+}
+
+.rbc-today {
+  background-color: rgba(46, 204, 113, 0.1);
+}
+
+/* ===== Form Styles ===== */
+.equipment-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .equipment-form {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 3rem;
+  }
+}
+
+.equipment-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.equipment-form select,
+.equipment-form input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  color: var(--text-color);
+  background-color: white;
+  transition: var(--transition);
+}
+
+.equipment-form select:focus,
+.equipment-form input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+  outline: none;
+}
+
+.button-group {
+  grid-column: span 2;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.equipment-form button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.equipment-form button:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.equipment-form button:disabled {
+  background-color: var(--light-text);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ===== Table Styles ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+th {
+  background-color: var(--primary-color);
+  color: white;
+  text-align: left;
+  font-weight: 600;
+  padding: 1rem;
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+tbody tr:hover {
+  background-color: var(--light-bg);
+}
+
+/* ===== Message Styles ===== */
+.error-message, 
+.success-message {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+}
+
+.error-message {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: var(--danger-color);
+  border-left: 4px solid var(--danger-color);
+}
+
+.success-message {
+  background-color: rgba(46, 204, 113, 0.1);
+  color: var(--success-color);
+  border-left: 4px solid var(--success-color);
+}
+
+/* ===== FAQ Styles ===== */
+.equipment-section h3 {
+  font-size: 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.equipment-section p {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+.equipment-section p strong {
+  color: var(--accent-color);
+}
+
+/* ===== Animation ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.equipment-section {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* ===== Responsive Styles ===== */
+@media screen and (max-width: 768px) {
+  .nav-container {
+    flex-direction: column;
+  }
+  
+  .nav-links {
+    margin-top: 1rem;
+  }
+  
+  .equipment-section {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+  
+  .button-group {
+    grid-column: 1;
+  }
+  
+  th, td {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  table {
+    font-size: 0.9rem;
+  }
+}
+
+/* Add loading spinner */
+.loading-spinner {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s ease-in-out infinite;
+  margin: 2rem auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
