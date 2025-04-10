@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './css/login.css';
 
 const Login = () => {
@@ -7,7 +7,9 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,8 +19,46 @@ const Login = () => {
       return;
     }
 
-    setSuccess('Login successful (simulated)');
-    setError('');
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Send login request to API
+      const response = await fetch('http://localhost:5000/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store user info in localStorage
+      if (rememberMe) {
+        localStorage.setItem('userInfo', JSON.stringify(data));
+      } else {
+        sessionStorage.setItem('userInfo', JSON.stringify(data));
+      }
+
+      // Redirect based on role
+      if (data.role === 'etudiant') {
+        navigate('/etudiant');
+      } else if (data.role === 'technicien') {
+        navigate('/technicien');
+      } else if (data.role === 'responsable') {
+        navigate('/responsable');
+      }
+      
+    } catch (err) {
+      setError(err.message || 'An error occurred during login');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,6 +81,7 @@ const Login = () => {
       <section className="login-section">
         <div className="login-container">
           <h2>Login</h2>
+          {error && <p className="error-message">{error}</p>}
           <form className="login-form" onSubmit={handleSubmit}>
             <input
               type="email"
@@ -68,10 +109,10 @@ const Login = () => {
               </label>
               <a href="#" className="forgot-link">Forgot Password?</a>
             </div>
-            <button type="submit">Login</button>
+            <button type="submit" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
           </form>
-          {error && <p className="error-message">{error}</p>}
-          {success && <p className="success-message">{success}</p>}
           <p className="signup-link">
             Don't have an account? <a href="#">Sign up</a>
           </p>

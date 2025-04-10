@@ -231,3 +231,18 @@ db.users.createIndex({ email: 1 }, { unique: true });
 db.equipment.createIndex({ qr_code: 1 }, { unique: true });
 db.reservations.createIndex({ user_id: 1 });
 db.notifications.createIndex({ user_id: 1 });
+
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect('mongodb://127.0.0.1:27017/gestion_materiel', {});
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    return conn;
+  } catch (error) {
+    console.error(`Error connecting to MongoDB: ${error.message}`);
+    process.exit(1);
+  }
+};
+
+module.exports = connectDB;
