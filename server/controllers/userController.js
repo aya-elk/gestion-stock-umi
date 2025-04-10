@@ -5,9 +5,10 @@ const User = require('../models/userModel');
 // @access  Public
 const authUser = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, password } = req.body;
 
     // For now, we're just checking if the email exists and returning the role
+    // In a production app, you would validate the password here
     const user = await User.findOne({ email });
 
     if (user) {

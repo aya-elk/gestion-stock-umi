@@ -23,13 +23,13 @@ const Login = () => {
       setLoading(true);
       setError('');
       
-      // Send login request to API
+      // Send login request to API with email AND password
       const response = await fetch('http://localhost:5000/api/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();

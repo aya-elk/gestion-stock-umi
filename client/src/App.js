@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import './css/App.css'; // Import your CSS files
-import './css/enhanced.css'; // Import additional styles
+// import './css/enhanced.css'; // Import additional styles
 import Login from './login.js'; // Import the Login component
 import Etudiant from './etudiant';
 import Technicien from './technicien';
