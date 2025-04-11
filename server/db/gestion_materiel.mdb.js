@@ -1,3 +1,4 @@
+//! This database is deprecated and changed to an SQL one and will be removed in future versions.
 // Create database (runs implicitly when collections are created)
 // use gestion_materiel
 
