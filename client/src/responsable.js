@@ -771,136 +771,32 @@ const Responsable = () => {
       </button>
 
       {/* Mock API endpoints for development purposes */}
-      {typeof window !== 'undefined' && (
-        <script dangerouslySetInnerHTML={{ __html: `
-          window.fetch = (url, options = {}) => {
-            if (url.includes('/api/reservations')) {
-              if (options.method === 'PATCH') {
-                console.log('Updating reservation status:', url.split('/').pop(), JSON.parse(options.body));
-                return Promise.resolve({ ok: true });
-              } else {
-                const queryParams = new URLSearchParams(url.split('?')[1] || '');
-                const status = queryParams.get('status');
-                
-                let mockReservations = [
-                  {
-                    id_reservation: 1,
-                    id_utilisateur: 'Ahmed Alami',
-                    id_equipement: 'Server HP ProLiant',
-                    date_debut: '2023-05-15',
-                    date_fin: '2023-05-20',
-                    statut: 'confirmé',
-                    signature_responsable: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
-                  },
-                  {
-                    id_reservation: 2,
-                    id_utilisateur: 'Fatima Bennani',
-                    id_equipement: 'APC Smart-UPS',
-                    date_debut: '2023-06-01',
-                    date_fin: '2023-06-05',
-                    statut: 'en_attente'
-                  },
-                  {
-                    id_reservation: 3,
-                    id_utilisateur: 'Omar Chaoui',
-                    id_equipement: 'NVIDIA RTX 4090',
-                    date_debut: '2023-06-15',
-                    date_fin: '2023-06-20',
-                    statut: 'en_attente'
-                  },
-                  {
-                    id_reservation: 4,
-                    id_utilisateur: 'Laila Houssaini',
-                    id_equipement: 'Dell PowerEdge R740',
-                    date_debut: '2023-06-10',
-                    date_fin: '2023-06-15',
-                    statut: 'refusé',
-                    signature_responsable: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
-                  },
-                  {
-                    id_reservation: 5,
-                    id_utilisateur: 'Karim Tazi',
-                    id_equipement: 'Cisco Catalyst 9300',
-                    date_debut: '2023-06-20',
-                    date_fin: '2023-06-25',
-                    statut: 'en_attente'
-                  }
-                ];
-                
-                if (status && status !== 'all') {
-                  mockReservations = mockReservations.filter(r => r.statut === status);
-                }
-                
-                return Promise.resolve({
-                  ok: true,
-                  json: () => Promise.resolve(mockReservations)
-                });
-              }
-            } else if (url.includes('/api/equipments/stocks')) {
-              return Promise.resolve({
-                ok: true,
-                json: () => Promise.resolve([
-                  {
-                    id_equipement: 1,
-                    nom: 'Server HP ProLiant',
-                    description: 'High performance server for enterprise applications',
-                    catégorie: 'Serveur',
-                    état: 'disponible',
-                    quantite_dispo: 5,
-                    seuil_critique: 3
-                  },
-                  {
-                    id_equipement: 2,
-                    nom: 'APC Smart-UPS',
-                    description: 'Uninterruptible power supply for critical systems',
-                    catégorie: 'Onduleur',
-                    état: 'disponible',
-                    quantite_dispo: 2,
-                    seuil_critique: 3
-                  },
-                  {
-                    id_equipement: 3,
-                    nom: 'NVIDIA RTX 4090',
-                    description: 'High-end graphics card for AI and rendering',
-                    catégorie: 'Carte Graphique',
-                    état: 'en_reparation',
-                    quantite_dispo: 1,
-                    seuil_critique: 2
-                  },
-                  {
-                    id_equipement: 4,
-                    nom: 'Dell PowerEdge R740',
-                    description: 'Rack server for enterprise applications',
-                    catégorie: 'Serveur',
-                    état: 'disponible',
-                    quantite_dispo: 3,
-                    seuil_critique: 2
-                  },
-                  {
-                    id_equipement: 5,
-                    nom: 'Cisco Catalyst 9300',
-                    description: 'Enterprise network switch',
-                    catégorie: 'Réseau',
-                    état: 'disponible',
-                    quantite_dispo: 4,
-                    seuil_critique: 2
-                  },
-                  {
-                    id_equipement: 6,
-                    nom: 'HP LaserJet Enterprise',
-                    description: 'High-volume network printer',
-                    catégorie: 'Imprimante',
-                    état: 'disponible',
-                    quantite_dispo: 0,
-                    seuil_critique: 1
-                  }
-                ])
-              });
-            }
-            return Promise.reject(new Error('Not implemented'));
-          }
-        `}} />
-      )}
+      {/* {typeof window !== 'undefined' && (
+  <script dangerouslySetInnerHTML={{ __html: `
+    // Store original fetch
+    const originalFetch = window.fetch;
+    
+    window.fetch = (url, options = {}) => {
+      // Allow login requests to pass through to real server
+      if (url.includes('/api/users/login')) {
+        return originalFetch(url, options);
+      }
+      
+      // Rest of your mock implementation
+      if (url.includes('/api/equipments')) {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve([
+            // Your mock data
+          ])
+        });
+      }
+      // Other mock endpoints...
+      
+      return Promise.reject(new Error('Not implemented'));
+    };
+  `}} />
+)} */}
     </div>
   );
 };

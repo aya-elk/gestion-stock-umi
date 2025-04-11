@@ -836,105 +836,105 @@ const Technicien = () => {
   );
 };
 
-// Mock data (keep these as is)
-const mockEquipments = [
-  {
-    id_equipement: 1,
-    nom: 'Server HP ProLiant',
-    description: 'High performance server for enterprise applications',
-    catégorie: 'Serveur',
-    état: 'disponible',
-    quantite_dispo: 5
-  },
-  {
-    id_equipement: 2,
-    nom: 'APC Smart-UPS',
-    description: 'Uninterruptible power supply for critical systems',
-    catégorie: 'Onduleur',
-    état: 'disponible',
-    quantite_dispo: 3
-  },
-  {
-    id_equipement: 3,
-    nom: 'NVIDIA RTX 4090',
-    description: 'High-end graphics card for AI and rendering',
-    catégorie: 'Carte Graphique',
-    état: 'en_reparation',
-    quantite_dispo: 1
-  }
-];
+// // Mock data (keep these as is)
+// const mockEquipments = [
+//   {
+//     id_equipement: 1,
+//     nom: 'Server HP ProLiant',
+//     description: 'High performance server for enterprise applications',
+//     catégorie: 'Serveur',
+//     état: 'disponible',
+//     quantite_dispo: 5
+//   },
+//   {
+//     id_equipement: 2,
+//     nom: 'APC Smart-UPS',
+//     description: 'Uninterruptible power supply for critical systems',
+//     catégorie: 'Onduleur',
+//     état: 'disponible',
+//     quantite_dispo: 3
+//   },
+//   {
+//     id_equipement: 3,
+//     nom: 'NVIDIA RTX 4090',
+//     description: 'High-end graphics card for AI and rendering',
+//     catégorie: 'Carte Graphique',
+//     état: 'en_reparation',
+//     quantite_dispo: 1
+//   }
+// ];
 
-const mockReservations = [
-  {
-    id_reservation: 1,
-    id_utilisateur: 101,
-    date_debut: '2023-05-15',
-    date_fin: '2023-05-20',
-    statut: 'confirmé'
-  },
-  {
-    id_reservation: 2,
-    id_utilisateur: 102,
-    date_debut: '2023-06-01',
-    date_fin: '2023-06-05',
-    statut: 'en_cours'
-  }
-];
+// const mockReservations = [
+//   {
+//     id_reservation: 1,
+//     id_utilisateur: 101,
+//     date_debut: '2023-05-15',
+//     date_fin: '2023-05-20',
+//     statut: 'confirmé'
+//   },
+//   {
+//     id_reservation: 2,
+//     id_utilisateur: 102,
+//     date_debut: '2023-06-01',
+//     date_fin: '2023-06-05',
+//     statut: 'en_cours'
+//   }
+// ];
 
-// Mock API endpoints (keep these as is)
-if (typeof window !== 'undefined') {
-  window.fetch = (url, options = {}) => {
-    if (url.includes('/api/equipments')) {
-      // Handle equipment API endpoints
-      if (options.method === 'POST') {
-        // Add equipment
-        console.log('Adding equipment:', JSON.parse(options.body));
-        return Promise.resolve({ ok: true });
-      } else if (options.method === 'PUT') {
-        // Update equipment
-        console.log('Updating equipment:', JSON.parse(options.body));
-        return Promise.resolve({ ok: true });
-      } else if (options.method === 'DELETE') {
-        // Delete equipment
-        console.log('Deleting equipment ID:', url.split('/').pop());
-        return Promise.resolve({ ok: true });
-      } else {
-        // Get equipment (with optional filtering)
-        const queryParams = new URLSearchParams(url.split('?')[1]);
-        const category = queryParams.get('category') || '';
-        const status = queryParams.get('status') || '';
+// // Mock API endpoints (keep these as is)
+// if (typeof window !== 'undefined') {
+//   window.fetch = (url, options = {}) => {
+//     if (url.includes('/api/equipments')) {
+//       // Handle equipment API endpoints
+//       if (options.method === 'POST') {
+//         // Add equipment
+//         console.log('Adding equipment:', JSON.parse(options.body));
+//         return Promise.resolve({ ok: true });
+//       } else if (options.method === 'PUT') {
+//         // Update equipment
+//         console.log('Updating equipment:', JSON.parse(options.body));
+//         return Promise.resolve({ ok: true });
+//       } else if (options.method === 'DELETE') {
+//         // Delete equipment
+//         console.log('Deleting equipment ID:', url.split('/').pop());
+//         return Promise.resolve({ ok: true });
+//       } else {
+//         // Get equipment (with optional filtering)
+//         const queryParams = new URLSearchParams(url.split('?')[1]);
+//         const category = queryParams.get('category') || '';
+//         const status = queryParams.get('status') || '';
         
-        let filteredData = [...mockEquipments];
+//         let filteredData = [...mockEquipments];
         
-        if (category) {
-          filteredData = filteredData.filter(e => e.catégorie === category);
-        }
+//         if (category) {
+//           filteredData = filteredData.filter(e => e.catégorie === category);
+//         }
         
-        if (status) {
-          filteredData = filteredData.filter(e => e.état === status);
-        }
+//         if (status) {
+//           filteredData = filteredData.filter(e => e.état === status);
+//         }
         
-        return Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve(filteredData)
-        });
-      }
-    } else if (url.includes('/api/reservations')) {
-      // Handle reservation API endpoints
-      if (options.method === 'PATCH') {
-        // Update reservation status
-        console.log('Updating reservation status:', url.split('/').pop(), JSON.parse(options.body));
-        return Promise.resolve({ ok: true });
-      }
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve(mockReservations)
-      });
-    }
+//         return Promise.resolve({
+//           ok: true,
+//           json: () => Promise.resolve(filteredData)
+//         });
+//       }
+//     } else if (url.includes('/api/reservations')) {
+//       // Handle reservation API endpoints
+//       if (options.method === 'PATCH') {
+//         // Update reservation status
+//         console.log('Updating reservation status:', url.split('/').pop(), JSON.parse(options.body));
+//         return Promise.resolve({ ok: true });
+//       }
+//       return Promise.resolve({
+//         ok: true,
+//         json: () => Promise.resolve(mockReservations)
+//       });
+//     }
     
-    // Default fallback
-    return Promise.reject(new Error('Not implemented'));
-  };
-}
+//     // Default fallback
+//     return Promise.reject(new Error('Not implemented'));
+//   };
+// }
 
 export default Technicien;

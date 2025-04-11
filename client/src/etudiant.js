@@ -661,7 +661,7 @@ const Etudiant = () => {
       </button>
 
       {/* Mock API endpoints for development purposes (unchanged) */}
-      {typeof window !== 'undefined' && (
+      {/* {typeof window !== 'undefined' && (
         <script dangerouslySetInnerHTML={{ __html: `
           window.fetch = (url, options = {}) => {
             if (url.includes('/api/equipments')) {
@@ -746,10 +746,10 @@ const Etudiant = () => {
                 });
               }
             }
-            return Promise.reject(new Error('Not implemented'));
+            return Promise.reject(new Error('Not done hh'));
           }
         `}} />
-      )}
+      )} */}
     </div>
   );
 };
