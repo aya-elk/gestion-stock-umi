@@ -12,13 +12,26 @@ CREATE TABLE IF NOT EXISTS `Utilisateur` (
   `role` ENUM('etudiant', 'technicien', 'responsable') NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS `Nom_Exemplaire` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `nom` VARCHAR(255) UNIQUE NOT NULL
+);
+
 -- Table Equipement
 CREATE TABLE IF NOT EXISTS `Equipement` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `nom` VARCHAR(255) NOT NULL,
   `description` TEXT,
   `quantite` INT NOT NULL,
-  `disponibilite` ENUM('disponible', 'indisponible') NOT NULL
+  `disponibilite` ENUM('disponible', 'indisponible') NOT NULL,
+  FOREIGN KEY (`nom`) REFERENCES `Nom_Exemplaire`(`nom`)
+);
+
+CREATE TABLE IF NOT EXISTS `Exemplaire` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `description` TEXT,
+  `id_equipement` INT NOT NULL,
+  FOREIGN KEY (`id_equipement`) REFERENCES `Equipement`(`id`)
 );
 
 -- Table Reservation
