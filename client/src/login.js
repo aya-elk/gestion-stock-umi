@@ -26,8 +26,8 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (email === '' || password === '') {
-      setError('Please fill in all fields');
+    if (email === '') {
+      setError('Please enter your email');
       return;
     }
 
@@ -35,13 +35,13 @@ const Login = () => {
       setLoading(true);
       setError('');
       
-      // Send login request to API with email AND password
-      const response = await fetch('http://localhost:5000/api/users/login', {
+      // Update the port from 5000 to 8080 to match your server
+      const response = await fetch('http://localhost:8080/api/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email }), // Send only email
       });
 
       const data = await response.json();
@@ -64,6 +64,8 @@ const Login = () => {
         navigate('/technicien');
       } else if (data.role === 'responsable') {
         navigate('/responsable');
+      } else {
+        setError('Unauthorized role');
       }
       
     } catch (err) {
@@ -142,10 +144,10 @@ const Login = () => {
             <input
               type="password"
               name="password"
-              placeholder="Password"
-              required
+              placeholder="Password (optional)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required={false}
             />
             <div className="login-options">
               <label>

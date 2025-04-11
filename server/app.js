@@ -1,5 +1,5 @@
 const express = require('express');
-const connectDB = require('./dbConnect'); // Use the new connection file
+const connectDB = require('./dbConnect');
 const userRoutes = require('./routes/userRoutes');
 const cors = require('cors');
 
