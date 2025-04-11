@@ -30,18 +30,22 @@ const Login = () => {
       setError('Please enter your email');
       return;
     }
+    
+    if (password === '') {
+      setError('Please enter your password');
+      return;
+    }
 
     try {
       setLoading(true);
       setError('');
       
-      // Update the port from 5000 to 8080 to match your server
       const response = await fetch('http://localhost:8080/api/users/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email }), // Send only email
+        body: JSON.stringify({ email, password }), // Send both email and password
       });
 
       const data = await response.json();
@@ -144,10 +148,10 @@ const Login = () => {
             <input
               type="password"
               name="password"
-              placeholder="Password (optional)"
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required={false}
+              required
             />
             <div className="login-options">
               <label>

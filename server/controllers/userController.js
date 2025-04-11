@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 
-// @desc    Auth user by email only & get role
+// @desc    Auth user with email & password & get role
 // @route   POST /api/users/login
 // @access  Public
 const authUser = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, password } = req.body;
     
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
     }
 
     console.log('Login attempt with email:', email);
@@ -25,7 +25,12 @@ const authUser = async (req, res) => {
     console.log('User found:', user ? 'Yes' : 'No');
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'Invalid email or password' });
+    }
+
+    // Verify password (compare with mot_de_passe field from db)
+    if (user.mot_de_passe !== password) {
+      return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     // Return user data including role
