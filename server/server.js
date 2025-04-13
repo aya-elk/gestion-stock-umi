@@ -3,7 +3,7 @@ const cors = require('cors');
 const mysql = require('mysql2/promise');
 require('dotenv-flow').config();
 const userRoutes = require('./routes/userRoutes');
-// const equipmentRoutes = require('./routes/equipmentRoutes');
+const equipmentRoutes = require('./routes/equipmentRoutes'); // Uncomment this line
 
 const app = express();
 
@@ -13,7 +13,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/users', userRoutes);
-// app.use('/api/equipments', equipmentRoutes);
+app.use('/api/equipments', equipmentRoutes); // Uncomment this line
 
 // MySQL Connection Pool
 const pool = mysql.createPool({
