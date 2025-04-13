@@ -12,26 +12,27 @@ CREATE TABLE IF NOT EXISTS `Utilisateur` (
   `role` ENUM('etudiant', 'technicien', 'responsable') NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS `Nom_Exemplaire` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `nom` VARCHAR(255) UNIQUE NOT NULL
-);
-
 -- Table Equipement
 CREATE TABLE IF NOT EXISTS `Equipement` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `nom` VARCHAR(255) NOT NULL,
   `description` TEXT,
-  `quantite` INT NOT NULL,
-  `disponibilite` ENUM('disponible', 'indisponible') NOT NULL,
-  FOREIGN KEY (`nom`) REFERENCES `Nom_Exemplaire`(`nom`)
+  `categorie` ENUM('stockable', 'unique') NOT NULL,
+  `quantite` INT
 );
 
-CREATE TABLE IF NOT EXISTS `Exemplaire` (
-  `id` INT AUTO_INCREMENT PRIMARY KEY,
-  `description` TEXT,
-  `id_equipement` INT NOT NULL,
-  FOREIGN KEY (`id_equipement`) REFERENCES `Equipement`(`id`)
+-- Table stockable
+CREATE TABLE IF NOT EXISTS `Stockable` (
+  `id` INT PRIMARY KEY,
+  `quantite` INT,
+  `qr_code` TEXT,
+  FOREIGN KEY (`id`) REFERENCES `Equipement`(`id`)
+);
+-- Table unique
+CREATE TABLE IF NOT EXISTS `Unique` (
+  `id` INT PRIMARY KEY,
+  `etat` BOOLEAN NOT NULL,
+  FOREIGN KEY (`id`) REFERENCES `Equipement`(`id`)
 );
 
 -- Table Reservation
