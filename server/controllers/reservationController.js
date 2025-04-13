@@ -17,7 +17,7 @@ const pool = mysql.createPool({
 // @access  Public
 const getAllReservations = async (req, res) => {
   try {
-    const { userId, status } = req.query;
+    const { userId, status, limit } = req.query;
     
     let query = `
       SELECT r.id as id_reservation, r.date_debut, r.date_fin, r.etat as statut, 
@@ -47,7 +47,14 @@ const getAllReservations = async (req, res) => {
       query += ' WHERE ' + conditions.join(' AND ');
     }
     
+    // Always order by date, most recent first
     query += ' ORDER BY r.date_debut DESC';
+    
+    // Add limit if specified
+    if (limit) {
+      query += ' LIMIT ?';
+      params.push(parseInt(limit));
+    }
     
     const [reservations] = await pool.execute(query, params);
     res.json(reservations);
@@ -290,9 +297,10 @@ const updateReservationStatus = async (req, res) => {
       return res.status(400).json({ message: 'Invalid status value' });
     }
     
-    // Get reservation details to update equipment status
-    const [reservation] = await connection.execute(
-      `SELECT r.*, re.id_equipement, re.quantite_reservee, e.categorie, u.id as user_id
+    // Get ALL equipment items associated with this reservation
+    const [reservationItems] = await connection.execute(
+      `SELECT r.id, r.id_utilisateur, re.id_equipement, re.quantite_reservee, 
+              e.categorie, u.nom as nom_utilisateur, u.prenom as prenom_utilisateur
        FROM Reservation r
        JOIN Reservation_Equipement re ON r.id = re.id_reservation
        JOIN Equipement e ON re.id_equipement = e.id
@@ -301,12 +309,10 @@ const updateReservationStatus = async (req, res) => {
       [id]
     );
     
-    if (reservation.length === 0) {
+    if (reservationItems.length === 0) {
       await connection.rollback();
       return res.status(404).json({ message: 'Reservation not found' });
     }
-    
-    const currentReservation = reservation[0];
     
     // Update reservation status
     await connection.execute(
@@ -314,34 +320,40 @@ const updateReservationStatus = async (req, res) => {
       [statut, id]
     );
     
+    // Get the user ID for notifications
+    const userId = reservationItems[0].id_utilisateur;
+    
     // Handle equipment status and quantity based on reservation status
     if (statut === 'validee') {
-      // If validating the reservation
-      if (currentReservation.categorie === 'solo') {
-        // Update solo equipment status
-        await connection.execute(
-          'UPDATE Solo SET etat = "en_cours" WHERE id = ?',
-          [currentReservation.id_equipement]
-        );
-      } else if (currentReservation.categorie === 'stockable') {
-        // Update stockable equipment quantity
-        await connection.execute(
-          'UPDATE Equipement SET quantite = quantite - ? WHERE id = ?',
-          [currentReservation.quantite_reservee, currentReservation.id_equipement]
-        );
+      // Process each equipment item in this reservation
+      for (const item of reservationItems) {
+        if (item.categorie === 'solo') {
+          // Update solo equipment status
+          console.log(`Updating solo equipment ${item.id_equipement} to en_cours`);
+          await connection.execute(
+            'UPDATE Solo SET etat = "en_cours" WHERE id = ?',
+            [item.id_equipement]
+          );
+        } else if (item.categorie === 'stockable') {
+          // Update stockable equipment quantity
+          console.log(`Updating stockable equipment ${item.id_equipement} quantity by ${item.quantite_reservee}`);
+          await connection.execute(
+            'UPDATE Equipement SET quantite = quantite - ? WHERE id = ?',
+            [item.quantite_reservee, item.id_equipement]
+          );
+        }
       }
       
       // Create approval notification
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-        [currentReservation.id_utilisateur, `Your reservation #${id} has been approved.`]
+        [userId, `Your reservation #${id} has been approved.`]
       );
-      
     } else if (statut === 'refusee') {
       // Create rejection notification
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-        [currentReservation.id_utilisateur, `Your reservation #${id} has been rejected.`]
+        [userId, `Your reservation #${id} has been rejected.`]
       );
     }
     
