@@ -3,7 +3,8 @@ const cors = require('cors');
 const mysql = require('mysql2/promise');
 require('dotenv-flow').config();
 const userRoutes = require('./routes/userRoutes');
-const equipmentRoutes = require('./routes/equipmentRoutes'); // Uncomment this line
+const equipmentRoutes = require('./routes/equipmentRoutes');
+const reservationRoutes = require('./routes/reservationRoutes'); // Add this line
 
 const app = express();
 
@@ -13,7 +14,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/users', userRoutes);
-app.use('/api/equipments', equipmentRoutes); // Uncomment this line
+app.use('/api/equipments', equipmentRoutes);
+app.use('/api/reservations', reservationRoutes); // Add this line
 
 // MySQL Connection Pool
 const pool = mysql.createPool({
@@ -37,10 +39,13 @@ const testDbConnection = async () => {
   }
 };
 
+// Test the connection
 testDbConnection();
 
-// Start server
+// Define port
 const PORT = process.env.PORT || 8080;
+
+// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
