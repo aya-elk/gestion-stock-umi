@@ -4,13 +4,14 @@ import './css/technicien.css';
 
 const Technicien = () => {
   // State for equipment list and form
-  const [equipments, setEquipments] = useState([]);
+  const [stockableEquipment, setStockableEquipment] = useState([]);
+  const [soloEquipment, setSoloEquipment] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [formData, setFormData] = useState({
     id: '',
     nom: '',
     description: '',
-    categorie: '',
+    categorie: 'stockable', // Default category
     etat: 'disponible',
     quantite: '1'
   });
@@ -33,6 +34,8 @@ const Technicien = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [activeView, setActiveView] = useState('equipment');
   const [activeTab, setActiveTab] = useState('inventory');
+  const [activeEquipmentTab, setActiveEquipmentTab] = useState('stockable');
+  const [showLowStock, setShowLowStock] = useState(false);
   const [notifications, setNotifications] = useState([
     {
       id: 1,
@@ -170,18 +173,40 @@ const Technicien = () => {
 
   // Fetch equipment data with filters applied
   const fetchEquipments = async () => {
-    setIsLoading(true);
-    setError(null);
     try {
-      const response = await fetch(`/api/equipments?category=${filterCategory}&status=${filterStatus}`);
+      setIsLoading(true);
+      setError(null);
+      
+      console.log('Fetching equipment data from server...');
+      const response = await fetch('http://localhost:8080/api/equipments', {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch equipment data');
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`Failed to fetch equipment data: ${response.status} ${response.statusText}`);
       }
-      const data = await response.json();
-      setEquipments(data);
+      
+      const equipment = await response.json();
+      console.log('Equipment data parsed successfully:', equipment.length, 'items');
+      
+      // Filter based on the database categories
+      const stockable = equipment.filter(item => item.categorie === 'stockable');
+      const solo = equipment.filter(item => item.categorie === 'solo');
+      
+      console.log(`Categorized: ${stockable.length} stockable, ${solo.length} solo items`);
+      
+      setStockableEquipment(stockable);
+      setSoloEquipment(solo);
+
     } catch (err) {
-      setError('Error loading equipment data');
-      console.error(err);
+      setError("Error fetching equipment: " + err.message);
+      console.error('Equipment fetch error:', err);
+      setStockableEquipment([]);
+      setSoloEquipment([]);
     } finally {
       setIsLoading(false);
     }
@@ -190,7 +215,7 @@ const Technicien = () => {
   // Fetch reservation data
   const fetchReservations = async () => {
     try {
-      const response = await fetch('/api/reservations');
+      const response = await fetch('http://localhost:8080/api/reservations');
       if (!response.ok) {
         throw new Error('Failed to fetch reservation data');
       }
@@ -219,12 +244,12 @@ const Technicien = () => {
   // Open update modal with equipment data
   const openUpdateModal = (equipment) => {
     setFormData({
-      id: equipment.id_equipement,
+      id: equipment.id,
       nom: equipment.nom,
       description: equipment.description,
-      categorie: equipment.catégorie,
-      etat: equipment.état,
-      quantite: equipment.quantite_dispo
+      categorie: equipment.categorie,
+      etat: equipment.etat || 'disponible', // Use the enum value directly
+      quantite: equipment.quantite || '1'
     });
     setShowUpdateModal(true);
   };
@@ -244,7 +269,7 @@ const Technicien = () => {
     setError(null);
     setSuccess(null);
     try {
-      const response = await fetch('/api/equipments', {
+      const response = await fetch('http://localhost:8080/api/equipments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -253,6 +278,8 @@ const Technicien = () => {
       });
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
         throw new Error('Failed to add equipment');
       }
       
@@ -265,7 +292,7 @@ const Technicien = () => {
         resetForm();
       }, 1500);
     } catch (err) {
-      setError('Error adding equipment');
+      setError('Error adding equipment: ' + err.message);
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -284,7 +311,7 @@ const Technicien = () => {
     setError(null);
     setSuccess(null);
     try {
-      const response = await fetch(`/api/equipments/${formData.id}`, {
+      const response = await fetch(`http://localhost:8080/api/equipments/${formData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -293,6 +320,8 @@ const Technicien = () => {
       });
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
         throw new Error('Failed to update equipment');
       }
       
@@ -305,7 +334,7 @@ const Technicien = () => {
         resetForm();
       }, 1500);
     } catch (err) {
-      setError('Error updating equipment');
+      setError('Error updating equipment: ' + err.message);
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -327,18 +356,20 @@ const Technicien = () => {
     setError(null);
     setSuccess(null);
     try {
-      const response = await fetch(`/api/equipments/${id}`, {
+      const response = await fetch(`http://localhost:8080/api/equipments/${id}`, {
         method: 'DELETE',
       });
       
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
         throw new Error('Failed to delete equipment');
       }
       
       setSuccess('Equipment deleted successfully');
       fetchEquipments();
     } catch (err) {
-      setError('Error deleting equipment');
+      setError('Error deleting equipment: ' + err.message);
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -351,7 +382,7 @@ const Technicien = () => {
       id: '',
       nom: '',
       description: '',
-      categorie: '',
+      categorie: 'stockable',
       etat: 'disponible',
       quantite: '1'
     });
@@ -370,7 +401,7 @@ const Technicien = () => {
   const handleUpdateReservationStatus = async (id, status) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/reservations/${id}`, {
+      const response = await fetch(`http://localhost:8080/api/reservations/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -393,6 +424,47 @@ const Technicien = () => {
   // Handle tab change
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+  };
+  
+  // Toggle between stockable and solo equipment tabs
+  const handleEquipmentTabChange = (tabType) => {
+    setActiveEquipmentTab(tabType);
+  };
+
+  // Add this function to handle status updates
+  const handleUpdateEquipmentStatus = async (id, newStatus) => {
+    if (!id) {
+      setError('No equipment selected for update');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/equipments/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ etat: newStatus }),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error('Failed to update equipment status');
+      }
+      
+      setSuccess(`Equipment status updated to ${newStatus}`);
+      fetchEquipments();
+    } catch (err) {
+      setError('Error updating equipment status: ' + err.message);
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -538,135 +610,246 @@ const Technicien = () => {
                       </p>
                     </div>
                     
-                    <div className="filter-section">
-                      <h3>Filter Equipment</h3>
-                      <div className="filter-controls">
-                        <div className="form-group">
-                          <label htmlFor="filter_category">Category:</label>
-                          <select 
-                            name="filter_category" 
-                            id="filter_category"
-                            value={filterCategory} 
-                            onChange={handleFilterChange}
-                            className="form-control"
-                          >
-                            <option value="">All Categories</option>
-                            <option value="Serveur">Serveur</option>
-                            <option value="Onduleur">Onduleur</option>
-                            <option value="Carte Graphique">Carte Graphique</option>
-                          </select>
-                        </div>
-                        <div className="form-group">
-                          <label htmlFor="filter_status">Status:</label>
-                          <select 
-                            name="filter_status" 
-                            id="filter_status"
-                            value={filterStatus} 
-                            onChange={handleFilterChange}
-                            className="form-control"
-                          >
-                            <option value="">All Status</option>
-                            <option value="disponible">Available</option>
-                            <option value="hors_service">Out of Service</option>
-                            <option value="en_reparation">Under Repair</option>
-                          </select>
-                        </div>
-                        <button 
-                          className="secondary-button" 
-                          onClick={() => {
-                            setFilterCategory('');
-                            setFilterStatus('');
-                          }}
-                        >
-                          Clear Filters
-                        </button>
-                      </div>
+                    {/* Equipment type tabs */}
+                    <div className="equipment-tabs">
+                      <button
+                        className={`equipment-tab ${activeEquipmentTab === 'stockable' ? 'active' : ''}`}
+                        onClick={() => handleEquipmentTabChange('stockable')}
+                      >
+                        Stockable Equipment
+                      </button>
+                      <button
+                        className={`equipment-tab ${activeEquipmentTab === 'solo' ? 'active' : ''}`}
+                        onClick={() => handleEquipmentTabChange('solo')}
+                      >
+                        Solo Equipment
+                      </button>
                     </div>
                     
-                    <div className="table-container glass-effect">
-                      <div className="table-header">
-                        <h3>Equipment List</h3>
-                        <button 
-                          className="add-button" 
-                          onClick={openAddModal}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                          </svg>
-                          Add Equipment
-                        </button>
-                      </div>
-                      
-                      <div className="responsive-table">
-                        {isLoading && !equipments.length ? (
-                          <div className="loading-spinner"></div>
-                        ) : (
-                          <table>
-                            <thead>
-                              <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Category</th>
-                                <th>Status</th>
-                                <th>Quantity</th>
-                                <th>Actions</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {equipments.length === 0 ? (
-                                <tr>
-                                  <td colSpan="7" className="centered-cell">No equipment found</td>
-                                </tr>
-                              ) : (
-                                equipments.map(equipment => (
-                                  <tr 
-                                    key={equipment.id_equipement}
-                                  >
-                                    <td>{equipment.id_equipement}</td>
-                                    <td>{equipment.nom}</td>
-                                    <td>{equipment.description}</td>
-                                    <td>
-                                      <span className="category-badge">{equipment.catégorie}</span>
-                                    </td>
-                                    <td>
-                                      <span className={`status-badge status-${equipment.état}`}>
-                                        {equipment.état === 'disponible' ? 'Available' : 
-                                         equipment.état === 'hors_service' ? 'Out of Service' : 'Under Repair'}
-                                      </span>
-                                    </td>
-                                    <td>{equipment.quantite_dispo}</td>
-                                    <td className="action-buttons">
-                                      <button 
-                                        onClick={() => openUpdateModal(equipment)}
-                                        className="edit-button"
-                                        title="Edit"
-                                      >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <path d="M12 20h9"></path>
-                                          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                        </svg>
-                                      </button>
-                                      <button 
-                                        onClick={() => handleDeleteEquipment(equipment.id_equipement)}
-                                        className="delete-button-small"
-                                        title="Delete"
-                                      >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <polyline points="3 6 5 6 21 6"></polyline>
-                                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                        </svg>
-                                      </button>
-                                    </td>
-                                  </tr>
-                                ))
-                              )}
-                            </tbody>
-                          </table>
-                        )}
-                      </div>
+                    <div className="filter-section">
+                      {activeEquipmentTab === 'stockable' ? (
+                        // For stockable equipment - only show low stock filter checkbox
+                        <div className="form-group">
+                          <label className="checkbox-container">
+                            <input 
+                              type="checkbox" 
+                              checked={showLowStock} 
+                              onChange={() => setShowLowStock(!showLowStock)}
+                            />
+                            <span className="checkmark"></span>
+                            Show only low stock items
+                          </label>
+                        </div>
+                      ) : (
+                        // For solo equipment - only show status filter
+                        <>
+                          <h3>Filter Equipment</h3>
+                          <div className="filter-controls">
+                            <div className="form-group">
+                              <label htmlFor="filter_status">Status:</label>
+                              <select 
+                                name="filter_status" 
+                                id="filter_status"
+                                value={filterStatus} 
+                                onChange={handleFilterChange}
+                                className="form-control"
+                              >
+                                <option value="">All Status</option>
+                                <option value="disponible">Available</option>
+                                <option value="en_cours">Under Repair</option>
+                                <option value="indisponible">Out of Service</option>
+                              </select>
+                            </div>
+                            <button 
+                              className="secondary-button" 
+                              onClick={() => setFilterStatus('')}
+                            >
+                              Clear Filter
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
+                    
+                    {/* Stockable Equipment Table */}
+                    {activeEquipmentTab === 'stockable' && (
+                      <div className="table-container glass-effect">
+                        <div className="table-header">
+                          <h3>Stockable Equipment List</h3>
+                          <button 
+                            className="add-button" 
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, categorie: 'stockable' }));
+                              openAddModal();
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="12" y1="5" x2="12" y2="19"></line>
+                              <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add Stockable Equipment
+                          </button>
+                        </div>
+                        
+                        <div className="responsive-table">
+                          {isLoading && !stockableEquipment.length ? (
+                            <div className="loading-spinner"></div>
+                          ) : (
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>ID</th>
+                                  <th>Name</th>
+                                  <th>Description</th>
+                                  <th>Category</th>
+                                  <th>Quantity</th>
+                                  <th>Status</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {stockableEquipment.length === 0 ? (
+                                  <tr>
+                                    <td colSpan="7" className="centered-cell">No stockable equipment found</td>
+                                  </tr>
+                                ) : (
+                                  stockableEquipment
+                                    .filter(item => !showLowStock || item.quantite < 5)
+                                    .map(equipment => (
+                                    <tr key={equipment.id}>
+                                      <td>{equipment.id}</td>
+                                      <td>{equipment.nom}</td>
+                                      <td>{equipment.description}</td>
+                                      <td>
+                                        <span className="category-badge">{equipment.categorie}</span>
+                                      </td>
+                                      <td>{equipment.quantite}</td>
+                                      <td>
+                                        <span className={`stock-level ${equipment.quantite < 5 ? 'low' : 'normal'}`}>
+                                          {equipment.quantite < 5 ? 'Low Stock' : 'Normal'}
+                                        </span>
+                                      </td>
+                                      <td className="action-buttons">
+                                        <button 
+                                          onClick={() => openUpdateModal(equipment)}
+                                          className="edit-button"
+                                          title="Edit"
+                                        >
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M12 20h9"></path>
+                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                          </svg>
+                                        </button>
+                                        <button 
+                                          onClick={() => handleDeleteEquipment(equipment.id)}
+                                          className="delete-button-small"
+                                          title="Delete"
+                                        >
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                          </svg>
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Solo Equipment Table */}
+                    {activeEquipmentTab === 'solo' && (
+                      <div className="table-container glass-effect">
+                        <div className="table-header">
+                          <h3>Solo Equipment List</h3>
+                          <button 
+                            className="add-button" 
+                            onClick={() => {
+                              setFormData(prev => ({ ...prev, categorie: 'solo' }));
+                              openAddModal();
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="12" y1="5" x2="12" y2="19"></line>
+                              <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add Solo Equipment
+                          </button>
+                        </div>
+                        
+                        <div className="responsive-table">
+                          {isLoading && !soloEquipment.length ? (
+                            <div className="loading-spinner"></div>
+                          ) : (
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>ID</th>
+                                  <th>Name</th>
+                                  <th>Description</th>
+                                  <th>Category</th>
+                                  <th>Status</th>
+                                  <th>Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {soloEquipment.length === 0 ? (
+                                  <tr>
+                                    <td colSpan="6" className="centered-cell">No solo equipment found</td>
+                                  </tr>
+                                ) : (
+                                  soloEquipment
+                                    // Apply status filter if selected
+                                    .filter(item => filterStatus === '' || item.etat === filterStatus)
+                                    .map(equipment => (
+                                    <tr key={equipment.id}>
+                                      <td>{equipment.id}</td>
+                                      <td>{equipment.nom}</td>
+                                      <td>{equipment.description}</td>
+                                      <td>
+                                        <span className="category-badge">{equipment.categorie}</span>
+                                      </td>
+                                      <td>
+                                        <span className={`status-badge status-${equipment.etat}`}>
+                                          {equipment.etat === 'disponible' ? 'Available' : 
+                                           equipment.etat === 'en_cours' ? 'Under Repair' : 'Out of Service'}
+                                        </span>
+                                      </td>
+                                      <td className="action-buttons">
+                                        <button 
+                                          onClick={() => openUpdateModal(equipment)}
+                                          className="edit-button"
+                                          title="Edit"
+                                        >
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M12 20h9"></path>
+                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                          </svg>
+                                        </button>
+                                        <button 
+                                          onClick={() => handleDeleteEquipment(equipment.id)}
+                                          className="delete-button-small"
+                                          title="Delete"
+                                        >
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <polyline points="3 6 5 6 21 6"></polyline>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                          </svg>
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))
+                                )}
+                              </tbody>
+                            </table>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </section>
                 )}
 
@@ -692,52 +875,52 @@ const Technicien = () => {
                               <tr>
                                 <th>ID</th>
                                 <th>Name</th>
+                                <th>Category</th>
                                 <th>Status</th>
-                                <th>Reported Issue</th>
-                                <th>Start Date</th>
-                                <th>Estimated Completion</th>
+                                <th>Description</th>
                                 <th>Actions</th>
                               </tr>
                             </thead>
                             <tbody>
-                              <tr>
-                                <td>3</td>
-                                <td>NVIDIA RTX 4090</td>
-                                <td>
-                                  <span className="status-badge status-en_reparation">Under Repair</span>
-                                </td>
-                                <td>Overheating during heavy workloads</td>
-                                <td>2023-10-05</td>
-                                <td>2023-10-20</td>
-                                <td className="action-buttons">
-                                  <button className="confirm-btn" title="Mark as Available">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                      <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                    </svg>
-                                    Complete
-                                  </button>
-                                </td>
-                              </tr>
-                              <tr>
-                                <td>5</td>
-                                <td>Dell PowerEdge Server</td>
-                                <td>
-                                  <span className="status-badge status-hors_service">Out of Service</span>
-                                </td>
-                                <td>Power supply failure</td>
-                                <td>2023-10-02</td>
-                                <td>2023-10-25</td>
-                                <td className="action-buttons">
-                                  <button className="progress-btn" title="Mark as Under Repair">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                      <circle cx="12" cy="12" r="10"></circle>
-                                      <polyline points="12 6 12 12 16 14"></polyline>
-                                    </svg>
-                                    Start Repair
-                                  </button>
-                                </td>
-                              </tr>
+                              {soloEquipment.filter(item => item.etat === 'en_cours').length === 0 ? (
+                                <tr>
+                                  <td colSpan="6" className="centered-cell">No equipment currently under maintenance</td>
+                                </tr>
+                              ) : (
+                                soloEquipment.filter(item => item.etat === 'en_cours').map(equipment => (
+                                  <tr key={equipment.id}>
+                                    <td>{equipment.id}</td>
+                                    <td>{equipment.nom}</td>
+                                    <td><span className="category-badge">{equipment.categorie}</span></td>
+                                    <td><span className="status-badge status-en_cours">Under Repair</span></td>
+                                    <td>{equipment.description}</td>
+                                    <td className="action-buttons">
+                                      <button 
+                                        className="confirm-btn" 
+                                        title="Mark as Available"
+                                        onClick={() => handleUpdateEquipmentStatus(equipment.id, 'disponible')}
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                        Mark Available
+                                      </button>
+                                      <button 
+                                        className="delete-button-small" 
+                                        title="Mark as Unavailable"
+                                        onClick={() => handleUpdateEquipmentStatus(equipment.id, 'indisponible')}
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                          <circle cx="12" cy="12" r="10"></circle>
+                                          <line x1="15" y1="9" x2="9" y2="15"></line>
+                                          <line x1="9" y1="9" x2="15" y2="15"></line>
+                                        </svg>
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
                             </tbody>
                           </table>
                         )}
@@ -964,18 +1147,20 @@ const Technicien = () => {
                 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="categorie">Category:</label>
-                    <input 
-                      type="text" 
-                      name="categorie" 
+                    <label htmlFor="categorie">Type:</label>
+                    <select
+                      name="categorie"
                       id="categorie"
-                      placeholder="Category" 
-                      required 
-                      value={formData.categorie || ''} 
+                      required
+                      value={formData.categorie || 'stockable'}
                       onChange={handleInputChange}
-                      className="form-control" 
-                    />
+                      className="form-control"
+                    >
+                      <option value="stockable">Stockable</option>
+                      <option value="solo">Solo</option>
+                    </select>
                   </div>
+                  
                   <div className="form-group">
                     <label htmlFor="etat">Status:</label>
                     <select 
@@ -987,26 +1172,28 @@ const Technicien = () => {
                       className="form-control"
                     >
                       <option value="disponible">Available</option>
-                      <option value="hors_service">Out of Service</option>
-                      <option value="en_reparation">Under Repair</option>
+                      <option value="en_cours">Under Repair</option>
+                      <option value="indisponible">Out of Service</option>
                     </select>
                   </div>
                 </div>
                 
-                <div className="form-group">
-                  <label htmlFor="quantite">Quantity:</label>
-                  <input 
-                    type="number" 
-                    name="quantite" 
-                    id="quantite"
-                    placeholder="Quantity" 
-                    required 
-                    value={formData.quantite || '1'} 
-                    onChange={handleInputChange}
-                    className="form-control" 
-                    min="1"
-                  />
-                </div>
+                {formData.categorie === 'stockable' && (
+                  <div className="form-group">
+                    <label htmlFor="quantite">Quantity:</label>
+                    <input 
+                      type="number" 
+                      name="quantite" 
+                      id="quantite"
+                      placeholder="Quantity" 
+                      required 
+                      value={formData.quantite || '1'} 
+                      onChange={handleInputChange}
+                      className="form-control" 
+                      min="1"
+                    />
+                  </div>
+                )}
                 
                 <div className="modal-actions">
                   <button 
@@ -1073,17 +1260,19 @@ const Technicien = () => {
                 
                 <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="update_categorie">Category:</label>
-                    <input 
-                      type="text" 
-                      name="categorie" 
+                    <label htmlFor="update_categorie">Type:</label>
+                    <select
+                      name="categorie"
                       id="update_categorie"
-                      placeholder="Category" 
-                      required 
-                      value={formData.categorie || ''} 
+                      required
+                      value={formData.categorie || 'stockable'}
                       onChange={handleInputChange}
-                      className="form-control" 
-                    />
+                      className="form-control"
+                      disabled
+                    >
+                      <option value="stockable">Stockable</option>
+                      <option value="solo">Solo</option>
+                    </select>
                   </div>
                   <div className="form-group">
                     <label htmlFor="update_etat">Status:</label>
@@ -1096,26 +1285,28 @@ const Technicien = () => {
                       className="form-control"
                     >
                       <option value="disponible">Available</option>
-                      <option value="hors_service">Out of Service</option>
-                      <option value="en_reparation">Under Repair</option>
+                      <option value="en_cours">Under Repair</option>
+                      <option value="indisponible">Out of Service</option>
                     </select>
                   </div>
                 </div>
                 
-                <div className="form-group">
-                  <label htmlFor="update_quantite">Quantity:</label>
-                  <input 
-                    type="number" 
-                    name="quantite" 
-                    id="update_quantite"
-                    placeholder="Quantity" 
-                    required 
-                    value={formData.quantite || '1'} 
-                    onChange={handleInputChange}
-                    className="form-control" 
-                    min="1"
-                  />
-                </div>
+                {formData.categorie === 'stockable' && (
+                  <div className="form-group">
+                    <label htmlFor="update_quantite">Quantity:</label>
+                    <input 
+                      type="number" 
+                      name="quantite" 
+                      id="update_quantite"
+                      placeholder="Quantity" 
+                      required 
+                      value={formData.quantite || '1'} 
+                      onChange={handleInputChange}
+                      className="form-control" 
+                      min="1"
+                    />
+                  </div>
+                )}
                 
                 <div className="modal-actions">
                   <button 

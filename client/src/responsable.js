@@ -425,8 +425,8 @@ const Responsable = () => {
                         Stockable Equipment
                       </button>
                       <button
-                        className={`equipment-tab ${activeEquipmentTab === 'unique' ? 'active' : ''}`}
-                        onClick={() => handleEquipmentTabChange('unique')}
+                        className={`equipment-tab ${activeEquipmentTab === 'solo' ? 'active' : ''}`}
+                        onClick={() => handleEquipmentTabChange('solo')}
                       >
                         Solo Equipment {/* Changed from "Unique Equipment" */}
                       </button>
@@ -503,7 +503,7 @@ const Responsable = () => {
                     )}
 
                     {/* Solo Equipment Table - Updated from Unique to Solo */}
-                    {activeEquipmentTab === 'unique' && (
+                    {activeEquipmentTab === 'solo' && (
                       <div className="table-container glass-effect">
                         <h3>Solo Equipment Inventory</h3> {/* Changed from "Unique Equipment" */}
                         <div className="responsive-table">
@@ -532,8 +532,10 @@ const Responsable = () => {
                                     <td>{item.nom}</td>
                                     <td>{item.description}</td>
                                     <td>
-                                      <span className={`status-badge ${item.etat ? 'status-confirmed' : 'status-unavailable'}`}>
-                                        {item.etat ? 'Available' : 'Unavailable'}
+                                      <span className={`status-badge status-${item.etat}`}>
+                                        {item.etat === 'disponible' ? 'Available' : 
+                                         item.etat === 'en_cours' ? 'In Use' :
+                                         'Unavailable'}
                                       </span>
                                     </td>
                                   </tr>

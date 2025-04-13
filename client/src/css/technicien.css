@@ -730,21 +730,49 @@ table tr:hover td {
   background-color: var(--tech-available);
 }
 
-.status-en_reparation {
+.status-en_cours {
   background-color: var(--tech-repair-light);
   color: var(--tech-repair);
 }
 
-.status-en_reparation:before {
+.status-en_cours:before {
   background-color: var(--tech-repair);
 }
 
-.status-hors_service {
+.status-indisponible {
   background-color: var(--tech-outofservice-light);
   color: var(--tech-outofservice);
 }
 
-.status-hors_service:before {
+.status-indisponible:before {
+  background-color: var(--tech-outofservice);
+}
+
+/* Status badges for new enum values */
+.status-disponible {
+  background-color: var(--tech-available-light);
+  color: var(--tech-available);
+}
+
+.status-disponible:before {
+  background-color: var(--tech-available);
+}
+
+.status-en_cours {
+  background-color: var(--tech-repair-light);
+  color: var(--tech-repair);
+}
+
+.status-en_cours:before {
+  background-color: var(--tech-repair);
+}
+
+.status-indisponible {
+  background-color: var(--tech-outofservice-light);
+  color: var(--tech-outofservice);
+}
+
+.status-indisponible:before {
   background-color: var(--tech-outofservice);
 }
 
@@ -1294,4 +1322,120 @@ table tr:hover td {
     flex-direction: column;
     gap: 0.5rem;
   }
+}
+
+/* Equipment tabs styling */
+.equipment-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.equipment-tab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.equipment-tab:hover {
+  color: var(--primary-color);
+}
+
+.equipment-tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+/* Stock level display */
+.stock-level {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stock-level.low {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+.stock-level.normal {
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
+}
+
+/* Checkbox styling */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+  font-size: 1rem;
+  user-select: none;
+  color: var(--text-secondary);
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.dark-mode .checkmark {
+  background-color: rgba(26, 34, 52, 0.9);
+  border-color: var(--glass-border-dark);
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  border-color: var(--primary-color);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 7px;
+  top: 3px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }

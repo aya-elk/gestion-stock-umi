@@ -539,6 +539,38 @@ table tr:hover td {
   background-color: #f39c12;
 }
 
+/* Status badges for new enum values */
+.status-disponible {
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
+}
+
+.status-en_cours {
+  background-color: rgba(243, 156, 18, 0.15);
+  color: #f39c12;
+}
+
+.status-indisponible {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+/* Status badges for ENUM values */
+.status-disponible {
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #27ae60;
+}
+
+.status-en_cours {
+  background-color: rgba(243, 156, 18, 0.15);
+  color: #f39c12;
+}
+
+.status-indisponible {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
 .category-badge {
   background-color: rgba(155, 89, 182, 0.15);
   color: #8e44ad;
