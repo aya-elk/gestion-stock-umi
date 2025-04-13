@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import moment from 'moment';
+import { QRCodeCanvas } from 'qrcode.react';
 import '../css/technicien.css';
 
 const Technicien = () => {
@@ -26,6 +27,10 @@ const Technicien = () => {
   // State for modals
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  
+  // Add state for QR code modal
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [qrData, setQrData] = useState(null);
   
   // State for filters
   const [filterCategory, setFilterCategory] = useState('');
@@ -93,6 +98,7 @@ const Technicien = () => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
         setShowAddModal(false);
         setShowUpdateModal(false);
+        setShowQRModal(false);
       }
     }
     
@@ -354,10 +360,26 @@ const Technicien = () => {
     setShowUpdateModal(true);
   };
 
+  // Function to generate QR code data
+  const generateQRData = (equipment) => {
+    return JSON.stringify({
+      id: equipment.id,
+      name: equipment.nom,
+      description: equipment.description
+    });
+  };
+
+  // Function to open QR code modal
+  const openQRModal = (equipment) => {
+    setQrData(generateQRData(equipment));
+    setShowQRModal(true);
+  };
+
   // Close modals
   const closeModals = () => {
     setShowAddModal(false);
     setShowUpdateModal(false);
+    setShowQRModal(false);
     setError(null);
     setSuccess(null);
   };
@@ -835,7 +857,7 @@ const Technicien = () => {
                                   <th>ID</th>
                                   <th>Name</th>
                                   <th>Description</th>
-                                  <th>Category</th>
+                                  <th>QR Code</th>
                                   <th>Quantity</th>
                                   <th>Status</th>
                                   <th>Actions</th>
@@ -854,8 +876,26 @@ const Technicien = () => {
                                       <td>{equipment.id}</td>
                                       <td>{equipment.nom}</td>
                                       <td>{equipment.description}</td>
-                                      <td>
-                                        <span className="category-badge">{equipment.categorie}</span>
+                                      <td className="qr-cell">
+                                        <div className="qr-inline">
+                                          <QRCodeCanvas 
+                                            value={generateQRData(equipment)}
+                                            size={50}
+                                            level="M"
+                                          />
+                                          <button 
+                                            className="qr-view-btn" 
+                                            onClick={() => openQRModal(equipment)}
+                                            title="View/Download QR"
+                                          >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                              <circle cx="11" cy="11" r="8"></circle>
+                                              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                              <line x1="11" y1="8" x2="11" y2="14"></line>
+                                              <line x1="8" y1="11" x2="14" y2="11"></line>
+                                            </svg>
+                                          </button>
+                                        </div>
                                       </td>
                                       <td>{equipment.quantite}</td>
                                       <td>
@@ -925,7 +965,7 @@ const Technicien = () => {
                                   <th>ID</th>
                                   <th>Name</th>
                                   <th>Description</th>
-                                  <th>Category</th>
+                                  <th>QR Code</th>
                                   <th>Status</th>
                                   <th>Actions</th>
                                 </tr>
@@ -944,8 +984,26 @@ const Technicien = () => {
                                       <td>{equipment.id}</td>
                                       <td>{equipment.nom}</td>
                                       <td>{equipment.description}</td>
-                                      <td>
-                                        <span className="category-badge">{equipment.categorie}</span>
+                                      <td className="qr-cell">
+                                        <div className="qr-inline">
+                                          <QRCodeCanvas 
+                                            value={generateQRData(equipment)}
+                                            size={50}
+                                            level="M"
+                                          />
+                                          <button 
+                                            className="qr-view-btn" 
+                                            onClick={() => openQRModal(equipment)}
+                                            title="View/Download QR"
+                                          >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                              <circle cx="11" cy="11" r="8"></circle>
+                                              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                              <line x1="11" y1="8" x2="11" y2="14"></line>
+                                              <line x1="8" y1="11" x2="14" y2="11"></line>
+                                            </svg>
+                                          </button>
+                                        </div>
                                       </td>
                                       <td>
                                         <span className={`status-badge status-${equipment.etat}`}>
@@ -1478,6 +1536,60 @@ const Technicien = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* QR Code Modal */}
+      {showQRModal && (
+        <div className="modal-overlay">
+          <div className="modal-container qr-modal" ref={modalRef}>
+            <div className="modal-header">
+              <h3>Equipment QR Code</h3>
+              <button className="modal-close" onClick={() => setShowQRModal(false)}>×</button>
+            </div>
+            <div className="modal-body qr-container">
+              {qrData && (
+                <>
+                  <div className="qr-code">
+                    <QRCodeCanvas 
+                      value={qrData} 
+                      size={200}
+                      level="H"
+                      includeMargin={true}
+                    />
+                  </div>
+                  <div className="qr-info">
+                    <p><strong>Equipment Information:</strong></p>
+                    <p>When scanned, this QR code will show:</p>
+                    <ul>
+                      {JSON.parse(qrData) && (
+                        <>
+                          <li><strong>ID:</strong> {JSON.parse(qrData).id}</li>
+                          <li><strong>Name:</strong> {JSON.parse(qrData).name}</li>
+                          <li><strong>Description:</strong> {JSON.parse(qrData).description}</li>
+                        </>
+                      )}
+                    </ul>
+                    <button 
+                      className="submit-button"
+                      onClick={() => {
+                        // Function to download QR code
+                        const canvas = document.querySelector('.qr-code canvas');
+                        const image = canvas.toDataURL("image/png");
+                        const link = document.createElement('a');
+                        const equipmentName = JSON.parse(qrData).name.replace(/\s+/g, '_').toLowerCase();
+                        link.download = `qrcode_${equipmentName}_${JSON.parse(qrData).id}.png`;
+                        link.href = image;
+                        link.click();
+                      }}
+                    >
+                      Download QR Code
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
