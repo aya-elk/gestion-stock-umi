@@ -96,14 +96,14 @@ INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
     Logiciel de tranchage: Creality Print, Cura 5.0 et version ultérieure 
     Formats de fichier pour trancher: STL, OBJ, 3MF 
     Langues de l\'interface utilisateur : anglais',
-    'unique', 1),
+    'solo', 1),
 
   ('Pin connector kit',
     '1550 PCS 2.54mm dupont connectors 
     760 PCS 2.54mm JST-XH connectors 
     1.5m 10-wire ribbon cable. 
     terminal crimping tool',
-    'unique', 1),
+    'solo', 1),
 
   ('Onduleur',
     'Puissance : 1500 VA / 865 W 
@@ -115,7 +115,7 @@ INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
     Ports de communication : USB et serial 
     Logiciel de Gestion  
     Mode bypass',
-    'unique', 1),
+    'solo', 1),
 
   ('Serveur',
     'CPU : Intel Xeon E-2136 
@@ -125,7 +125,7 @@ INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
     Carte réseau : Intel Ethernet Server Adapter I350-T2 (dual-port) 
     Alimentation : Corsair RM750x 750W 80 PLUS Gold (x2) 
     Refroidissement : Noctua NF-F12 industrialPPC-2000 PWM (x4)',
-    'unique', 1),
+    'solo', 1),
 
   ('NVIDIA Jetson Nano',
     'Memory: 4GB 64-bit LPDDR4 25.6GB/s 
@@ -137,7 +137,7 @@ INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
     Sortie vidéo 1 x DisplayPort 
     USB 3.0 4 x USB 3.0  
     Ethernet 10/100/1000 (Gigabit)',
-    'unique', 1),
+    'solo', 1),
 
   ('NVIDIA GeForce RTX 3090 Ti',
     'NVIDIA CUDA Cores 10752 
@@ -147,7 +147,7 @@ INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
     Slot: 3-Slot 
     Supplementary Power Connectors: 3x PCIe 8-pin cables (adapter in box) OR 
     450W or greater PCIe Gen 5 cable',
-    'unique', 1),
+    'solo', 1),
 
   ('XBee S2 ou S3 ZigBee',
     'Antenne fouet',
@@ -202,5 +202,5 @@ INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
 INSERT INTO `Stockable` (id, quantite)
 SELECT id, quantite FROM Equipement WHERE categorie = 'stockable';
 
-INSERT INTO `Unique` (id, etat)
-SELECT id, TRUE FROM Equipement WHERE categorie = 'unique';
+INSERT INTO `Solo` (id, etat)
+SELECT id, TRUE FROM Equipement WHERE categorie = 'solo';

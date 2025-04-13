@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `Equipement` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `nom` VARCHAR(255) NOT NULL,
   `description` TEXT,
-  `categorie` ENUM('stockable', 'unique') NOT NULL,
+  `categorie` ENUM('stockable', 'solo') NOT NULL,
   `quantite` INT
 );
 
@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS `Stockable` (
   FOREIGN KEY (`id`) REFERENCES `Equipement`(`id`)
 );
 -- Table unique
-CREATE TABLE IF NOT EXISTS `Unique` (
+CREATE TABLE IF NOT EXISTS `Solo` (
   `id` INT PRIMARY KEY,
   `etat` BOOLEAN NOT NULL,
   FOREIGN KEY (`id`) REFERENCES `Equipement`(`id`)
