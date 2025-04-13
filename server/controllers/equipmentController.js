@@ -21,10 +21,7 @@ const getAllEquipment = async (req, res) => {
     
     let query = `
       SELECT e.id, e.nom, e.description, e.categorie, e.quantite,
-             CASE 
-                WHEN s.etat IS NOT NULL THEN IF(s.etat, true, false)
-                ELSE NULL 
-             END as etat,
+             s.etat,
              CASE WHEN st.qr_code IS NOT NULL THEN st.qr_code ELSE NULL END as qr_code
       FROM Equipement e
       LEFT JOIN Solo s ON e.id = s.id
@@ -40,15 +37,12 @@ const getAllEquipment = async (req, res) => {
     }
     
     if (status) {
-      if (status === 'disponible') {
-        conditions.push('(s.etat IS NULL OR s.etat = true)');
-      } else {
-        conditions.push('s.etat = false');
-      }
+      conditions.push('s.etat = ?');
+      params.push(status);
     }
     
     if (available === 'true') {
-      conditions.push('(e.categorie = "stockable" AND e.quantite > 0) OR (e.categorie = "solo" AND (s.etat IS NULL OR s.etat = true))');
+      conditions.push('(e.categorie = "stockable" AND e.quantite > 0) OR (e.categorie = "solo" AND s.etat = "disponible")');
     }
     
     if (conditions.length) {
@@ -115,7 +109,7 @@ const createEquipment = async (req, res) => {
     if (categorie === 'solo') {
       await connection.execute(
         'INSERT INTO Solo (id, etat) VALUES (?, ?)',
-        [equipmentId, etat === true]
+        [equipmentId, etat || 'disponible']  // Use ENUM value directly, default to 'disponible'
       );
     } else if (categorie === 'stockable') {
       await connection.execute(
@@ -132,6 +126,7 @@ const createEquipment = async (req, res) => {
       description,
       categorie,
       quantite,
+      etat,
       message: 'Equipment added successfully'
     });
   } catch (error) {
@@ -182,14 +177,14 @@ const updateEquipment = async (req, res) => {
       if (soloCheck.length > 0) {
         await connection.execute(
           'UPDATE Solo SET etat = ? WHERE id = ?',
-          [etat === true, id]
+          [etat || 'disponible', id]  // Use ENUM value directly
         );
       } else {
         // Handle type change if needed
         await connection.execute('DELETE FROM Stockable WHERE id = ?', [id]);
         await connection.execute(
           'INSERT INTO Solo (id, etat) VALUES (?, ?)',
-          [id, etat === true]
+          [id, etat || 'disponible']  // Use ENUM value directly
         );
         await connection.execute(
           'UPDATE Equipement SET categorie = "solo" WHERE id = ?',
@@ -318,11 +313,45 @@ const getSoloEquipment = async (req, res) => {
   }
 };
 
+// @desc    Update equipment status
+// @route   PATCH /api/equipments/:id/status
+// @access  Private
+const updateEquipmentStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { etat } = req.body;
+    
+    if (!etat) {
+      return res.status(400).json({ message: 'Status is required' });
+    }
+    
+    // Validate the status is one of the allowed ENUM values
+    if (!['disponible', 'en_cours', 'indisponible'].includes(etat)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+    
+    const [result] = await pool.execute(
+      'UPDATE Solo SET etat = ? WHERE id = ?',
+      [etat, id]
+    );
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: 'Equipment not found or not of type Solo' });
+    }
+    
+    res.json({ message: 'Equipment status updated successfully' });
+  } catch (error) {
+    console.error('Error updating equipment status:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 module.exports = {
   getAllEquipment,
   getEquipmentById,
   createEquipment,
   updateEquipment,
+  updateEquipmentStatus, // Add this new function
   deleteEquipment,
   getStockableEquipment,
   getSoloEquipment
