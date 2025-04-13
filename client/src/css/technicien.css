@@ -472,14 +472,24 @@ textarea.form-control {
 }
 
 .progress-btn {
-  background: linear-gradient(135deg, #FFAB00, #FF8B00);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
   color: white;
-  box-shadow: 0 4px 12px rgba(255, 171, 0, 0.2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
 }
 
 .progress-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(255, 171, 0, 0.3);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .cancel-button {
@@ -502,6 +512,32 @@ textarea.form-control {
 .add-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(108, 43, 217, 0.3);
+}
+
+.approve-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-right: 0.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.approve-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.approve-btn svg, .progress-btn svg {
+  margin-right: 4px;
 }
 
 button:disabled {
@@ -719,6 +755,15 @@ table tr:hover td {
 
 .status-pending:before {
   background-color: #f39c12;
+}
+
+.status-rejected {
+  background-color: rgba(231, 76, 60, 0.15);
+  color: #e74c3c;
+}
+
+.status-rejected:before {
+  background-color: #e74c3c;
 }
 
 .status-disponible {
@@ -1438,4 +1483,10 @@ table tr:hover td {
   border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
+}
+
+.status-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-style: italic;
 }

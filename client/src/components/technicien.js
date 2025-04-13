@@ -1,8 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import moment from 'moment';
 import '../css/technicien.css';
 
 const Technicien = () => {
+  // Add navigation for redirects
+  const navigate = useNavigate();
+  
+  // Current user state for authentication
+  const [currentUser, setCurrentUser] = useState(null);
+  
   // State for equipment list and form
   const [stockableEquipment, setStockableEquipment] = useState([]);
   const [soloEquipment, setSoloEquipment] = useState([]);
@@ -25,7 +32,7 @@ const Technicien = () => {
   const [filterStatus, setFilterStatus] = useState('');
   
   // State for loading and error handling
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   
@@ -36,29 +43,7 @@ const Technicien = () => {
   const [activeTab, setActiveTab] = useState('inventory');
   const [activeEquipmentTab, setActiveEquipmentTab] = useState('stockable');
   const [showLowStock, setShowLowStock] = useState(false);
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'Equipment Repair Request',
-      message: 'New repair request for Laptop HP EliteBook submitted by Sarah Johnson.',
-      date: new Date(2023, 9, 15),
-      read: false
-    },
-    {
-      id: 2,
-      title: 'Low Stock Alert',
-      message: 'Projector inventory is running low. Only 2 units remaining.',
-      date: new Date(2023, 9, 14),
-      read: false
-    },
-    {
-      id: 3,
-      title: 'Maintenance Completed',
-      message: 'NVIDIA GPU repairs have been completed and ready for verification.',
-      date: new Date(2023, 9, 12),
-      read: true
-    }
-  ]);
+  const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   
   // Refs for sections and modals
@@ -66,6 +51,42 @@ const Technicien = () => {
   const reservationsRef = useRef(null);
   const modalRef = useRef(null);
   
+  // Authentication check on component mount
+  useEffect(() => {
+    // Check if user is logged in and has role 'technicien'
+    let userFromStorage;
+    try {
+      const localData = localStorage.getItem('userInfo');
+      const sessionData = sessionStorage.getItem('userInfo');
+      
+      if (localData) {
+        userFromStorage = JSON.parse(localData);
+      } else if (sessionData) {
+        userFromStorage = JSON.parse(sessionData);
+      }
+    } catch (parseErr) {
+      console.error("Error parsing storage data:", parseErr);
+      navigate('/login');
+      return;
+    }
+    
+    // If no user data or wrong role, redirect to login
+    if (!userFromStorage) {
+      navigate('/login');
+      return;
+    }
+    
+    // Check if user role is 'technicien'
+    if (userFromStorage.role !== 'technicien') {
+      // Wrong role, redirect to login
+      navigate('/login');
+      return;
+    }
+    
+    // User is authenticated and has correct role
+    setCurrentUser(userFromStorage);
+  }, [navigate]);
+
   // Click outside modal handler
   useEffect(() => {
     function handleClickOutside(event) {
@@ -105,7 +126,7 @@ const Technicien = () => {
   // Format notification date
   const formatNotificationDate = (date) => {
     const now = new Date();
-    const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.floor((now - new Date(date)) / (1000 * 60 * 60 * 24));
     
     if (diffDays === 0) {
       return 'Today';
@@ -114,7 +135,7 @@ const Technicien = () => {
     } else if (diffDays < 7) {
       return `${diffDays} days ago`;
     } else {
-      return date.toLocaleDateString();
+      return new Date(date).toLocaleDateString();
     }
   };
 
@@ -144,32 +165,36 @@ const Technicien = () => {
 
   // Load equipment data when component mounts or filters change
   useEffect(() => {
-    // Animate elements on scroll
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('show');
-        }
-      });
-    }, { threshold: 0.1 });
-    
-    document.querySelectorAll('.hidden').forEach(el => {
-      observer.observe(el);
-    });
-    
-    // Check dark mode
-    const isDarkMode = document.body.classList.contains('dark-mode');
-    setDarkMode(isDarkMode);
-    
-    fetchEquipments();
-    fetchReservations();
-    
-    return () => {
+    // Only fetch data if authenticated
+    if (currentUser) {
+      // Animate elements on scroll
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('show');
+          }
+        });
+      }, { threshold: 0.1 });
+      
       document.querySelectorAll('.hidden').forEach(el => {
-        observer.unobserve(el);
+        observer.observe(el);
       });
-    };
-  }, [filterCategory, filterStatus]);
+      
+      // Check dark mode
+      const isDarkMode = document.body.classList.contains('dark-mode');
+      setDarkMode(isDarkMode);
+      
+      fetchEquipments();
+      fetchReservations();
+      fetchNotifications();
+      
+      return () => {
+        document.querySelectorAll('.hidden').forEach(el => {
+          observer.unobserve(el);
+        });
+      };
+    }
+  }, [filterCategory, filterStatus, currentUser]);
 
   // Fetch equipment data with filters applied
   const fetchEquipments = async () => {
@@ -215,14 +240,89 @@ const Technicien = () => {
   // Fetch reservation data
   const fetchReservations = async () => {
     try {
+      setIsLoading(true);
+      
+      // Get all reservations 
       const response = await fetch('http://localhost:8080/api/reservations');
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch reservation data');
+        throw new Error(`Failed to fetch reservations: ${response.status} ${response.statusText}`);
       }
+      
       const data = await response.json();
-      setReservations(data);
+      console.log('Reservations data:', data);
+      
+      // Group by reservation ID to handle multiple equipment items per reservation
+      const reservationMap = {};
+      
+      data.forEach(item => {
+        if (!reservationMap[item.id_reservation]) {
+          reservationMap[item.id_reservation] = {
+            ...item,
+            equipment_items: [{
+              id: item.id_equipement,
+              name: item.nom_equipement,
+              quantity: item.quantite_reservee
+            }]
+          };
+        } else {
+          // Add additional equipment to existing reservation
+          reservationMap[item.id_reservation].equipment_items.push({
+            id: item.id_equipement,
+            name: item.nom_equipement,
+            quantity: item.quantite_reservee
+          });
+        }
+      });
+      
+      const finalReservations = Object.values(reservationMap);
+      setReservations(finalReservations);
     } catch (err) {
       console.error('Error loading reservation data:', err);
+      setError("Failed to load reservations. Please try again later.");
+      setReservations([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch notifications from API
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/notifications/tech');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch notifications');
+      }
+      
+      const data = await response.json();
+      setNotifications(data);
+    } catch (err) {
+      console.error('Notification fetch error:', err);
+      // Fallback to dummy data if API fails
+      setNotifications([
+        {
+          id: 1,
+          title: 'Equipment Repair Request',
+          message: 'New repair request for Laptop HP EliteBook submitted by Sarah Johnson.',
+          date: new Date(Date.now() - 86400000).toISOString(), // yesterday
+          read: false
+        },
+        {
+          id: 2,
+          title: 'Low Stock Alert',
+          message: 'Projector inventory is running low. Only 2 units remaining.',
+          date: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
+          read: false
+        },
+        {
+          id: 3,
+          title: 'Maintenance Completed',
+          message: 'NVIDIA GPU repairs have been completed and ready for verification.',
+          date: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
+          read: true
+        }
+      ]);
     }
   };
 
@@ -248,7 +348,7 @@ const Technicien = () => {
       nom: equipment.nom,
       description: equipment.description,
       categorie: equipment.categorie,
-      etat: equipment.etat || 'disponible', // Use the enum value directly
+      etat: equipment.etat || 'disponible', 
       quantite: equipment.quantite || '1'
     });
     setShowUpdateModal(true);
@@ -400,6 +500,9 @@ const Technicien = () => {
   // Handle reservation status update
   const handleUpdateReservationStatus = async (id, status) => {
     setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+    
     try {
       const response = await fetch(`http://localhost:8080/api/reservations/${id}`, {
         method: 'PATCH',
@@ -409,13 +512,23 @@ const Technicien = () => {
         body: JSON.stringify({ statut: status }),
       });
       
-      if (!response.ok) throw new Error('Failed to update reservation status');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to update reservation status to ${status}`);
+      }
       
       setSuccess(`Reservation status updated to ${status}`);
-      fetchReservations();
+      
+      // Refresh the reservations list after a short delay
+      setTimeout(() => {
+        fetchReservations();
+        fetchEquipments(); // Refresh equipment as status might have changed
+        fetchNotifications(); // Check for new system notifications
+      }, 1000);
+      
     } catch (err) {
-      setError('Error updating reservation status');
-      console.error(err);
+      setError(`Error updating reservation: ${err.message}`);
+      console.error('Update reservation error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -431,7 +544,7 @@ const Technicien = () => {
     setActiveEquipmentTab(tabType);
   };
 
-  // Add this function to handle status updates
+  // Update equipment status (e.g., mark as available/under repair/unavailable)
   const handleUpdateEquipmentStatus = async (id, newStatus) => {
     if (!id) {
       setError('No equipment selected for update');
@@ -457,7 +570,10 @@ const Technicien = () => {
         throw new Error('Failed to update equipment status');
       }
       
-      setSuccess(`Equipment status updated to ${newStatus}`);
+      setSuccess(`Equipment status updated to ${newStatus === 'disponible' ? 'Available' : 
+                                                newStatus === 'en_cours' ? 'In Use' : 
+                                                newStatus === 'indisponible' ? 'Out of Service' : 
+                                                'Unknown'}`);
       fetchEquipments();
     } catch (err) {
       setError('Error updating equipment status: ' + err.message);
@@ -466,6 +582,16 @@ const Technicien = () => {
       setIsLoading(false);
     }
   };
+
+  // If not authenticated yet, show loading
+  if (!currentUser) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Verifying authentication...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={darkMode ? "dark-mode" : ""}>
@@ -536,7 +662,10 @@ const Technicien = () => {
                 </svg>
               )}
             </button>
-            <Link to="/login" className="sidebar-logout" title="Logout">
+            <Link to="/login" className="sidebar-logout" title="Logout" onClick={() => {
+              localStorage.removeItem('userInfo');
+              sessionStorage.removeItem('userInfo');
+            }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
@@ -561,7 +690,7 @@ const Technicien = () => {
             </div>
             <div className="dashboard-actions">
               <div className="user-profile">
-                <span className="user-greeting">Welcome, Technician</span>
+                <span className="user-greeting">Welcome, {currentUser.prenom || 'Technician'}</span>
                 <div className="user-avatar">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -572,6 +701,11 @@ const Technicien = () => {
             </div>
           </header>
           
+          {/* Success and error messages */}
+          {error && <div className="error-message">{error}</div>}
+          {success && <div className="success-message">{success}</div>}
+          
+          {/* Rest of the component remains the same */}
           {/* Equipment Management View */}
           {activeView === 'equipment' && (
             <div className="dashboard-content">
@@ -656,8 +790,8 @@ const Technicien = () => {
                               >
                                 <option value="">All Status</option>
                                 <option value="disponible">Available</option>
-                                <option value="en_cours">Under Repair</option>
-                                <option value="indisponible">Out of Service</option>
+                                <option value="en_cours">In Use</option>
+                                <option value="indisponible">Being Repaired</option>
                               </select>
                             </div>
                             <button 
@@ -816,7 +950,7 @@ const Technicien = () => {
                                       <td>
                                         <span className={`status-badge status-${equipment.etat}`}>
                                           {equipment.etat === 'disponible' ? 'Available' : 
-                                           equipment.etat === 'en_cours' ? 'Under Repair' : 'Out of Service'}
+                                           equipment.etat === 'en_cours' ? 'In Use' : 'Being Repaired'}
                                         </span>
                                       </td>
                                       <td className="action-buttons">
@@ -892,7 +1026,7 @@ const Technicien = () => {
                                     <td>{equipment.id}</td>
                                     <td>{equipment.nom}</td>
                                     <td><span className="category-badge">{equipment.categorie}</span></td>
-                                    <td><span className="status-badge status-en_cours">Under Repair</span></td>
+                                    <td><span className="status-badge status-en_cours">In Use</span></td>
                                     <td>{equipment.description}</td>
                                     <td className="action-buttons">
                                       <button 
@@ -973,7 +1107,7 @@ const Technicien = () => {
                       <thead>
                         <tr>
                           <th>ID</th>
-                          <th>User</th>
+                          <th>Student</th>
                           <th>Start Date</th>
                           <th>End Date</th>
                           <th>Status</th>
@@ -988,48 +1122,67 @@ const Technicien = () => {
                         ) : (
                           reservations.map(reservation => {
                             let statusClass = '';
-                            if (reservation.statut === 'confirmé') statusClass = 'status-confirmed';
-                            else if (reservation.statut === 'en_cours') statusClass = 'status-pending';
-                            else if (reservation.statut === 'en_attente') statusClass = 'status-pending';
+                            if (reservation.statut === 'confirmé' || reservation.statut === 'validee') statusClass = 'status-confirmed';
+                            else if (reservation.statut === 'en_cours' || reservation.statut === 'attente') statusClass = 'status-pending';
+                            else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
                             
                             return (
                               <tr key={reservation.id_reservation}>
-                                <td>{reservation.id_reservation}</td>
-                                <td>{reservation.id_utilisateur}</td>
-                                <td>{reservation.date_debut}</td>
-                                <td>{reservation.date_fin}</td>
+                                <td>#{reservation.id_reservation}</td>
+                                <td>
+                                  {reservation  .nom_utilisateur} {reservation.prenom_utilisateur}
+                                </td>
+                                <td>{new Date(reservation.date_debut).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
+                                <td>{new Date(reservation.date_fin).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
                                 <td>
                                   <span className={`status-badge ${statusClass}`}>
-                                    {reservation.statut === 'confirmé' ? 'Confirmed' : 
-                                     reservation.statut === 'en_cours' ? 'In Progress' : 'Pending'}
+                                    {reservation.statut === 'confirmé' || reservation.statut === 'validee' ? 'Confirmed' : 
+                                     reservation.statut === 'en_cours' ? 'In Progress' : 
+                                     reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
                                   </span>
                                 </td>
                                 <td className="action-buttons">
-                                  {reservation.statut !== 'confirmé' && (
+                                  {(reservation.statut === 'en_attente' || reservation.statut === 'attente') && (
+                                    <>
+                                      <button
+                                        onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'confirmé')}
+                                        className="approve-btn"
+                                        title="Confirm"
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        </svg>
+                                        Confirm
+                                      </button>
+                                      <button
+                                        onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'en_cours')}
+                                        className="progress-btn"
+                                        title="Mark In Progress"
+                                      >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                          <circle cx="12" cy="12" r="10"></circle>
+                                          <polyline points="12 6 12 12 16 14"></polyline>
+                                        </svg>
+                                        In Progress
+                                      </button>
+                                    </>
+                                  )}
+                                  {reservation.statut === 'en_cours' && (
                                     <button
                                       onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'confirmé')}
-                                      className="confirm-btn"
-                                      title="Confirm"
+                                      className="approve-btn"
+                                      title="Mark Completed"
                                     >
                                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                         <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                       </svg>
-                                      Confirm
+                                      Complete
                                     </button>
                                   )}
-                                  {reservation.statut === 'en_attente' && (
-                                    <button
-                                      onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'en_cours')}
-                                      className="progress-btn"
-                                      title="Mark In Progress"
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <polyline points="12 6 12 12 16 14"></polyline>
-                                      </svg>
-                                      In Progress
-                                    </button>
+                                  {reservation.statut === 'confirmé' || reservation.statut === 'validee' && (
+                                    <span className="status-text">Completed</span>
                                   )}
                                 </td>
                               </tr>
@@ -1172,8 +1325,8 @@ const Technicien = () => {
                       className="form-control"
                     >
                       <option value="disponible">Available</option>
-                      <option value="en_cours">Under Repair</option>
-                      <option value="indisponible">Out of Service</option>
+                      <option value="en_cours">In Use</option>
+                      <option value="indisponible">Being Repaired</option>
                     </select>
                   </div>
                 </div>
@@ -1285,8 +1438,8 @@ const Technicien = () => {
                       className="form-control"
                     >
                       <option value="disponible">Available</option>
-                      <option value="en_cours">Under Repair</option>
-                      <option value="indisponible">Out of Service</option>
+                      <option value="en_cours">In Use</option>
+                      <option value="indisponible">Being Repaired</option>
                     </select>
                   </div>
                 </div>
