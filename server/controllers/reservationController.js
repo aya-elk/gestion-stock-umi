@@ -184,6 +184,91 @@ const createReservation = async (req, res) => {
   }
 };
 
+// @desc    Create batch reservation with multiple equipment
+// @route   POST /api/reservations/batch
+// @access  Private
+const createBatchReservation = async (req, res) => {
+  const connection = await pool.getConnection();
+  
+  try {
+    await connection.beginTransaction();
+    
+    const { id_utilisateur, date_debut, date_fin, items } = req.body;
+    
+    // Validate required fields
+    if (!id_utilisateur || !date_debut || !date_fin || !items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ message: 'Invalid request data' });
+    }
+
+    // Create a single reservation entry
+    const [result] = await connection.execute(
+      'INSERT INTO Reservation (date_debut, date_fin, etat, id_utilisateur) VALUES (?, ?, ?, ?)',
+      [date_debut, date_fin, 'attente', id_utilisateur]
+    );
+    
+    const reservationId = result.insertId;
+    
+    // Add all equipment items to the reservation
+    for (const item of items) {
+      const { id_equipement, quantite } = item;
+      
+      // Check if equipment exists and is available
+      const [equipment] = await connection.execute(
+        'SELECT * FROM Equipement e LEFT JOIN Solo s ON e.id = s.id WHERE e.id = ?',
+        [id_equipement]
+      );
+      
+      if (equipment.length === 0) {
+        await connection.rollback();
+        return res.status(404).json({ message: `Equipment ID ${id_equipement} not found` });
+      }
+      
+      const equip = equipment[0];
+      
+      // For solo equipment, check if it's available
+      if (equip.categorie === 'solo' && equip.etat !== 'disponible') {
+        await connection.rollback();
+        return res.status(400).json({ message: `Equipment ${equip.nom} is not available for reservation` });
+      }
+      
+      // For stockable equipment, check quantity
+      if (equip.categorie === 'stockable' && (equip.quantite < quantite || equip.quantite <= 0)) {
+        await connection.rollback();
+        return res.status(400).json({ message: `Not enough ${equip.nom} available` });
+      }
+      
+      // Insert into Reservation_Equipement table
+      await connection.execute(
+        'INSERT INTO Reservation_Equipement (id_reservation, id_equipement, quantite_reservee) VALUES (?, ?, ?)',
+        [reservationId, id_equipement, quantite]
+      );
+    }
+    
+    // Create notification for the user
+    await connection.execute(
+      'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), ?)',
+      [
+        id_utilisateur,
+        'Your reservation request has been received and is pending approval.',
+        'envoye'
+      ]
+    );
+    
+    await connection.commit();
+    
+    res.status(201).json({
+      id: reservationId,
+      message: 'Batch reservation created successfully'
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error creating batch reservation:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  } finally {
+    connection.release();
+  }
+};
+
 // @desc    Update reservation status
 // @route   PATCH /api/reservations/:id
 // @access  Private
@@ -373,6 +458,7 @@ module.exports = {
   getAllReservations,
   getReservationById,
   createReservation,
+  createBatchReservation,
   updateReservationStatus,
   deleteReservation,
   getPendingReservations

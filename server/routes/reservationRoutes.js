@@ -6,7 +6,8 @@ const {
   createReservation,
   updateReservationStatus,
   deleteReservation,
-  getPendingReservations
+  getPendingReservations,
+  createBatchReservation
 } = require('../controllers/reservationController');
 
 // Get all reservations or filter by user/status
@@ -23,5 +24,8 @@ router.route('/:id')
 
 // Create a new reservation
 router.post('/', createReservation);
+
+// Create batch reservations
+router.post('/batch', createBatchReservation);
 
 module.exports = router;

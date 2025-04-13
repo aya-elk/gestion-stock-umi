@@ -1,16 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '../css/etudiant.css';
 
 const Etudiant = () => {
+  const navigate = useNavigate();
+  // User authentication state
+  const [currentUser, setCurrentUser] = useState(null);
+  
   // State variables
   const [equipements, setEquipements] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [formData, setFormData] = useState({
-    id_utilisateur: 1,
+    id_utilisateur: null, // Will be set from authenticated user
     date_debut: '',
     date_fin: ''
   });
@@ -31,28 +35,59 @@ const Etudiant = () => {
   const [searchTerm, setSearchTerm] = useState('');
   
   // Notifications
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'Reservation Approved',
-      message: 'Your reservation for Laptop HP EliteBook has been approved.',
-      date: new Date(2023, 9, 15).toISOString(),
-      read: false
-    },
-    {
-      id: 2,
-      title: 'Return Reminder',
-      message: 'Please return Arduino Kit by tomorrow.',
-      date: new Date(2023, 9, 14).toISOString(),
-      read: false
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  // Check authentication when component mounts
+  useEffect(() => {
+    // Check for user in localStorage or sessionStorage
+    const userFromStorage = JSON.parse(localStorage.getItem('userInfo')) || 
+                            JSON.parse(sessionStorage.getItem('userInfo'));
+    
+    if (!userFromStorage) {
+      // No user found, redirect to login
+      navigate('/login');
+      return;
     }
-  ]);
-  const [unreadCount, setUnreadCount] = useState(2);
+    
+    // Check if user role is 'etudiant'
+    if (userFromStorage.role !== 'etudiant') {
+      // Wrong role, redirect to login
+      navigate('/login');
+      return;
+    }
+    
+    // User is authenticated and has correct role
+    setCurrentUser(userFromStorage);
+    
+    // Set user ID in form data
+    setFormData(prev => ({
+      ...prev,
+      id_utilisateur: userFromStorage.id
+    }));
+    
+  }, [navigate]);
+
+  // Fetch equipment data independently (not dependent on authentication)
+  useEffect(() => {
+    // Always fetch equipment data regardless of authentication status
+    fetchEquipments();
+  }, []); // Empty dependency array means this runs once on component mount
+
+  // Fetch user-specific data when user is authenticated
+  useEffect(() => {
+    if (currentUser && formData.id_utilisateur) {
+      fetchReservations();
+      fetchNotifications();
+    }
+  }, [currentUser, formData.id_utilisateur]);
 
   // Calendar localizer and events
   const localizer = momentLocalizer(moment);
   const calendarEvents = reservations.map(reservation => ({
-    title: `Equipment: ${reservation.id_equipement}`,
+    title: `Equipment: ${reservation.nom_equipement || reservation.id_equipement}`,
     start: new Date(reservation.date_debut),
     end: new Date(reservation.date_fin),
     resource: reservation,
@@ -89,13 +124,6 @@ const Etudiant = () => {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
-
-  // Fetch equipment and reservations on component mount
-  useEffect(() => {
-    fetchEquipments();
-    fetchReservations();
-    fetchNotifications();
-  }, []);
 
   // Fetch equipment data from backend
   const fetchEquipments = async () => {
@@ -226,6 +254,8 @@ const Etudiant = () => {
   const fetchReservations = async () => {
     try {
       const userId = formData.id_utilisateur;
+      if (!userId) return; // Don't fetch if no user ID
+      
       const response = await fetch(`http://localhost:8080/api/reservations?userId=${userId}`, {
         headers: {
           'Accept': 'application/json'
@@ -243,33 +273,7 @@ const Etudiant = () => {
       setReservations(data);
     } catch (err) {
       console.error('Reservation fetch error:', err);
-      // Using mock data until backend is implemented
-      setReservations([
-        {
-          id_reservation: 1,
-          id_utilisateur: 1,
-          id_equipement: 'Server HP ProLiant',
-          date_debut: '2023-05-15',
-          date_fin: '2023-05-20',
-          statut: 'confirmé'
-        },
-        {
-          id_reservation: 2,
-          id_utilisateur: 1,
-          id_equipement: 'APC Smart-UPS',
-          date_debut: '2023-06-01',
-          date_fin: '2023-06-05',
-          statut: 'en_attente'
-        },
-        {
-          id_reservation: 3,
-          id_utilisateur: 1,
-          id_equipement: 'NVIDIA RTX 4090',
-          date_debut: '2023-06-15',
-          date_fin: '2023-06-20',
-          statut: 'en_attente'
-        }
-      ]);
+      setReservations([]);
     }
   };
 
@@ -277,6 +281,8 @@ const Etudiant = () => {
   const fetchNotifications = async () => {
     try {
       const userId = formData.id_utilisateur;
+      if (!userId) return; // Don't fetch if no user ID
+      
       const response = await fetch(`http://localhost:8080/api/notifications?userId=${userId}`);
       
       if (!response.ok) {
@@ -287,22 +293,39 @@ const Etudiant = () => {
       setNotifications(data);
       
       // Count unread notifications
-      const unread = data.filter(notification => !notification.read).length;
+      const unread = data.filter(notification => notification.statut === 'envoye').length;
       setUnreadCount(unread);
     } catch (err) {
       console.error('Error fetching notifications:', err);
-      // Leave mock notifications in place
+      setNotifications([]);
+      setUnreadCount(0);
     }
   };
 
   // Mark notification as read
-  const markAsRead = (id) => {
-    setNotifications(prevNotifications =>
-      prevNotifications.map(notification =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
-    setUnreadCount(prev => Math.max(0, prev - 1));
+  const markAsRead = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/notifications/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ statut: 'lu' }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to mark notification as read');
+      }
+      
+      setNotifications(prevNotifications =>
+        prevNotifications.map(notification =>
+          notification.id === id ? { ...notification, statut: 'lu' } : notification
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+    }
   };
 
   // Format notification date
@@ -342,6 +365,40 @@ const Etudiant = () => {
     setSuccess(null);
     
     try {
+      // More robust storage check with error handling
+      let userFromStorage;
+      try {
+        const localData = localStorage.getItem('userInfo');
+        const sessionData = sessionStorage.getItem('userInfo');
+        
+        if (localData) {
+          userFromStorage = JSON.parse(localData);
+        } else if (sessionData) {
+          userFromStorage = JSON.parse(sessionData);
+        }
+        
+        console.log("User data found:", userFromStorage); // Debug output
+      } catch (parseErr) {
+        console.error("Error parsing storage data:", parseErr);
+        throw new Error('Session data is corrupted. Please login again.');
+      }
+      
+      // Check for user ID with fallbacks for different field names
+      const userId = userFromStorage?.id || 
+                     userFromStorage?.userId || 
+                     userFromStorage?._id;
+                     
+      if (!userId) {
+        // Use currentUser state as fallback if it exists
+        if (currentUser && currentUser.id) {
+          console.log("Using currentUser as fallback");
+          userFromStorage = currentUser;
+        } else {
+          throw new Error('Unable to identify user. Please login again.');
+        }
+      }
+      
+      // Rest of your existing code...
       if (cart.length === 0) {
         throw new Error('Your cart is empty. Please add equipment before reserving.');
       }
@@ -356,39 +413,47 @@ const Etudiant = () => {
         throw new Error('End date must be after start date');
       }
 
-      // Create a reservation for each cart item
-      const reservationPromises = cart.map(item => {
-        return fetch('http://localhost:8080/api/reservations', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            id_utilisateur: formData.id_utilisateur,
+      // Create a single reservation with multiple equipment items
+      const response = await fetch('http://localhost:8080/api/reservations/batch', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id_utilisateur: userId,
+          date_debut: formData.date_debut,
+          date_fin: formData.date_fin,
+          items: cart.map(item => ({
             id_equipement: item.id,
-            date_debut: formData.date_debut,
-            date_fin: formData.date_fin,
-            quantite: item.quantity,
-            statut: 'en_attente'
-          }),
-        });
+            quantite: item.quantity || 1
+          }))
+        }),
       });
-      
-      const results = await Promise.all(reservationPromises);
-      
-      // Check if all reservations were successful
-      if (results.every(res => res.ok)) {
-        setSuccess('Reservations submitted successfully! You will receive a confirmation shortly.');
-        fetchReservations();
-        clearCart();
-        setFormData(prevState => ({
-          ...prevState,
-          date_debut: '',
-          date_fin: ''
-        }));
-      } else {
-        throw new Error('Some reservations failed to be submitted');
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create reservation');
       }
+
+      setSuccess('Reservation submitted successfully! Your request is pending approval.');
+      
+      // Give the server a moment to complete the transaction
+      setTimeout(() => {
+        fetchReservations(); // Reload the reservations to show the new ones
+        fetchNotifications(); // Check for new notifications
+      }, 1000);
+      
+      clearCart();
+      setFormData(prevState => ({
+        ...prevState,
+        date_debut: '',
+        date_fin: ''
+      }));
+      
+      // Change to history view to let user see their reservations
+      setTimeout(() => {
+        setActiveView('history');
+      }, 2000);
     } catch (err) {
       setError(err.message);
       console.error('Reservation submission error:', err);
@@ -407,14 +472,26 @@ const Etudiant = () => {
       color: 'white'
     };
     
-    if (event.status === 'confirmé') {
+    if (event.status === 'validee') {
       style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+    } else if (event.status === 'refusee') {
+      style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
     } else {
       style.background = 'linear-gradient(135deg, #f39c12, #e67e22)';
     }
     
     return { style };
   };
+
+  // If not authenticated yet, show loading
+  if (!currentUser) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Verifying authentication...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={darkMode ? "dark-mode" : ""}>
@@ -518,7 +595,11 @@ const Etudiant = () => {
                 </svg>
               )}
             </button>
-            <Link to="/login" className="sidebar-logout" title="Logout">
+            <Link to="/login" className="sidebar-logout" title="Logout" onClick={() => {
+              // Clear user session when logging out
+              localStorage.removeItem('userInfo');
+              sessionStorage.removeItem('userInfo');
+            }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                 <polyline points="16 17 21 12 16 7"></polyline>
@@ -562,7 +643,7 @@ const Etudiant = () => {
                 </div>
               )}
               <div className="user-profile">
-                <span className="user-greeting">Welcome, Student</span>
+                <span className="user-greeting">Welcome, {currentUser.prenom || 'Student'}</span>
                 <div className="user-avatar">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -974,14 +1055,15 @@ const Etudiant = () => {
                     <select 
                       id="filter_status"
                       className="form-control"
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
                     >
                       <option value="all">All Reservations</option>
-                      <option value="en_attente">Pending</option>
-                      <option value="confirmé">Approved</option>
-                      <option value="refusé">Rejected</option>
+                      <option value="attente">Pending</option>
+                      <option value="validee">Approved</option>
+                      <option value="refusee">Rejected</option>
                     </select>
                   </div>
-                  <button className="secondary-button">Apply Filter</button>
                 </div>
               </div>
               
@@ -1001,33 +1083,29 @@ const Etudiant = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {reservations.length === 0 ? (
-                          <tr>
-                            <td colSpan="5" className="centered-cell">No reservations found</td>
-                          </tr>
-                        ) : (
-                          reservations.map(reservation => {
+                        {reservations
+                          .filter(res => filterStatus === 'all' || res.statut === filterStatus)
+                          .map(reservation => {
                             let statusClass = '';
-                            if (reservation.statut === 'confirmé') statusClass = 'status-confirmed';
-                            else if (reservation.statut === 'en_attente') statusClass = 'status-pending';
-                            else if (reservation.statut === 'refusé') statusClass = 'status-rejected';
+                            if (reservation.statut === 'validee') statusClass = 'status-confirmed';
+                            else if (reservation.statut === 'attente') statusClass = 'status-pending';
+                            else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
                             
                             return (
                               <tr key={reservation.id_reservation}>
                                 <td>{reservation.id_reservation}</td>
-                                <td>{reservation.id_equipement}</td>
+                                <td>{reservation.nom_equipement || reservation.id_equipement}</td>
                                 <td>{moment(reservation.date_debut).format('MMM DD, YYYY')}</td>
                                 <td>{moment(reservation.date_fin).format('MMM DD, YYYY')}</td>
                                 <td>
                                   <span className={`status-badge ${statusClass}`}>
-                                    {reservation.statut === 'confirmé' ? 'Confirmed' : 
-                                     reservation.statut === 'en_attente' ? 'Pending' : 'Rejected'}
+                                    {reservation.statut === 'validee' ? 'Confirmed' : 
+                                     reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
                                   </span>
                                 </td>
                               </tr>
                             );
-                          })
-                        )}
+                          })}
                       </tbody>
                     </table>
                   </div>
@@ -1055,27 +1133,27 @@ const Etudiant = () => {
                     {notifications.map(notification => (
                       <div 
                         key={notification.id} 
-                        className={`notification-item ${notification.read ? '' : 'unread'}`}
+                        className={`notification-item ${notification.statut === 'lu' ? '' : 'unread'}`}
                         onClick={() => markAsRead(notification.id)}
                       >
                         <div className="notification-icon">
-                          {!notification.read && <div className="unread-indicator"></div>}
+                          {notification.statut !== 'lu' && <div className="unread-indicator"></div>}
                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                             <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                           </svg>
                         </div>
                         <div className="notification-content">
-                          <h3>{notification.title}</h3>
+                          <h3>{notification.titre || 'System Notification'}</h3>
                           <p>{notification.message}</p>
                           <div className="notification-meta">
-                            <span className="notification-time">{formatNotificationDate(notification.date)}</span>
+                            <span className="notification-time">{formatNotificationDate(notification.date_envoi)}</span>
                           </div>
                         </div>
                         <div className="notification-actions">
-                          <button className="mark-read-btn" title={notification.read ? "Mark as unread" : "Mark as read"}>
+                          <button className="mark-read-btn" title={notification.statut === 'lu' ? "Mark as unread" : "Mark as read"}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              {notification.read ? (
+                              {notification.statut === 'lu' ? (
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                               ) : (
                                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
