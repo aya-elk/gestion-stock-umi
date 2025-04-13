@@ -1,26 +1,27 @@
 const express = require('express');
 const router = express.Router();
-const { 
-  getEquipments, 
-  getEquipment, 
-  addEquipment, 
-  updateEquipment, 
-  deleteEquipment 
+const {
+  getAllEquipment,
+  getEquipmentById,
+  createEquipment,
+  updateEquipment,
+  deleteEquipment,
+  getStockableEquipment,
+  getSoloEquipment
 } = require('../controllers/equipmentController');
 
-// Get all equipment with optional filtering
-router.get('/', getEquipments);
+// Routes for specific equipment types
+router.get('/stockable', getStockableEquipment);
+router.get('/solo', getSoloEquipment);
 
-// Get single equipment by ID
-router.get('/:id', getEquipment);
+// Main equipment routes
+router.route('/')
+  .get(getAllEquipment)
+  .post(createEquipment);
 
-// Add new equipment
-router.post('/', addEquipment);
-
-// Update equipment
-router.put('/:id', updateEquipment);
-
-// Delete equipment
-router.delete('/:id', deleteEquipment);
+router.route('/:id')
+  .get(getEquipmentById)
+  .put(updateEquipment)
+  .delete(deleteEquipment);
 
 module.exports = router;

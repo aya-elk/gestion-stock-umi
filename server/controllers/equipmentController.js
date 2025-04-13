@@ -1,7 +1,7 @@
 const mysql = require('mysql2/promise');
-require('dotenv-flow').config();
+require('dotenv').config();
 
-// Create a connection pool to MySQL
+// Database connection pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -14,125 +14,125 @@ const pool = mysql.createPool({
 
 // @desc    Get all equipment
 // @route   GET /api/equipments
-// @access  Private
-const getEquipments = async (req, res) => {
+// @access  Public
+const getAllEquipment = async (req, res) => {
   try {
-    const { category, status } = req.query;
+    const { category, status, available } = req.query;
+    
     let query = `
-      SELECT 
-        e.id AS id_equipement,
-        e.nom,
-        e.description,
-        e.categorie AS catégorie,
-        CASE
-          WHEN e.categorie = 'stockable' THEN 'disponible'
-          WHEN e.categorie = 'unique' AND u.etat = TRUE THEN 'disponible'
-          ELSE 'hors_service'
-        END AS état,
-        COALESCE(s.quantite, 1) AS quantite_dispo
+      SELECT e.id, e.nom, e.description, e.categorie, e.quantite,
+             CASE 
+                WHEN s.etat IS NOT NULL THEN IF(s.etat, true, false)
+                ELSE NULL 
+             END as etat,
+             CASE WHEN st.qr_code IS NOT NULL THEN st.qr_code ELSE NULL END as qr_code
       FROM Equipement e
-      LEFT JOIN Stockable s ON e.id = s.id
-      LEFT JOIN \`Unique\` u ON e.id = u.id
-      WHERE 1=1
+      LEFT JOIN Solo s ON e.id = s.id
+      LEFT JOIN Stockable st ON e.id = st.id
     `;
-
-    const queryParams = [];
-
-    if (category && category !== 'all') {
-      query += ' AND e.categorie = ?';
-      queryParams.push(category);
+    
+    const conditions = [];
+    const params = [];
+    
+    if (category) {
+      conditions.push('e.categorie = ?');
+      params.push(category);
     }
-
-    if (status && status !== 'all') {
+    
+    if (status) {
       if (status === 'disponible') {
-        query += ' AND (e.categorie = "stockable" OR (e.categorie = "unique" AND u.etat = TRUE))';
-      } else if (status === 'hors_service') {
-        query += ' AND (e.categorie = "unique" AND u.etat = FALSE)';
+        conditions.push('(s.etat IS NULL OR s.etat = true)');
+      } else {
+        conditions.push('s.etat = false');
       }
     }
-
-    query += ' ORDER BY e.id';
     
-    const [equipments] = await pool.execute(query, queryParams);
+    if (available === 'true') {
+      conditions.push('(e.categorie = "stockable" AND e.quantite > 0) OR (e.categorie = "solo" AND (s.etat IS NULL OR s.etat = true))');
+    }
     
-    res.status(200).json(equipments);
+    if (conditions.length) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    const [equipment] = await pool.execute(query, params);
+    res.json(equipment);
   } catch (error) {
-    console.error('Error getting equipments:', error);
+    console.error('Error fetching equipment:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-// @desc    Get single equipment
+// @desc    Get equipment by ID
 // @route   GET /api/equipments/:id
-// @access  Private
-const getEquipment = async (req, res) => {
+// @access  Public
+const getEquipmentById = async (req, res) => {
   try {
     const { id } = req.params;
     
-    const [equipment] = await pool.execute(`
-      SELECT 
-        e.id AS id_equipement,
-        e.nom,
-        e.description,
-        e.categorie AS catégorie,
-        CASE
-          WHEN e.categorie = 'stockable' THEN 'disponible'
-          WHEN e.categorie = 'unique' AND u.etat = TRUE THEN 'disponible'
-          ELSE 'hors_service'
-        END AS état,
-        COALESCE(s.quantite, 1) AS quantite_dispo
-      FROM Equipement e
-      LEFT JOIN Stockable s ON e.id = s.id
-      LEFT JOIN \`Unique\` u ON e.id = u.id
-      WHERE e.id = ?
-    `, [id]);
-
+    const [equipment] = await pool.execute(
+      `SELECT e.id, e.nom, e.description, e.categorie, e.quantite,
+              CASE WHEN s.id IS NOT NULL THEN s.etat ELSE NULL END as etat,
+              CASE WHEN st.id IS NOT NULL THEN st.qr_code ELSE NULL END as qr_code
+       FROM Equipement e
+       LEFT JOIN Solo s ON e.id = s.id
+       LEFT JOIN Stockable st ON e.id = st.id
+       WHERE e.id = ?`,
+      [id]
+    );
+    
     if (equipment.length === 0) {
       return res.status(404).json({ message: 'Equipment not found' });
     }
     
-    res.status(200).json(equipment[0]);
+    res.json(equipment[0]);
   } catch (error) {
-    console.error('Error getting equipment:', error);
+    console.error('Error fetching equipment details:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 
-// @desc    Add equipment
+// @desc    Create new equipment
 // @route   POST /api/equipments
-// @access  Private/Admin
-const addEquipment = async (req, res) => {
+// @access  Private
+const createEquipment = async (req, res) => {
   const connection = await pool.getConnection();
+  
   try {
     await connection.beginTransaction();
     
-    const { nom, description, categorie = 'stockable', quantite = 1, etat = true } = req.body;
+    const { nom, description, categorie, quantite, etat, qr_code } = req.body;
     
+    // Insert into main Equipement table first
     const [result] = await connection.execute(
       'INSERT INTO Equipement (nom, description, categorie, quantite) VALUES (?, ?, ?, ?)',
       [nom, description, categorie, quantite]
     );
-
+    
     const equipmentId = result.insertId;
-
-    // Based on category, insert into appropriate subtable
-    if (categorie === 'stockable') {
+    
+    // Insert into specific type table
+    if (categorie === 'solo') {
       await connection.execute(
-        'INSERT INTO Stockable (id, quantite) VALUES (?, ?)',
-        [equipmentId, quantite]
+        'INSERT INTO Solo (id, etat) VALUES (?, ?)',
+        [equipmentId, etat === true]
       );
-    } else if (categorie === 'unique') {
+    } else if (categorie === 'stockable') {
       await connection.execute(
-        'INSERT INTO `Unique` (id, etat) VALUES (?, ?)',
-        [equipmentId, etat]
+        'INSERT INTO Stockable (id, quantite, qr_code) VALUES (?, ?, ?)',
+        [equipmentId, quantite, qr_code || null]
       );
     }
-
+    
     await connection.commit();
     
-    res.status(201).json({ 
-      message: 'Equipment added successfully',
-      id: equipmentId
+    res.status(201).json({
+      id: equipmentId,
+      nom,
+      description,
+      categorie,
+      quantite,
+      message: 'Equipment added successfully'
     });
   } catch (error) {
     await connection.rollback();
@@ -145,70 +145,88 @@ const addEquipment = async (req, res) => {
 
 // @desc    Update equipment
 // @route   PUT /api/equipments/:id
-// @access  Private/Admin
+// @access  Private
 const updateEquipment = async (req, res) => {
   const connection = await pool.getConnection();
+  
   try {
     await connection.beginTransaction();
     
     const { id } = req.params;
-    const { nom, description, categorie, quantite, etat } = req.body;
+    const { nom, description, categorie, quantite, etat, qr_code } = req.body;
     
-    // First check if equipment exists
+    // Check if equipment exists
     const [existing] = await connection.execute(
       'SELECT * FROM Equipement WHERE id = ?',
       [id]
     );
-
+    
     if (existing.length === 0) {
       await connection.rollback();
       return res.status(404).json({ message: 'Equipment not found' });
     }
-
-    const currentCategory = existing[0].categorie;
     
-    // Update the main equipment table
+    // Update main Equipement table
     await connection.execute(
-      'UPDATE Equipement SET nom = ?, description = ?, categorie = ?, quantite = ? WHERE id = ?',
-      [nom, description, categorie, quantite, id]
+      'UPDATE Equipement SET nom = ?, description = ?, quantite = ? WHERE id = ?',
+      [nom, description, quantite, id]
     );
-
-    // Handle the subtype tables
-    if (categorie === 'stockable') {
-      // If it was already stockable, just update
-      if (currentCategory === 'stockable') {
+    
+    // Update specific type table based on category
+    if (categorie === 'solo') {
+      const [soloCheck] = await connection.execute(
+        'SELECT * FROM Solo WHERE id = ?',
+        [id]
+      );
+      
+      if (soloCheck.length > 0) {
         await connection.execute(
-          'UPDATE Stockable SET quantite = ? WHERE id = ?',
-          [quantite, id]
+          'UPDATE Solo SET etat = ? WHERE id = ?',
+          [etat === true, id]
         );
       } else {
-        // It's changing from unique to stockable
-        await connection.execute('DELETE FROM `Unique` WHERE id = ?', [id]);
-        await connection.execute(
-          'INSERT INTO Stockable (id, quantite) VALUES (?, ?)',
-          [id, quantite]
-        );
-      }
-    } else if (categorie === 'unique') {
-      // If it was already unique, just update
-      if (currentCategory === 'unique') {
-        await connection.execute(
-          'UPDATE `Unique` SET etat = ? WHERE id = ?',
-          [etat === 'disponible', id]
-        );
-      } else {
-        // It's changing from stockable to unique
+        // Handle type change if needed
         await connection.execute('DELETE FROM Stockable WHERE id = ?', [id]);
         await connection.execute(
-          'INSERT INTO `Unique` (id, etat) VALUES (?, ?)',
-          [id, etat === 'disponible']
+          'INSERT INTO Solo (id, etat) VALUES (?, ?)',
+          [id, etat === true]
+        );
+        await connection.execute(
+          'UPDATE Equipement SET categorie = "solo" WHERE id = ?',
+          [id]
+        );
+      }
+    } else if (categorie === 'stockable') {
+      const [stockableCheck] = await connection.execute(
+        'SELECT * FROM Stockable WHERE id = ?',
+        [id]
+      );
+      
+      if (stockableCheck.length > 0) {
+        await connection.execute(
+          'UPDATE Stockable SET quantite = ?, qr_code = ? WHERE id = ?',
+          [quantite, qr_code || null, id]
+        );
+      } else {
+        // Handle type change if needed
+        await connection.execute('DELETE FROM Solo WHERE id = ?', [id]);
+        await connection.execute(
+          'INSERT INTO Stockable (id, quantite, qr_code) VALUES (?, ?, ?)',
+          [id, quantite, qr_code || null]
+        );
+        await connection.execute(
+          'UPDATE Equipement SET categorie = "stockable" WHERE id = ?',
+          [id]
         );
       }
     }
-
+    
     await connection.commit();
     
-    res.status(200).json({ message: 'Equipment updated successfully' });
+    res.json({
+      id,
+      message: 'Equipment updated successfully'
+    });
   } catch (error) {
     await connection.rollback();
     console.error('Error updating equipment:', error);
@@ -220,40 +238,38 @@ const updateEquipment = async (req, res) => {
 
 // @desc    Delete equipment
 // @route   DELETE /api/equipments/:id
-// @access  Private/Admin
+// @access  Private
 const deleteEquipment = async (req, res) => {
   const connection = await pool.getConnection();
+  
   try {
     await connection.beginTransaction();
     
     const { id } = req.params;
     
-    // Check if equipment exists
-    const [existing] = await connection.execute(
-      'SELECT categorie FROM Equipement WHERE id = ?', 
+    // Check for reservations
+    const [reservations] = await connection.execute(
+      'SELECT * FROM Reservation_Equipement WHERE id_equipement = ?',
       [id]
     );
     
-    if (existing.length === 0) {
+    if (reservations.length > 0) {
       await connection.rollback();
-      return res.status(404).json({ message: 'Equipment not found' });
-    }
-
-    const categorie = existing[0].categorie;
-    
-    // Delete from proper subtype table first
-    if (categorie === 'stockable') {
-      await connection.execute('DELETE FROM Stockable WHERE id = ?', [id]);
-    } else if (categorie === 'unique') {
-      await connection.execute('DELETE FROM `Unique` WHERE id = ?', [id]);
+      return res.status(400).json({ 
+        message: 'Cannot delete equipment that has reservations' 
+      });
     }
     
-    // Delete from main equipment table
+    // Delete from specific type tables first (due to foreign key constraints)
+    await connection.execute('DELETE FROM Solo WHERE id = ?', [id]);
+    await connection.execute('DELETE FROM Stockable WHERE id = ?', [id]);
+    
+    // Then delete from main table
     await connection.execute('DELETE FROM Equipement WHERE id = ?', [id]);
     
     await connection.commit();
     
-    res.status(200).json({ message: 'Equipment deleted successfully' });
+    res.json({ message: 'Equipment deleted successfully' });
   } catch (error) {
     await connection.rollback();
     console.error('Error deleting equipment:', error);
@@ -263,10 +279,51 @@ const deleteEquipment = async (req, res) => {
   }
 };
 
+// @desc    Get stockable equipment
+// @route   GET /api/equipments/stockable
+// @access  Public
+const getStockableEquipment = async (req, res) => {
+  try {
+    const [equipment] = await pool.execute(`
+      SELECT e.id, e.nom, e.description, e.categorie, 
+             st.quantite, st.qr_code
+      FROM Equipement e
+      JOIN Stockable st ON e.id = st.id
+      WHERE e.categorie = 'stockable'
+    `);
+    
+    res.json(equipment);
+  } catch (error) {
+    console.error('Error fetching stockable equipment:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// @desc    Get solo equipment
+// @route   GET /api/equipments/solo
+// @access  Public
+const getSoloEquipment = async (req, res) => {
+  try {
+    const [equipment] = await pool.execute(`
+      SELECT e.id, e.nom, e.description, e.categorie, s.etat
+      FROM Equipement e
+      JOIN Solo s ON e.id = s.id
+      WHERE e.categorie = 'solo'
+    `);
+    
+    res.json(equipment);
+  } catch (error) {
+    console.error('Error fetching solo equipment:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 module.exports = {
-  getEquipments,
-  getEquipment,
-  addEquipment,
+  getAllEquipment,
+  getEquipmentById,
+  createEquipment,
   updateEquipment,
-  deleteEquipment
+  deleteEquipment,
+  getStockableEquipment,
+  getSoloEquipment
 };
