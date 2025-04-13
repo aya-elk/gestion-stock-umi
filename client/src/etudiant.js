@@ -719,18 +719,17 @@ const Etudiant = () => {
                         <h3 className="equipment-name">{equipment.nom}</h3>
                         <div className="equipment-meta">
                           <span className="category-badge">{equipment.categorie}</span>
-                          {equipment.categorie === 'stockable' && (
+                          {equipment.categorie === 'stockable' ? (
                             <span className={`stock-level ${equipment.quantite < 5 ? 'low' : 'normal'}`}>
-                              {equipment.quantite} available
+                              {equipment.quantite} Available
+                            </span>
+                          ) : (
+                            <span className={`status-badge ${getStatusClass(equipment)}`}>
+                              {getAvailabilityStatus(equipment)}
                             </span>
                           )}
                         </div>
                         <p className="equipment-description">{equipment.description}</p>
-                        <div className="equipment-status">
-                          <span className={`status-badge ${getStatusClass(equipment)}`}>
-                            {getAvailabilityStatus(equipment)}
-                          </span>
-                        </div>
                         <button 
                           className="add-to-cart-btn"
                           onClick={() => addToCart(equipment)}
