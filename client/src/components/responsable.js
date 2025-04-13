@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import SignatureCanvas from 'react-signature-canvas';
-import './css/responsable.css'; // Import the new CSS file
+import '../css/responsable.css'; // Import the new CSS file
 
 const Responsable = () => {
   // State variables

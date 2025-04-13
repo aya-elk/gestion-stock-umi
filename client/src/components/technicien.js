@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import './css/technicien.css';
+import '../css/technicien.css';
 
 const Technicien = () => {
   // State for equipment list and form
