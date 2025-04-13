@@ -253,9 +253,35 @@ const Etudiant = () => {
   // Fetch reservation data from backend
   const fetchReservations = async () => {
     try {
-      const userId = formData.id_utilisateur;
-      if (!userId) return; // Don't fetch if no user ID
+      // Get user ID with multiple fallbacks - similar to handleReservationSubmit
+      let userFromStorage;
+      try {
+        const localData = localStorage.getItem('userInfo');
+        const sessionData = sessionStorage.getItem('userInfo');
+        
+        if (localData) {
+          userFromStorage = JSON.parse(localData);
+        } else if (sessionData) {
+          userFromStorage = JSON.parse(sessionData);
+        }
+      } catch (parseErr) {
+        console.error("Error parsing storage data:", parseErr);
+      }
       
+      // Use same fallback pattern as in reservation submission
+      const userId = userFromStorage?.id || 
+                    userFromStorage?.userId || 
+                    userFromStorage?._id || 
+                    (currentUser ? currentUser.id : null);
+      
+      if (!userId) {
+        console.error("No user ID available for fetching reservations");
+        return;
+      }
+      
+      console.log("Fetching reservations for user ID:", userId);
+      
+      // Continue with your existing fetch logic
       const response = await fetch(`http://localhost:8080/api/reservations?userId=${userId}`, {
         headers: {
           'Accept': 'application/json'
@@ -269,8 +295,41 @@ const Etudiant = () => {
       }
       
       const data = await response.json();
-      console.log('Reservation data parsed successfully:', data.length, 'items');
-      setReservations(data);
+      console.log('Raw reservation data from API:', data);
+      
+      if (data.length === 0) {
+        console.log("No reservations found for this user");
+        setReservations([]);
+        return;
+      }
+      
+      // Group by reservation ID - no need to filter by user as the API already did
+      const reservationMap = {};
+      
+      data.forEach(item => {
+        if (!reservationMap[item.id_reservation]) {
+          reservationMap[item.id_reservation] = {
+            ...item,
+            equipment_items: [{
+              id: item.id_equipement,
+              name: item.nom_equipement,
+              quantity: item.quantite_reservee
+            }]
+          };
+        } else {
+          reservationMap[item.id_reservation].equipment_items.push({
+            id: item.id_equipement,
+            name: item.nom_equipement,
+            quantity: item.quantite_reservee
+          });
+        }
+      });
+      
+      const finalReservations = Object.values(reservationMap);
+      console.log('Final processed reservations:', finalReservations);
+      
+      // Update state
+      setReservations(finalReservations);
     } catch (err) {
       console.error('Reservation fetch error:', err);
       setReservations([]);
@@ -541,7 +600,10 @@ const Etudiant = () => {
             
             <button 
               className={`sidebar-nav-item ${activeView === 'history' ? 'active' : ''}`}
-              onClick={() => setActiveView('history')}
+              onClick={() => {
+                setActiveView('history');
+                fetchReservations(); // Force a refresh when viewing history
+              }}
               title="Reservation History"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1072,42 +1134,59 @@ const Etudiant = () => {
                   <div className="loading-spinner"></div>
                 ) : (
                   <div className="responsive-table">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>ID</th>
-                          <th>Equipment</th>
-                          <th>Start Date</th>
-                          <th>End Date</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {reservations
-                          .filter(res => filterStatus === 'all' || res.statut === filterStatus)
-                          .map(reservation => {
-                            let statusClass = '';
-                            if (reservation.statut === 'validee') statusClass = 'status-confirmed';
-                            else if (reservation.statut === 'attente') statusClass = 'status-pending';
-                            else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
-                            
-                            return (
-                              <tr key={reservation.id_reservation}>
-                                <td>{reservation.id_reservation}</td>
-                                <td>{reservation.nom_equipement || reservation.id_equipement}</td>
-                                <td>{moment(reservation.date_debut).format('MMM DD, YYYY')}</td>
-                                <td>{moment(reservation.date_fin).format('MMM DD, YYYY')}</td>
-                                <td>
-                                  <span className={`status-badge ${statusClass}`}>
-                                    {reservation.statut === 'validee' ? 'Confirmed' : 
-                                     reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
-                                  </span>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                      </tbody>
-                    </table>
+                    {reservations.length === 0 ? (
+                      <div className="no-data">No reservations found. Create a new reservation to see it here.</div>
+                    ) : (
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Equipment</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {reservations
+                            .filter(res => filterStatus === 'all' || res.statut === filterStatus)
+                            .map(reservation => {
+                              let statusClass = '';
+                              if (reservation.statut === 'validee') statusClass = 'status-confirmed';
+                              else if (reservation.statut === 'attente') statusClass = 'status-pending';
+                              else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
+                              
+                              return (
+                                <tr key={reservation.id_reservation}>
+                                  <td>{reservation.id_reservation}</td>
+                                  <td>
+                                    {reservation.equipment_items ? (
+                                      <div className="equipment-list">
+                                        {reservation.equipment_items.map((item, idx) => (
+                                          <div key={idx} className="equipment-item">
+                                            {item.name || `Item #${item.id}`}
+                                            {item.quantity > 1 && <span className="quantity-badge"> x{item.quantity}</span>}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      reservation.nom_equipement || reservation.id_equipement
+                                    )}
+                                  </td>
+                                  <td>{moment(reservation.date_debut).format('MMM DD, YYYY')}</td>
+                                  <td>{moment(reservation.date_fin).format('MMM DD, YYYY')}</td>
+                                  <td>
+                                    <span className={`status-badge ${statusClass}`}>
+                                      {reservation.statut === 'validee' ? 'Confirmed' : 
+                                       reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 )}
               </div>
