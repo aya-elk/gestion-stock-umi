@@ -6,7 +6,8 @@ import './css/responsable.css'; // Import the new CSS file
 const Responsable = () => {
   // State variables
   const [reservations, setReservations] = useState([]);
-  const [stocks, setStocks] = useState([]);
+  const [stockableEquipment, setStockableEquipment] = useState([]);
+  const [soloEquipment, setSoloEquipment] = useState([]); // Changed from uniqueEquipment
   const [selectedReservation, setSelectedReservation] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -15,6 +16,7 @@ const Responsable = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
+  const [activeEquipmentTab, setActiveEquipmentTab] = useState('stockable'); 
   const [signatureURL, setSignatureURL] = useState(null);
   const [signatureModalOpen, setSignatureModalOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState(null);
@@ -69,12 +71,63 @@ const Responsable = () => {
 
   // Fetch reservation data
   const fetchReservations = async () => {
-    // Your implementation
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:8080/api/reservations');
+      if (!response.ok) {
+        throw new Error('Failed to fetch reservations');
+      }
+      const data = await response.json();
+      setReservations(data);
+    } catch (err) {
+      setError("Error fetching reservations: " + err.message);
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Fetch stock data
+  // Updated fetch stocks function with correct server URL
   const fetchStocks = async () => {
-    // Your implementation
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      console.log('Fetching equipment data from server...');
+      // Use the full URL with port 8080
+      const response = await fetch('http://localhost:8080/api/equipments', {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`Failed to fetch equipment data: ${response.status} ${response.statusText}`);
+      }
+      
+      // Parse JSON directly (removed text debugging step for cleaner code)
+      const equipment = await response.json();
+      console.log('Equipment data parsed successfully:', equipment.length, 'items');
+      
+      // Filter based on the database categories
+      const stockable = equipment.filter(item => item.categorie === 'stockable');
+      const solo = equipment.filter(item => item.categorie === 'solo');
+      
+      console.log(`Categorized: ${stockable.length} stockable, ${solo.length} solo items`);
+      
+      setStockableEquipment(stockable);
+      setSoloEquipment(solo);
+
+    } catch (err) {
+      setError("Error fetching equipment: " + err.message);
+      console.error('Equipment fetch error:', err);
+      setStockableEquipment([]);
+      setSoloEquipment([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Fetch notifications (placeholder)
@@ -107,8 +160,6 @@ const Responsable = () => {
       setNotifications(dummyNotifications);
     }, 500);
   };
-
-  // Your other functionality
 
   // Format date for notifications
   const formatNotificationDate = (dateString) => {
@@ -143,10 +194,15 @@ const Responsable = () => {
     setActiveTab(tab);
   };
 
+  // Toggle between stockable and unique equipment tabs
+  const handleEquipmentTabChange = (tabType) => {
+    setActiveEquipmentTab(tabType);
+  };
+
   return (
     <div className={darkMode ? "dark-mode" : ""}>
       <div className="dashboard-layout">
-        {/* Sidebar */}
+        {/* Sidebar - No changes needed */}
         <aside className="dashboard-sidebar">
           <div className="sidebar-header">
             <div className="logo-icon">GP<span className="accent-dot">.</span></div>
@@ -281,8 +337,6 @@ const Responsable = () => {
                       </p>
                     </div>
                     
-                    {/* Your existing filter section */}
-                    {/* Your existing table container */}
                     <div className="filter-section">
                       <h3>Filter Reservations</h3>
                       <div className="filter-controls">
@@ -362,6 +416,22 @@ const Responsable = () => {
                       </p>
                     </div>
                     
+                    {/* Equipment type tabs - Updated labels */}
+                    <div className="equipment-tabs">
+                      <button
+                        className={`equipment-tab ${activeEquipmentTab === 'stockable' ? 'active' : ''}`}
+                        onClick={() => handleEquipmentTabChange('stockable')}
+                      >
+                        Stockable Equipment
+                      </button>
+                      <button
+                        className={`equipment-tab ${activeEquipmentTab === 'unique' ? 'active' : ''}`}
+                        onClick={() => handleEquipmentTabChange('unique')}
+                      >
+                        Solo Equipment {/* Changed from "Unique Equipment" */}
+                      </button>
+                    </div>
+                    
                     <div className="filter-section">
                       <div className="filter-controls">
                         <div className="form-group">
@@ -378,60 +448,108 @@ const Responsable = () => {
                       </div>
                     </div>
                     
-                    <div className="table-container glass-effect">
-                      <h3>Equipment Inventory</h3>
-                      <div className="responsive-table">
-                        <table>
-                          <thead>
-                            <tr>
-                              <th>ID</th>
-                              <th>Equipment</th>
-                              <th>Category</th>
-                              <th>Available</th>
-                              <th>Total</th>
-                              <th>Status</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>#1</td>
-                              <td>Laptop HP EliteBook</td>
-                              <td>
-                                <span className="category-badge">Computers</span>
-                              </td>
-                              <td>15</td>
-                              <td>20</td>
-                              <td><span className="stock-level normal">Normal</span></td>
-                            </tr>
-                            <tr>
-                              <td>#2</td>
-                              <td>Projector Epson</td>
-                              <td>
-                                <span className="category-badge">Audiovisual</span>
-                              </td>
-                              <td>2</td>
-                              <td>5</td>
-                              <td><span className="stock-level low">Low Stock</span></td>
-                            </tr>
-                            <tr>
-                              <td>#3</td>
-                              <td>Arduino Kit</td>
-                              <td>
-                                <span className="category-badge">Electronics</span>
-                              </td>
-                              <td>8</td>
-                              <td>10</td>
-                              <td><span className="stock-level normal">Normal</span></td>
-                            </tr>
-                          </tbody>
-                        </table>
+                    {/* Stockable Equipment Table - Updated to match API structure */}
+                    {activeEquipmentTab === 'stockable' && (
+                      <div className="table-container glass-effect">
+                        <h3>Stockable Equipment Inventory</h3>
+                        <div className="responsive-table">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>QR Code</th>
+                                <th>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {isLoading ? (
+                                <tr>
+                                  <td colSpan="6" className="centered-cell">Loading equipment...</td>
+                                </tr>
+                              ) : stockableEquipment.length === 0 ? (
+                                <tr>
+                                  <td colSpan="6" className="centered-cell">No stockable equipment found</td>
+                                </tr>
+                              ) : (
+                                stockableEquipment
+                                  .filter(item => !showLowStock || item.quantite < 5) // Use quantite instead of quantite_dispo
+                                  .map(item => (
+                                    <tr key={item.id}>
+                                      <td>#{item.id}</td>
+                                      <td>{item.nom}</td>
+                                      <td>{item.description}</td>
+                                      <td>{item.quantite}</td> {/* Use quantite instead of quantite_dispo */}
+                                      <td>
+                                        {item.qr_code ? 
+                                          <button className="qr-button">View QR</button> : 
+                                          <span>No QR Code</span>
+                                        }
+                                      </td>
+                                      <td>
+                                        <span className={`stock-level ${item.quantite < 5 ? 'low' : 'normal'}`}>
+                                          {item.quantite < 5 ? 'Low Stock' : 'Normal'}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* Solo Equipment Table - Updated from Unique to Solo */}
+                    {activeEquipmentTab === 'unique' && (
+                      <div className="table-container glass-effect">
+                        <h3>Solo Equipment Inventory</h3> {/* Changed from "Unique Equipment" */}
+                        <div className="responsive-table">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {isLoading ? (
+                                <tr>
+                                  <td colSpan="4" className="centered-cell">Loading equipment...</td>
+                                </tr>
+                              ) : soloEquipment.length === 0 ? (
+                                <tr>
+                                  <td colSpan="4" className="centered-cell">No solo equipment found</td>
+                                </tr>
+                              ) : (
+                                soloEquipment.map(item => (
+                                  <tr key={item.id}>
+                                    <td>#{item.id}</td>
+                                    <td>{item.nom}</td>
+                                    <td>{item.description}</td>
+                                    <td>
+                                      <span className={`status-badge ${item.etat ? 'status-confirmed' : 'status-unavailable'}`}>
+                                        {item.etat ? 'Available' : 'Unavailable'}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </section>
                 )}
 
                 {activeTab === 'history' && (
                   <section id="history" className="dashboard-section active-section">
+                    {/* History content - No changes needed */}
                     <div className="section-header">
                       <h2 className="section-title">Equipment Usage History</h2>
                       <div className="section-divider"></div>
@@ -492,7 +610,7 @@ const Responsable = () => {
             </div>
           )}
           
-          {/* Notifications View */}
+          {/* Notifications View - No changes needed */}
           {activeView === 'notifications' && (
             <div className="dashboard-content notifications-view">
               <div className="section-header">
@@ -549,7 +667,7 @@ const Responsable = () => {
         </main>
       </div>
       
-      {/* Your existing modal and back-to-top button */}
+      {/* Back to top button - No changes needed */}
       <button 
         id="back-to-top" 
         title="Back to Top" 

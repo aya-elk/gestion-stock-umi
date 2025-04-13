@@ -968,3 +968,68 @@ table tr:hover td {
     transform: translate(50%, -50%);
   }
 }
+
+/* Equipment tabs styling */
+.equipment-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.equipment-tab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 500;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.equipment-tab:hover {
+  color: var(--primary-color);
+}
+
+.equipment-tab.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.qr-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s;
+}
+
+.qr-button:hover {
+  background-color: var(--primary-color-dark);
+}
+
+.status-unavailable {
+  background-color: #ff6b6b;
+}
+
+/* Low stock and normal stock indicators */
+.stock-level {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.stock-level.low {
+  background-color: #ffeaea;
+  color: #ff6b6b;
+}
+
+.stock-level.normal {
+  background-color: #e7f5e8;
+  color: #28a745;
+}
