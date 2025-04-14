@@ -33,6 +33,7 @@ const Responsable = () => {
   const [activeView, setActiveView] = useState('reservations');
   const [notifications, setNotifications] = useState([]);
   const [activityHistory, setActivityHistory] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Refs for sections
   const pendingRef = useRef(null);
@@ -75,6 +76,13 @@ const Responsable = () => {
     // User is authenticated and has correct role
     setCurrentUser(userFromStorage);
   }, [navigate]);
+
+  // Initial data loading
+  useEffect(() => {
+    fetchStocks();
+    fetchNotifications();
+    fetchRecentActivity();
+  }, []);
 
   // Toggle dark mode
   const toggleDarkMode = () => {
@@ -243,38 +251,35 @@ const Responsable = () => {
     }
   };
 
-  // Fetch real notifications from API
+  // Improved fetchNotifications function
   const fetchNotifications = async () => {
     try {
       const response = await fetch('http://localhost:8080/api/notifications/admin');
       
       if (!response.ok) {
         throw new Error('Failed to fetch notifications');
-        return;
       }
       
       const data = await response.json();
-      setNotifications(data);
+      console.log('Fetched notifications:', data);
+      
+      // Transform the data to match the expected format in the UI
+      const formattedNotifications = data.map(notification => ({
+        id: notification.id,
+        title: 'System Notification', // Add a default title since database doesn't have this
+        message: notification.message,
+        date: notification.date_envoi,
+        read: notification.statut === 'lu' // Convert 'envoye'/'lu' to boolean
+      }));
+      
+      setNotifications(formattedNotifications);
+      
+      // Count unread notifications
+      const unreadCount = data.filter(n => n.statut === 'envoye').length;
+      setUnreadCount(unreadCount);
     } catch (err) {
       console.error('Notification fetch error:', err);
-      // Fallback to dummy data if API fails
-      const dummyNotifications = [
-        {
-          id: 1,
-          title: 'New reservation request',
-          message: 'A new reservation has been submitted for approval',
-          date: new Date(new Date().getTime() - 1000 * 60 * 30).toISOString(),
-          read: false
-        },
-        {
-          id: 2,
-          title: 'Low stock alert',
-          message: 'Laptops are running low. Currently at 3 units.',
-          date: new Date(new Date().getTime() - 1000 * 60 * 60 * 2).toISOString(),
-          read: false
-        }
-      ];
-      setNotifications(dummyNotifications);
+      // You can keep the fallback data if needed
     }
   };
 
@@ -296,15 +301,33 @@ const Responsable = () => {
     }
   };
 
-  // Mark notification as read
-  const markAsRead = (id) => {
-    setNotifications(notifications.map(notification => 
-      notification.id === id ? {...notification, read: true} : notification
-    ));
+  // Update markAsRead function to send request to server
+  const markAsRead = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/notifications/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to mark notification as read');
+      }
+      
+      // Update local state
+      setNotifications(prevNotifications =>
+        prevNotifications.map(notification =>
+          notification.id === id ? { ...notification, read: true } : notification
+        )
+      );
+      
+      // Update unread count
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+    }
   };
-
-  // Count unread notifications
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   // Set active tab and handle scrolling
   const handleTabChange = (tab) => {
@@ -343,7 +366,10 @@ const Responsable = () => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ statut: newStatus })
+        body: JSON.stringify({ 
+          statut: newStatus,
+          responsable_id: currentUser.id || currentUser._id // Include responsable ID for notifications
+        })
       });
       
       if (!response.ok) {
