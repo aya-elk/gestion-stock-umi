@@ -57,6 +57,26 @@ const getAdminNotifications = async (req, res) => {
   }
 };
 
+// @desc    Get notifications for technicians
+// @route   GET /api/notifications/tech
+// @access  Private (Technicians only)
+const getTechnicianNotifications = async (req, res) => {
+  try {
+    const [notifications] = await pool.execute(
+      `SELECT n.*, u.nom, u.prenom 
+       FROM Notification n
+       JOIN Utilisateur u ON n.id_utilisateur = u.id
+       WHERE u.role = 'technicien'
+       ORDER BY n.date_envoi DESC`
+    );
+    
+    res.json(notifications);
+  } catch (error) {
+    console.error('Error fetching technician notifications:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // @desc    Mark a notification as read
 // @route   PATCH /api/notifications/:id
 // @access  Private
@@ -79,5 +99,6 @@ const markNotificationAsRead = async (req, res) => {
 module.exports = {
   getUserNotifications,
   getAdminNotifications,
+  getTechnicianNotifications,
   markNotificationAsRead
 };

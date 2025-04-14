@@ -326,7 +326,6 @@ const updateEquipmentStatus = async (req, res) => {
     }
     
     // Validate the status is one of the allowed ENUM values
-    // Update this line to include 'en_reparation'
     if (!['disponible', 'en_cours', 'indisponible', 'en_reparation'].includes(etat)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }
@@ -347,13 +346,138 @@ const updateEquipmentStatus = async (req, res) => {
   }
 };
 
+// @desc    Update equipment state with notifications
+// @route   PATCH /api/equipments/:id
+// @access  Private
+const updateEquipmentState = async (req, res) => {
+  const { id } = req.params;
+  const { etat: newState, oldState, technicianId, technicianName } = req.body;
+  
+  const connection = await pool.getConnection();
+  
+  try {
+    await connection.beginTransaction();
+    
+    // Update equipment state in database
+    await connection.execute(
+      'UPDATE Solo SET etat = ? WHERE id = ?',
+      [newState, id]
+    );
+    
+    // Get equipment details
+    const [equipment] = await connection.execute(
+      'SELECT nom FROM Equipement WHERE id = ?',
+      [id]
+    );
+    
+    if (equipment.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'Equipment not found' });
+    }
+    
+    const equipmentName = equipment[0].nom;
+    
+    // Get technician details if not provided
+    let techFullName = technicianName;
+    if (!techFullName && technicianId) {
+      const [techDetails] = await connection.execute(
+        'SELECT nom, prenom FROM Utilisateur WHERE id = ?',
+        [technicianId]
+      );
+      
+      if (techDetails.length > 0) {
+        techFullName = `${techDetails[0].prenom} ${techDetails[0].nom}`;
+      } else {
+        techFullName = 'A technician';
+      }
+    }
+    
+    // Handle state transitions for notifications
+    if (oldState === 'disponible' && newState === 'indisponible') {
+      // Notification to technician
+      await connection.execute(
+        'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+        [technicianId, `${equipmentName} #${id} is now unavailable`]
+      );
+      
+      // Notification to responsables
+      const [responsables] = await connection.execute(
+        'SELECT id FROM Utilisateur WHERE role = "responsable"'
+      );
+      
+      for (const resp of responsables) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [resp.id, `${techFullName} has marked ${equipmentName} #${id} as unavailable`]
+        );
+      }
+    } 
+    else if (oldState === 'indisponible' && newState === 'en_reparation') {
+      // Notification to technician
+      await connection.execute(
+        'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+        [technicianId, `${equipmentName} #${id} is now in repair`]
+      );
+      
+      // Notification to responsables
+      const [responsables] = await connection.execute(
+        'SELECT id FROM Utilisateur WHERE role = "responsable"'
+      );
+      
+      for (const resp of responsables) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [resp.id, `${techFullName} is repairing ${equipmentName} #${id}`]
+        );
+      }
+    }
+    else if (oldState === 'en_reparation' && newState === 'disponible') {
+      // Notification to technician
+      await connection.execute(
+        'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+        [technicianId, `${equipmentName} #${id} has been repaired`]
+      );
+      
+      // Notification to responsables
+      const [responsables] = await connection.execute(
+        'SELECT id FROM Utilisateur WHERE role = "responsable"'
+      );
+      
+      for (const resp of responsables) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [resp.id, `${techFullName} has repaired ${equipmentName} #${id}`]
+        );
+      }
+    }
+    
+    await connection.commit();
+    
+    res.json({ 
+      message: `Equipment status changed from ${oldState} to ${newState}`,
+      equipment: {
+        id,
+        name: equipmentName,
+        state: newState
+      }
+    });
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error updating equipment state:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  } finally {
+    connection.release();
+  }
+};
+
 module.exports = {
   getAllEquipment,
   getEquipmentById,
   createEquipment,
   updateEquipment,
-  updateEquipmentStatus, // Add this new function
+  updateEquipmentStatus,
   deleteEquipment,
   getStockableEquipment,
-  getSoloEquipment
+  getSoloEquipment,
+  updateEquipmentState
 };

@@ -251,16 +251,56 @@ const createBatchReservation = async (req, res) => {
       );
     }
     
-    // Create notification for the user
+    // First fetch equipment names for all requested items
+    const equipmentItems = await Promise.all(items.map(async (item) => {
+      const [equipResult] = await connection.execute(
+        'SELECT nom FROM Equipement WHERE id = ?',
+        [item.id_equipement]
+      );
+      return {
+        ...item,
+        equipmentName: equipResult[0]?.nom || `Equipment #${item.id_equipement}`
+      };
+    }));
+
+    // Current notification to student (to be enhanced)
     await connection.execute(
       'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), ?)',
       [
         id_utilisateur,
-        'Your reservation request has been received and is pending approval.',
+        `Your reservation request for ${equipmentItems.map(item => 
+          `${item.equipmentName}${item.quantite > 1 ? ` (x${item.quantite})` : ''}`
+        ).join(', ')} has been received and is pending approval.`,
         'envoye'
       ]
     );
-    
+
+    // Get student full name
+    const [studentDetails] = await connection.execute(
+      'SELECT nom, prenom FROM Utilisateur WHERE id = ?',
+      [id_utilisateur]
+    );
+
+    const studentFullName = `${studentDetails[0].prenom} ${studentDetails[0].nom}`;
+
+    // Get all responsables
+    const [responsables] = await connection.execute(
+      'SELECT id FROM Utilisateur WHERE role = "responsable"'
+    );
+
+    // Create notification for all responsables
+    for (const responsable of responsables) {
+      await connection.execute(
+        'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+        [
+          responsable.id,
+          `Student ${studentFullName} requested ${equipmentItems.map(item => 
+            `${item.equipmentName}${item.quantite > 1 ? ` (x${item.quantite})` : ''}`
+          ).join(', ')} under reservation #${reservationId}.`,
+        ]
+      );
+    }
+
     await connection.commit();
     
     res.status(201).json({
@@ -286,7 +326,7 @@ const updateReservationStatus = async (req, res) => {
     await connection.beginTransaction();
     
     const { id } = req.params;
-    const { statut } = req.body;
+    const { statut, responsable_id } = req.body; // Add responsable_id to request body
     
     if (!statut) {
       return res.status(400).json({ message: 'Status is required' });
@@ -297,10 +337,10 @@ const updateReservationStatus = async (req, res) => {
       return res.status(400).json({ message: 'Invalid status value' });
     }
     
-    // Get ALL equipment items associated with this reservation
+    // Get ALL equipment items associated with this reservation with equipment names
     const [reservationItems] = await connection.execute(
       `SELECT r.id, r.id_utilisateur, re.id_equipement, re.quantite_reservee, 
-              e.categorie, u.nom as nom_utilisateur, u.prenom as prenom_utilisateur
+              e.categorie, e.nom, u.nom as nom_utilisateur, u.prenom as prenom_utilisateur
        FROM Reservation r
        JOIN Reservation_Equipement re ON r.id = re.id_reservation
        JOIN Equipement e ON re.id_equipement = e.id
@@ -323,6 +363,31 @@ const updateReservationStatus = async (req, res) => {
     // Get the user ID for notifications
     const userId = reservationItems[0].id_utilisateur;
     
+    // Get responsable ID - either from request body, req.user, or use a default
+    const respId = responsable_id || (req.user ? req.user.id : null);
+    
+    // Format equipment list for notifications
+    const equipmentList = reservationItems.map(item => 
+      `${item.nom}${item.quantite_reservee > 1 ? ` (x${item.quantite_reservee})` : ''}`
+    ).join(', ');
+    
+    // Get student full name
+    const studentFullName = `${reservationItems[0].prenom_utilisateur} ${reservationItems[0].nom_utilisateur}`;
+    
+    let responsableFullName = "A responsible manager";
+    
+    // Get responsable name if we have the ID
+    if (respId) {
+      const [responsableDetails] = await connection.execute(
+        'SELECT nom, prenom FROM Utilisateur WHERE id = ?',
+        [respId]
+      );
+      
+      if (responsableDetails.length > 0) {
+        responsableFullName = `${responsableDetails[0].prenom} ${responsableDetails[0].nom}`;
+      }
+    }
+
     // Handle equipment status and quantity based on reservation status
     if (statut === 'validee') {
       // Process each equipment item in this reservation
@@ -344,19 +409,63 @@ const updateReservationStatus = async (req, res) => {
         }
       }
       
-      // Create approval notification
+      // 1. Create notification for the student
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-        [userId, `Your reservation #${id} has been approved.`]
+        [
+          userId, 
+          `${responsableFullName} has accepted your reservation #${id} of ${equipmentList}.`
+        ]
       );
+      
+      // 2. Create notification for the responsable
+      if (respId) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [
+            respId,
+            `You accepted ${studentFullName}'s reservation #${id} of ${equipmentList}.`
+          ]
+        );
+      }
+      
+      // 3. Notify technicians
+      const [technicians] = await connection.execute(
+        'SELECT id FROM Utilisateur WHERE role = "technicien"'
+      );
+      
+      for (const tech of technicians) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [
+            tech.id,
+            `Responsable ${responsableFullName} has approved equipment ${equipmentList} to student ${studentFullName}. Please assist them.`
+          ]
+        );
+      }
+      
     } else if (statut === 'refusee') {
-      // Create rejection notification
+      // 1. Create notification for the student
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-        [userId, `Your reservation #${id} has been rejected.`]
+        [
+          userId, 
+          `${responsableFullName} has refused your reservation #${id} of ${equipmentList}.`
+        ]
       );
+      
+      // 2. Create notification for the responsable
+      if (respId) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [
+            respId,
+            `You refused ${studentFullName}'s reservation #${id} of ${equipmentList}.`
+          ]
+        );
+      }
     }
-    
+
     await connection.commit();
     
     res.json({
