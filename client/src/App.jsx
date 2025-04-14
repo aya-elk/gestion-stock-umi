@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useLocation } from 'react-router-dom';
-import Home from './components/home'; // Import the Login component
-import Login from './components/login'; // Import the Login component
-import Etudiant from './components/etudiant';
-import Technicien from './components/technicien';
-import Responsable from './components/responsable';
+import Home from './pages/home'; // Import the Login component
+import Login from './pages/login'; // Import the Login component
+import Etudiant from './pages/etudiant';
+import Technicien from './pages/technicien';
+import Responsable from './pages/responsable';
 
 // ScrollToTop component for smooth navigation
 const ScrollToTop = () => {
