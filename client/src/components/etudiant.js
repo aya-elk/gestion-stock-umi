@@ -62,10 +62,10 @@ const Etudiant = () => {
     // User is authenticated and has correct role
     setCurrentUser(userFromStorage);
     
-    // Set user ID in form data
+    // Set user ID in form data - handle both id and _id fields
     setFormData(prev => ({
       ...prev,
-      id_utilisateur: userFromStorage.id
+      id_utilisateur: userFromStorage.id || userFromStorage._id
     }));
     
   }, [navigate]);
@@ -341,9 +341,38 @@ const Etudiant = () => {
   // Fetch notifications
   const fetchNotifications = async () => {
     try {
-      const userId = formData.id_utilisateur;
-      if (!userId) return; // Don't fetch if no user ID
+      // Get user ID with multiple fallbacks - similar to fetchReservations
+      let userId = formData.id_utilisateur;
       
+      // If not found in formData, try currentUser or storage
+      if (!userId) {
+        let userFromStorage;
+        try {
+          const localData = localStorage.getItem('userInfo');
+          const sessionData = sessionStorage.getItem('userInfo');
+          
+          if (localData) {
+            userFromStorage = JSON.parse(localData);
+          } else if (sessionData) {
+            userFromStorage = JSON.parse(sessionData);
+          }
+        } catch (parseErr) {
+          console.error("Error parsing storage data:", parseErr);
+        }
+        
+        // Use same fallback pattern as in reservation submission - IMPORTANT: Include _id
+        userId = userFromStorage?._id || 
+                userFromStorage?.id || 
+                userFromStorage?.userId || 
+                (currentUser ? currentUser._id || currentUser.id : null);
+      }
+      
+      if (!userId) {
+        console.error("No user ID available for fetching notifications");
+        return;
+      }
+      
+      console.log(`Fetching notifications for user ID: ${userId}`);
       const response = await fetch(`http://localhost:8080/api/notifications?userId=${userId}`);
       
       if (!response.ok) {
@@ -351,6 +380,7 @@ const Etudiant = () => {
       }
       
       const data = await response.json();
+      console.log('Notifications received:', data);
       setNotifications(data);
       
       // Count unread notifications
@@ -1331,7 +1361,7 @@ const Etudiant = () => {
         className={showBackToTop ? 'show' : ''}
         onClick={scrollToTop}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="18 15 12 9 6 15"></polyline>
         </svg>
       </button>
