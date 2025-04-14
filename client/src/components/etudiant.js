@@ -168,7 +168,9 @@ const Etudiant = () => {
       return equipment.quantite > 0 ? 'Available' : 'Out of Stock';
     } else {
       return equipment.etat === 'disponible' ? 'Available' : 
-             equipment.etat === 'en_cours' ? 'In Use' : 'Unavailable';
+             equipment.etat === 'en_cours' ? 'In Use' :
+             equipment.etat === 'en_reparation' ? 'In Repair' :
+             'Unavailable';
     }
   };
 
