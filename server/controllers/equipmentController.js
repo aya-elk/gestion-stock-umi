@@ -326,7 +326,8 @@ const updateEquipmentStatus = async (req, res) => {
     }
     
     // Validate the status is one of the allowed ENUM values
-    if (!['disponible', 'en_cours', 'indisponible'].includes(etat)) {
+    // Update this line to include 'en_reparation'
+    if (!['disponible', 'en_cours', 'indisponible', 'en_reparation'].includes(etat)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }
     

@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `Stockable` (
 -- Table unique
 CREATE TABLE IF NOT EXISTS `Solo` (
   `id` INT PRIMARY KEY,
-  `etat` ENUM('disponible','en_cours', 'indisponible') NOT NULL DEFAULT 'disponible',
+  `etat` ENUM('disponible','en_cours', 'en_reparation','indisponible') NOT NULL DEFAULT 'disponible',
   FOREIGN KEY (`id`) REFERENCES `Equipement`(`id`)
 );
 
