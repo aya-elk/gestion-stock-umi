@@ -121,12 +121,31 @@ const Technicien = () => {
   };
 
   // Mark notification as read
-  const markAsRead = (id) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
+  const markAsRead = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/notifications/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to mark notification as read');
+      }
+      
+      // Update local state
+      setNotifications(prevNotifications =>
+        prevNotifications.map(notification =>
+          notification.id === id ? { ...notification, read: true } : notification
+        )
+      );
+      
+      // Update unread count
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error('Error marking notification as read:', err);
+    }
   };
 
   // Format notification date
@@ -302,33 +321,24 @@ const Technicien = () => {
       }
       
       const data = await response.json();
-      setNotifications(data);
+      
+      // Transform the data to match the expected format in the UI
+      const formattedNotifications = data.map(notification => ({
+        id: notification.id,
+        title: 'System Notification', // Add a default title since database doesn't have this
+        message: notification.message,
+        date: notification.date_envoi, // Ensure this field is included
+        read: notification.statut === 'lu' // Convert 'envoye'/'lu' to boolean
+      }));
+      
+      setNotifications(formattedNotifications);
+      
+      // Count unread notifications
+      const unreadCount = data.filter(n => n.statut === 'envoye').length;
+      setUnreadCount(unreadCount);
     } catch (err) {
       console.error('Notification fetch error:', err);
-      // Fallback to dummy data if API fails
-      setNotifications([
-        {
-          id: 1,
-          title: 'Equipment Repair Request',
-          message: 'New repair request for Laptop HP EliteBook submitted by Sarah Johnson.',
-          date: new Date(Date.now() - 86400000).toISOString(), // yesterday
-          read: false
-        },
-        {
-          id: 2,
-          title: 'Low Stock Alert',
-          message: 'Projector inventory is running low. Only 2 units remaining.',
-          date: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-          read: false
-        },
-        {
-          id: 3,
-          title: 'Maintenance Completed',
-          message: 'NVIDIA GPU repairs have been completed and ready for verification.',
-          date: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
-          read: true
-        }
-      ]);
+      // Fallback data if needed
     }
   };
 
@@ -567,7 +577,7 @@ const Technicien = () => {
   };
 
   // Update equipment status (e.g., mark as available/under repair/unavailable)
-  const handleUpdateEquipmentStatus = async (id, newStatus) => {
+  const handleUpdateEquipmentStatus = async (id, newStatus, previousStatus) => {
     if (!id) {
       setError('No equipment selected for update');
       return;
@@ -578,12 +588,29 @@ const Technicien = () => {
     setSuccess(null);
     
     try {
-      const response = await fetch(`http://localhost:8080/api/equipments/${id}`, {
+      // Get equipment details to include in notification
+      const equipmentResponse = await fetch(`http://localhost:8080/api/equipments/${id}`);
+      if (!equipmentResponse.ok) {
+        throw new Error('Failed to fetch equipment details');
+      }
+      const equipment = await equipmentResponse.json();
+      
+      // Ensure previous status is never undefined - use equipment's current state as fallback
+      const oldState = previousStatus || equipment.etat || 'disponible';
+      
+      // Update equipment status
+      const response = await fetch(`http://localhost:8080/api/equipments/${id}/state`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ etat: newStatus }),
+        body: JSON.stringify({ 
+          etat: newStatus,
+          oldState: oldState || 'disponible', // Ensure we never send undefined
+          technicianId: currentUser?.id || null, // Use null instead of undefined
+          technicianName: currentUser?.prenom && currentUser?.nom ? 
+            `${currentUser.prenom} ${currentUser.nom}` : 'Unknown Technician'
+        }),
       });
       
       if (!response.ok) {
@@ -593,11 +620,16 @@ const Technicien = () => {
       }
       
       setSuccess(`Equipment status updated to ${newStatus === 'disponible' ? 'Available' : 
-                                        newStatus === 'en_cours' ? 'In Use' : 
-                                        newStatus === 'en_reparation' ? 'In Repair' :
-                                        newStatus === 'indisponible' ? 'Out of Service' : 
-                                        'Unknown'}`);
-      fetchEquipments();
+                                      newStatus === 'en_cours' ? 'In Use' : 
+                                      newStatus === 'en_reparation' ? 'In Repair' :
+                                      newStatus === 'indisponible' ? 'Out of Service' : 
+                                      'Unknown'}`);
+      
+      // Increase timeout to ensure server has time to process
+      setTimeout(() => {
+        fetchEquipments();
+        fetchNotifications(); // Refresh notifications after status change
+      }, 1000);
     } catch (err) {
       setError('Error updating equipment status: ' + err.message);
       console.error(err);
@@ -1099,7 +1131,7 @@ const Technicien = () => {
                                         <button 
                                           className="repair-btn" 
                                           title="Mark as In Repair"
-                                          onClick={() => handleUpdateEquipmentStatus(equipment.id, 'en_reparation')}
+                                          onClick={() => handleUpdateEquipmentStatus(equipment.id, 'en_reparation', 'indisponible')}
                                         >
                                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
@@ -1111,7 +1143,7 @@ const Technicien = () => {
                                         <button 
                                           className="confirm-btn" 
                                           title="Mark as Repaired"
-                                          onClick={() => handleUpdateEquipmentStatus(equipment.id, 'disponible')}
+                                          onClick={() => handleUpdateEquipmentStatus(equipment.id, 'disponible', 'en_reparation')}
                                         >
                                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -1302,14 +1334,23 @@ const Technicien = () => {
                           </svg>
                         </div>
                         <div className="notification-content">
-                          <h3>{notification.title}</h3>
+                          <h3>{notification.title || 'Notification'}</h3>
                           <p>{notification.message}</p>
                           <div className="notification-meta">
-                            <span className="notification-time">{formatNotificationDate(notification.date)}</span>
+                            <span className="notification-time">
+                              {notification.date ? new Date(notification.date).toLocaleString() : 'Recent'}
+                            </span>
                           </div>
                         </div>
                         <div className="notification-actions">
-                          <button className="mark-read-btn" title={notification.read ? "Mark as unread" : "Mark as read"}>
+                          <button 
+                            className="mark-read-btn" 
+                            title={notification.read ? "Mark as unread" : "Mark as read"}
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent the parent onClick from firing
+                              markAsRead(notification.id);
+                            }}
+                          >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               {notification.read ? (
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>

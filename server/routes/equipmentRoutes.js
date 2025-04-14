@@ -8,7 +8,8 @@ const {
   updateEquipmentStatus, // Add the new handler
   deleteEquipment,
   getStockableEquipment,
-  getSoloEquipment
+  getSoloEquipment,
+  updateEquipmentState // Add the new handler
 } = require('../controllers/equipmentController');
 
 // Routes for specific equipment types
@@ -25,5 +26,8 @@ router.route('/:id')
   .put(updateEquipment)
   .patch(updateEquipmentStatus) // Add PATCH endpoint for status updates
   .delete(deleteEquipment);
+
+// Make sure this route exists
+router.patch('/:id/state', updateEquipmentState);
 
 module.exports = router;

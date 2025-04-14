@@ -148,7 +148,7 @@ const updateEquipment = async (req, res) => {
     await connection.beginTransaction();
     
     const { id } = req.params;
-    const { nom, description, categorie, quantite, etat, qr_code } = req.body;
+    const { nom, description, categorie, quantite, etat, qr_code, previousStatus, technicianId, technicianName } = req.body;
     
     // Check if equipment exists
     const [existing] = await connection.execute(
@@ -212,6 +212,72 @@ const updateEquipment = async (req, res) => {
         await connection.execute(
           'UPDATE Equipement SET categorie = "stockable" WHERE id = ?',
           [id]
+        );
+      }
+    }
+    
+    // Get equipment details
+    const [equipResult] = await connection.execute(
+      'SELECT nom FROM Equipement WHERE id = ?',
+      [id]
+    );
+    const equipmentName = equipResult[0]?.nom || `Equipment #${id}`;
+
+    // Create notifications based on status transitions
+    if (previousStatus === 'disponible' && etat === 'indisponible') {
+      // Available to unavailable
+      await connection.execute(
+        'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+        [technicianId, `${equipmentName} #${id} is marked as unavailable`]
+      );
+      
+      // Notify responsables
+      const [responsables] = await connection.execute(
+        'SELECT id FROM Utilisateur WHERE role = "responsable"'
+      );
+      
+      for (const resp of responsables) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [resp.id, `${technicianName} has marked ${equipmentName} #${id} as unavailable`]
+        );
+      }
+    } 
+    else if (previousStatus === 'indisponible' && etat === 'en_reparation') {
+      // Unavailable to in repair
+      await connection.execute(
+        'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+        [technicianId, `${equipmentName} #${id} is now in repair`]
+      );
+      
+      // Notify responsables
+      const [responsables] = await connection.execute(
+        'SELECT id FROM Utilisateur WHERE role = "responsable"'
+      );
+      
+      for (const resp of responsables) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [resp.id, `${technicianName} is repairing ${equipmentName} #${id}`]
+        );
+      }
+    }
+    else if (previousStatus === 'en_reparation' && etat === 'disponible') {
+      // In repair to available
+      await connection.execute(
+        'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+        [technicianId, `${equipmentName} #${id} has been repaired and is now available`]
+      );
+      
+      // Notify responsables
+      const [responsables] = await connection.execute(
+        'SELECT id FROM Utilisateur WHERE role = "responsable"'
+      );
+      
+      for (const resp of responsables) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [resp.id, `${technicianName} has repaired ${equipmentName} #${id}`]
         );
       }
     }
