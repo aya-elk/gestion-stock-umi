@@ -1,91 +1,7 @@
-/* Import the same font as in App.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* Import the base styles from index.css */
+@import url('./index.css');
 
-/* Root variables to match App.css */
-:root {
-  --primary-color: #6c2bd9;
-  --primary-light: #8e5cf7;
-  --primary-dark: #5325a5;
-  --secondary-color: #ff6a00;
-  --secondary-light: #ff8c33;
-  --secondary-dark: #cc5500;
-  --accent-color: #00d2ff;
-  --text-primary: #1e2a39;
-  --text-secondary: #4e5d78;
-  --text-tertiary: #8a94a6;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fc;
-  --bg-tertiary: #eef1f8;
-  --bg-card: #ffffff;
-  --border-color: rgba(0, 0, 0, 0.08);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-full: 9999px;
-  --transition: all 0.3s ease;
-  --header-height: 80px;
-  --content-width: 1200px;
-  
-  /* Glass effect values */
-  --glass-bg-light: rgba(255, 255, 255, 0.6);
-  --glass-bg-dark: rgba(26, 34, 52, 0.7);
-  --glass-border-light: rgba(255, 255, 255, 0.8);
-  --glass-border-dark: rgba(255, 255, 255, 0.08);
-  --glass-blur: 10px;
-}
-
-/* Dark mode variables */
-.dark-mode {
-  --primary-color: #9d6eff;
-  --primary-light: #b392ff;
-  --primary-dark: #7c4dff;
-  --secondary-color: #ff8c33;
-  --secondary-light: #ffa866;
-  --secondary-dark: #e67300;
-  --text-primary: #f8f9fc;
-  --text-secondary: #d1d5db;
-  --text-tertiary: #9ca3af;
-  --bg-primary: #121825;
-  --bg-secondary: #1a2234;
-  --bg-tertiary: #232e45;
-  --bg-card: #1a2234;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4);
-}
-
-/* Base styles to match App.css */
-*, *::before, *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-  font-size: 16px;
-}
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: var(--text-primary);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  transition: var(--transition);
-  overflow-x: hidden;
-  
-  /* Background with SVG */
-  background: url('../svg/background.svg') no-repeat center center;
-  background-size: cover;
-  background-attachment: fixed;
-  min-height: 100vh;
-}
+/* ================ LOGIN-SPECIFIC STYLES BELOW ================ */
 
 /* ===== Login Section ===== */
 .login-section {
@@ -99,7 +15,7 @@ body {
   margin-top: var(--header-height);
 }
 
-/* Animated shapes background for login page - to match hero section */
+/* Animated shapes background for login page */
 .login-background {
   position: absolute;
   top: 0;
@@ -140,12 +56,6 @@ body {
   top: 40%;
   right: 5%;
   animation: float 10s ease-in-out 0.5s infinite;
-}
-
-@keyframes float {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(5deg); }
-  100% { transform: translateY(0px) rotate(0deg); }
 }
 
 /* Login container with glassmorphism */
@@ -198,10 +108,6 @@ body {
   margin-bottom: 1.5rem;
   position: relative;
   display: inline-block;
-}
-
-.accent-dot {
-  color: var(--primary-color);
 }
 
 .login-container h2::after {
@@ -354,24 +260,7 @@ body {
   text-decoration: underline;
 }
 
-/* Error message styling */
-.error-message {
-  background-color: rgba(239, 68, 68, 0.1);
-  border-left: 4px solid #ef4444;
-  color: #dc2626;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-md);
-  font-size: 0.95rem;
-  margin-bottom: 1.25rem;
-  text-align: left;
-  animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
+/* Login-specific animation */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -383,138 +272,8 @@ body {
   }
 }
 
-/* Header and Navigation - matched with App.css */
-.sticky-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: var(--header-height);
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  transition: var(--transition);
-  box-shadow: var(--shadow-sm);
-}
-
-.dark-mode .sticky-header {
-  background-color: rgba(18, 24, 37, 0.8);
-}
-
-.nav-container {
-  max-width: var(--content-width);
-  height: 100%;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--text-primary);
-}
-
-.logo-icon {
-  margin-right: 0.25rem;
-}
-
-.logo-text {
-  display: flex;
-  align-items: center;
-}
-
-.nav-links {
-  display: flex;
-  list-style: none;
-  gap: 1.5rem;
-}
-
-.nav-links li a {
-  color: var(--text-primary);
-  font-weight: 600;
-  text-decoration: none;
-  padding: 0.5rem 0.75rem;
-  transition: var(--transition);
-  position: relative;
-}
-
-.nav-links li a::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
-  transition: width 0.3s ease, left 0.3s ease;
-  transform: translateY(5px);
-}
-
-.nav-links li a:hover, .nav-links li a.active {
-  color: var(--primary-color);
-}
-
-.nav-links li a:hover::after, .nav-links li a.active::after {
-  width: 100%;
-  left: 0;
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.theme-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.25rem;
-  padding: 0.25rem;
-  border-radius: var(--radius-full);
-  transition: var(--transition);
-  color: var(--text-primary);
-}
-
-.theme-toggle:hover {
-  background-color: var(--bg-tertiary);
-}
-
-.cta-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
-  color: white;
-  font-weight: 600;
-  border-radius: var(--radius-full);
-  box-shadow: var(--shadow-md);
-  transition: var(--transition);
-  text-decoration: none;
-}
-
-.cta-button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  color: white;
-}
-
-/* Responsive styles */
+/* Login-specific responsive styles */
 @media screen and (max-width: 991px) {
-  :root {
-    --header-height: 70px;
-  }
-  
-  .nav-links {
-    display: none;
-  }
-  
   .login-container {
     padding: 2rem;
     max-width: 90%;
@@ -528,16 +287,6 @@ body {
     margin: 0 1rem;
   }
   
-  .sticky-header {
-    height: auto;
-    padding: 0.75rem 0;
-  }
-  
-  .nav-container {
-    height: auto;
-    padding: 0.5rem 1rem;
-  }
-  
   .login-options {
     flex-direction: column;
     align-items: flex-start;
@@ -548,14 +297,5 @@ body {
 @media screen and (max-width: 480px) {
   .login-container h2 {
     font-size: 1.75rem;
-  }
-  
-  .nav-actions {
-    gap: 0.5rem;
-  }
-  
-  .cta-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
   }
 }
