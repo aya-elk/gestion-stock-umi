@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import SignatureCanvas from 'react-signature-canvas';
 import moment from 'moment';
 import '../css/responsable.css';
 
@@ -15,31 +14,20 @@ const Responsable = () => {
   const [reservations, setReservations] = useState([]);
   const [stockableEquipment, setStockableEquipment] = useState([]);
   const [soloEquipment, setSoloEquipment] = useState([]);
-  const [selectedReservation, setSelectedReservation] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
   const [activeEquipmentTab, setActiveEquipmentTab] = useState('stockable'); 
-  const [signatureURL, setSignatureURL] = useState(null);
-  const [signatureModalOpen, setSignatureModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState(null);
   const [filterStatus, setFilterStatus] = useState('attente');
   const [showLowStock, setShowLowStock] = useState(false);
   const [activeView, setActiveView] = useState('reservations');
   const [notifications, setNotifications] = useState([]);
   const [activityHistory, setActivityHistory] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-
-  // Refs for sections
-  const pendingRef = useRef(null);
-  const stockRef = useRef(null);
-  const historyRef = useRef(null);
-  const sigPadRef = useRef({});
 
   // Authentication check on component mount
   useEffect(() => {
@@ -87,13 +75,6 @@ const Responsable = () => {
   // Toggle dark mode
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
-  };
-
-  // Scroll to section
-  const scrollToSection = (ref) => {
-    if (ref && ref.current) {
-      ref.current.scrollIntoView({ behavior: 'smooth' });
-    }
   };
 
   // Handle scroll for back to top button

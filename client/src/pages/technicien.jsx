@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import moment from 'moment';
 import { QRCodeCanvas } from 'qrcode.react';
 import '../css/technicien.css';
 
@@ -145,22 +144,6 @@ const Technicien = () => {
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Error marking notification as read:', err);
-    }
-  };
-
-  // Format notification date
-  const formatNotificationDate = (date) => {
-    const now = new Date();
-    const diffDays = Math.floor((now - new Date(date)) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return 'Today';
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 7) {
-      return `${diffDays} days ago`;
-    } else {
-      return new Date(date).toLocaleDateString();
     }
   };
 
