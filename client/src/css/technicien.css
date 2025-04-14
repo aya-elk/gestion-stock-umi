@@ -993,3 +993,57 @@ button:disabled {
     gap: 0.5rem;
   }
 }
+
+/* Table cell height consistency with natural width behavior */
+.responsive-table table {
+  border-collapse: collapse;
+  table-layout: auto; /* Allows columns to size based on content */
+  width: 100%;
+}
+
+.responsive-table tr {
+  display: table-row;
+}
+
+/* Table cells with consistent height, natural content-based width */
+.responsive-table th,
+.responsive-table td {
+  display: table-cell;
+  vertical-align: middle;
+  height: 100%;
+  box-sizing: border-box;
+  white-space: normal; /* Allow text to wrap */
+  padding: 0.75rem 1rem;
+  min-width: 50px; /* Minimum width for very small content */
+}
+
+/* Ensure content doesn't break row height consistency */
+.responsive-table td > *,
+.responsive-table th > * {
+  vertical-align: middle;
+}
+
+/* Force equal height for all cells in a row */
+.responsive-table tbody tr {
+  height: auto;
+}
+
+/* For specific rows with complex content */
+.responsive-table tr.data-row {
+  height: auto !important;
+}
+
+/* Handle responsive behavior while maintaining consistency */
+@media (max-width: 768px) {
+  .responsive-table td,
+  .responsive-table th {
+    padding: 0.75rem 0.5rem;
+  }
+  
+  /* Allow text wrapping on small screens */
+  .responsive-table th,
+  .responsive-table td {
+    white-space: normal;
+    word-break: break-word;
+  }
+}
