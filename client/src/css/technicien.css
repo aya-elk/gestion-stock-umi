@@ -10,6 +10,8 @@
   --tech-outofservice-light: rgba(231, 76, 60, 0.15);
   --tech-available: #27ae60;
   --tech-available-light: rgba(39, 174, 96, 0.15);
+  --tech-inrepair-light: rgba(241, 196, 15, 0.15);
+  --tech-inrepair: #f1c40f;
 }
 
 /* Dashboard Layout */
@@ -821,6 +823,15 @@ table tr:hover td {
   background-color: var(--tech-outofservice);
 }
 
+.status-en_reparation {
+  background-color: var(--tech-inrepair-light);
+  color: var(--tech-inrepair);
+}
+
+.status-en_reparation:before {
+  background-color: var(--tech-inrepair);
+}
+
 .category-badge {
   background-color: rgba(155, 89, 182, 0.15);
   color: #8e44ad;
@@ -1521,4 +1532,31 @@ table tr:hover td {
 .qr-view-btn:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
+}
+
+/* Style for repair button */
+.repair-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  background: linear-gradient(135deg, #f1c40f, #e67e22);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-right: 0.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.repair-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.repair-btn svg {
+  margin-right: 4px;
 }

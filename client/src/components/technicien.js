@@ -593,9 +593,10 @@ const Technicien = () => {
       }
       
       setSuccess(`Equipment status updated to ${newStatus === 'disponible' ? 'Available' : 
-                                                newStatus === 'en_cours' ? 'In Use' : 
-                                                newStatus === 'indisponible' ? 'Out of Service' : 
-                                                'Unknown'}`);
+                                        newStatus === 'en_cours' ? 'In Use' : 
+                                        newStatus === 'en_reparation' ? 'In Repair' :
+                                        newStatus === 'indisponible' ? 'Out of Service' : 
+                                        'Unknown'}`);
       fetchEquipments();
     } catch (err) {
       setError('Error updating equipment status: ' + err.message);
@@ -813,7 +814,8 @@ const Technicien = () => {
                                 <option value="">All Status</option>
                                 <option value="disponible">Available</option>
                                 <option value="en_cours">In Use</option>
-                                <option value="indisponible">Being Repaired</option>
+                                <option value="en_reparation">In Repair</option>
+                                <option value="indisponible">Unavailable</option>
                               </select>
                             </div>
                             <button 
@@ -1008,7 +1010,9 @@ const Technicien = () => {
                                       <td>
                                         <span className={`status-badge status-${equipment.etat}`}>
                                           {equipment.etat === 'disponible' ? 'Available' : 
-                                           equipment.etat === 'en_cours' ? 'In Use' : 'Being Repaired'}
+                                           equipment.etat === 'en_cours' ? 'In Use' : 
+                                           equipment.etat === 'en_reparation' ? 'In Repair' :
+                                           'Unavailable'}
                                         </span>
                                       </td>
                                       <td className="action-buttons">
@@ -1074,41 +1078,48 @@ const Technicien = () => {
                               </tr>
                             </thead>
                             <tbody>
-                              {soloEquipment.filter(item => item.etat === 'en_cours').length === 0 ? (
+                              {soloEquipment.filter(item => item.etat === 'indisponible' || item.etat === 'en_reparation').length === 0 ? (
                                 <tr>
                                   <td colSpan="6" className="centered-cell">No equipment currently under maintenance</td>
                                 </tr>
                               ) : (
-                                soloEquipment.filter(item => item.etat === 'en_cours').map(equipment => (
+                                soloEquipment.filter(item => item.etat === 'indisponible' || item.etat === 'en_reparation').map(equipment => (
                                   <tr key={equipment.id}>
                                     <td>{equipment.id}</td>
                                     <td>{equipment.nom}</td>
                                     <td><span className="category-badge">{equipment.categorie}</span></td>
-                                    <td><span className="status-badge status-en_cours">In Use</span></td>
+                                    <td>
+                                      <span className={`status-badge status-${equipment.etat}`}>
+                                        {equipment.etat === 'en_reparation' ? 'In Repair' : 'Unavailable'}
+                                      </span>
+                                    </td>
                                     <td>{equipment.description}</td>
                                     <td className="action-buttons">
-                                      <button 
-                                        className="confirm-btn" 
-                                        title="Mark as Available"
-                                        onClick={() => handleUpdateEquipmentStatus(equipment.id, 'disponible')}
-                                      >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                                        </svg>
-                                        Mark Available
-                                      </button>
-                                      <button 
-                                        className="delete-button-small" 
-                                        title="Mark as Unavailable"
-                                        onClick={() => handleUpdateEquipmentStatus(equipment.id, 'indisponible')}
-                                      >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <circle cx="12" cy="12" r="10"></circle>
-                                          <line x1="15" y1="9" x2="9" y2="15"></line>
-                                          <line x1="9" y1="9" x2="15" y2="15"></line>
-                                        </svg>
-                                      </button>
+                                      {equipment.etat === 'indisponible' && (
+                                        <button 
+                                          className="repair-btn" 
+                                          title="Mark as In Repair"
+                                          onClick={() => handleUpdateEquipmentStatus(equipment.id, 'en_reparation')}
+                                        >
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                                          </svg>
+                                          Start Repair
+                                        </button>
+                                      )}
+                                      {equipment.etat === 'en_reparation' && (
+                                        <button 
+                                          className="confirm-btn" 
+                                          title="Mark as Repaired"
+                                          onClick={() => handleUpdateEquipmentStatus(equipment.id, 'disponible')}
+                                        >
+                                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                          </svg>
+                                          Mark as Repaired
+                                        </button>
+                                      )}
                                     </td>
                                   </tr>
                                 ))
@@ -1143,12 +1154,15 @@ const Technicien = () => {
                     <select 
                       name="filter_status" 
                       id="filter_status"
+                      value={filterStatus} 
+                      onChange={handleFilterChange}
                       className="form-control"
                     >
-                      <option value="all">All Reservations</option>
-                      <option value="en_attente">Pending</option>
-                      <option value="en_cours">In Progress</option>
-                      <option value="confirmé">Confirmed</option>
+                      <option value="">All Status</option>
+                      <option value="disponible">Available</option>
+                      <option value="en_cours">In Use</option>
+                      <option value="en_reparation">In Repair</option>
+                      <option value="indisponible">Unavailable</option>
                     </select>
                   </div>
                   <button className="secondary-button">Clear Filters</button>
@@ -1384,7 +1398,8 @@ const Technicien = () => {
                     >
                       <option value="disponible">Available</option>
                       <option value="en_cours">In Use</option>
-                      <option value="indisponible">Being Repaired</option>
+                      <option value="en_reparation">In Repair</option>
+                      <option value="indisponible">Unavailable</option>
                     </select>
                   </div>
                 </div>
@@ -1497,7 +1512,8 @@ const Technicien = () => {
                     >
                       <option value="disponible">Available</option>
                       <option value="en_cours">In Use</option>
-                      <option value="indisponible">Being Repaired</option>
+                      <option value="en_reparation">In Repair</option>
+                      <option value="indisponible">Unavailable</option>
                     </select>
                   </div>
                 </div>
@@ -1601,7 +1617,7 @@ const Technicien = () => {
         className={showBackToTop ? 'show' : ''}
         onClick={scrollToTop}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="18 15 12 9 6 15"></polyline>
         </svg>
       </button>
