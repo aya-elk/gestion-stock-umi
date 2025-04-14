@@ -373,6 +373,11 @@ const Responsable = () => {
 
   // Add these helper functions before the return statement
   const getActivityStatus = (activity) => {
+    // For equipment activities, check if the equipment is in repair
+    if (activity.etat === 'en_reparation') {
+      return 'In Repair';
+    }
+    
     const now = new Date();
     const startDate = new Date(activity.date_debut);
     const endDate = new Date(activity.date_fin);
@@ -387,6 +392,10 @@ const Responsable = () => {
   };
 
   const getActivityStatusClass = (activity) => {
+    if (activity.etat === 'en_reparation') {
+      return 'status-repair';
+    }
+    
     const now = new Date();
     const startDate = new Date(activity.date_debut);
     const endDate = new Date(activity.date_fin);
@@ -723,18 +732,17 @@ const Responsable = () => {
                                 <th>Name</th>
                                 <th>Description</th>
                                 <th>Quantity</th>
-                                <th>QR Code</th>
                                 <th>Status</th>
                               </tr>
                             </thead>
                             <tbody>
                               {isLoading ? (
                                 <tr>
-                                  <td colSpan="6" className="centered-cell">Loading equipment...</td>
+                                  <td colSpan="5" className="centered-cell">Loading equipment...</td>
                                 </tr>
                               ) : stockableEquipment.length === 0 ? (
                                 <tr>
-                                  <td colSpan="6" className="centered-cell">No stockable equipment found</td>
+                                  <td colSpan="5" className="centered-cell">No stockable equipment found</td>
                                 </tr>
                               ) : (
                                 stockableEquipment
@@ -745,12 +753,6 @@ const Responsable = () => {
                                       <td>{item.nom}</td>
                                       <td>{item.description}</td>
                                       <td>{item.quantite}</td>
-                                      <td>
-                                        {item.qr_code ? 
-                                          <button className="qr-button">View QR</button> : 
-                                          <span>No QR Code</span>
-                                        }
-                                      </td>
                                       <td>
                                         <span className={`stock-level ${item.quantite < 5 ? 'low' : 'normal'}`}>
                                           {item.quantite < 5 ? 'Low Stock' : 'Normal'}
@@ -797,6 +799,7 @@ const Responsable = () => {
                                       <span className={`status-badge status-${item.etat}`}>
                                         {item.etat === 'disponible' ? 'Available' : 
                                          item.etat === 'en_cours' ? 'In Use' :
+                                         item.etat === 'en_reparation' ? 'In Repair' :
                                          'Unavailable'}
                                       </span>
                                     </td>

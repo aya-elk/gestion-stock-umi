@@ -586,6 +586,21 @@ table tr:hover td {
   color: #27ae60;
 }
 
+/* Status badge for in-repair status */
+.status-en_reparation {
+  background-color: rgba(241, 196, 15, 0.15);
+  color: #f1c40f;
+}
+
+.status-en_reparation:before {
+  background-color: #f1c40f;
+}
+
+.status-repair {
+  background-color: rgba(241, 196, 15, 0.15);
+  color: #f1c40f;
+}
+
 .category-badge {
   background-color: rgba(155, 89, 182, 0.15);
   color: #8e44ad;
