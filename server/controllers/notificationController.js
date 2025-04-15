@@ -1,16 +1,4 @@
-const mysql = require('mysql2/promise');
-require('dotenv').config();
-
-// Database connection pool
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'GESTION_STOCK',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-});
+const { pool } = require('../config/dbConfig');
 
 // @desc    Get notifications for a specific user
 // @route   GET /api/notifications
