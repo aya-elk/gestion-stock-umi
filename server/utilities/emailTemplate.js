@@ -13,16 +13,16 @@
  * @returns {string} HTML email content
  */
 const generateContactEmail = (data) => {
-    const { name, email, phone, message } = data;
-    const currentDate = new Date().toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  
-    // HTML template with inline CSS for email compatibility
-    return `
+  const { name, email, phone, message } = data;
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  // HTML template with inline CSS for email compatibility
+  return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -120,6 +120,6 @@ const generateContactEmail = (data) => {
       </body>
       </html>
     `;
-  };
-  
-  module.exports = { generateContactEmail };
+};
+
+module.exports = { generateContactEmail };

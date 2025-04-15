@@ -6,7 +6,7 @@ const { pool } = require('../config/dbConfig');
 const authUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    
+
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
@@ -15,7 +15,7 @@ const authUser = async (req, res) => {
 
     // SQL query to find user by email
     const [users] = await pool.execute(
-      'SELECT * FROM Utilisateur WHERE email = ?', 
+      'SELECT * FROM Utilisateur WHERE email = ?',
       [email]
     );
 

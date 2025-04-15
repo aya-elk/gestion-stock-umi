@@ -9,7 +9,7 @@ const Etudiant = () => {
   const navigate = useNavigate();
   // User authentication state
   const [currentUser, setCurrentUser] = useState(null);
-  
+
   // State variables
   const [equipements, setEquipements] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -23,17 +23,17 @@ const Etudiant = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  
+
   // Dashboard state variables
   const [activeView, setActiveView] = useState('browse');
   const [activeTab, setActiveTab] = useState('upcoming');
-  
+
   // Cart functionality
   const [cart, setCart] = useState([]);
   const [showCart, setShowCart] = useState(false);
   const [filterCategory, setFilterCategory] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Notifications
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -43,31 +43,31 @@ const Etudiant = () => {
   // Check authentication when component mounts
   useEffect(() => {
     // Check for user in localStorage or sessionStorage
-    const userFromStorage = JSON.parse(localStorage.getItem('userInfo')) || 
-                            JSON.parse(sessionStorage.getItem('userInfo'));
-    
+    const userFromStorage = JSON.parse(localStorage.getItem('userInfo')) ||
+      JSON.parse(sessionStorage.getItem('userInfo'));
+
     if (!userFromStorage) {
       // No user found, redirect to login
       navigate('/login');
       return;
     }
-    
+
     // Check if user role is 'etudiant'
     if (userFromStorage.role !== 'etudiant') {
       // Wrong role, redirect to login
       navigate('/login');
       return;
     }
-    
+
     // User is authenticated and has correct role
     setCurrentUser(userFromStorage);
-    
+
     // Set user ID in form data - handle both id and _id fields
     setFormData(prev => ({
       ...prev,
       id_utilisateur: userFromStorage.id || userFromStorage._id
     }));
-    
+
   }, [navigate]);
 
   // Fetch equipment data independently (not dependent on authentication)
@@ -135,13 +135,13 @@ const Etudiant = () => {
           'Accept': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
         throw new Error(`Failed to fetch equipment data: ${response.status} ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       console.log('Equipment data parsed successfully:', data.length, 'items');
       setEquipements(data);
@@ -167,10 +167,10 @@ const Etudiant = () => {
     if (equipment.categorie === 'stockable') {
       return equipment.quantite > 0 ? 'Available' : 'Out of Stock';
     } else {
-      return equipment.etat === 'disponible' ? 'Available' : 
-             equipment.etat === 'en_cours' ? 'In Use' :
-             equipment.etat === 'en_reparation' ? 'In Repair' :
-             'Unavailable';
+      return equipment.etat === 'disponible' ? 'Available' :
+        equipment.etat === 'en_cours' ? 'In Use' :
+          equipment.etat === 'en_reparation' ? 'In Repair' :
+            'Unavailable';
     }
   };
 
@@ -189,66 +189,66 @@ const Etudiant = () => {
     if (!cart.some(item => item.id === equipment.id)) {
       setCart([...cart, { ...equipment, quantity: 1 }]);
       setSuccess(`${equipment.nom} added to cart`);
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccess(null);
       }, 3000);
     } else {
       setError("This item is already in your cart");
-      
+
       // Clear error message after 3 seconds
       setTimeout(() => {
         setError(null);
       }, 3000);
     }
   };
-  
+
   const removeFromCart = (id) => {
     setCart(cart.filter(item => item.id !== id));
   };
-  
+
   const clearCart = () => {
     setCart([]);
   };
-  
+
   const updateQuantity = (id, quantity) => {
     if (quantity <= 0) {
       removeFromCart(id);
       return;
     }
-    
+
     // Find the current item to get its max quantity
     const item = cart.find(item => item.id === id);
     if (!item) return;
-    
+
     // For stockable items, limit by available quantity
     const maxQuantity = item.categorie === 'stockable' ? item.quantite : 1;
-    
+
     // Ensure we don't exceed maximum available quantity
     const newQuantity = Math.min(quantity, maxQuantity);
-    
-    setCart(cart.map(item => 
+
+    setCart(cart.map(item =>
       item.id === id ? { ...item, quantity: newQuantity } : item
     ));
   };
-  
+
   // Filter functions
   const handleFilterChange = (e) => {
     setFilterCategory(e.target.value);
   };
-  
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
-  
+
   // Filter equipment based on category and search term
   const filteredEquipment = equipements.filter(equipment => {
     const matchesCategory = filterCategory === '' || equipment.categorie === filterCategory;
-    const matchesSearch = searchTerm === '' || 
-      equipment.nom.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = searchTerm === '' ||
+      equipment.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
       equipment.description.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesCategory && matchesSearch;
   });
 
@@ -260,7 +260,7 @@ const Etudiant = () => {
       try {
         const localData = localStorage.getItem('userInfo');
         const sessionData = sessionStorage.getItem('userInfo');
-        
+
         if (localData) {
           userFromStorage = JSON.parse(localData);
         } else if (sessionData) {
@@ -269,45 +269,45 @@ const Etudiant = () => {
       } catch (parseErr) {
         console.error("Error parsing storage data:", parseErr);
       }
-      
+
       // Use same fallback pattern as in reservation submission
-      const userId = userFromStorage?.id || 
-                    userFromStorage?.userId || 
-                    userFromStorage?._id || 
-                    (currentUser ? currentUser.id : null);
-      
+      const userId = userFromStorage?.id ||
+        userFromStorage?.userId ||
+        userFromStorage?._id ||
+        (currentUser ? currentUser.id : null);
+
       if (!userId) {
         console.error("No user ID available for fetching reservations");
         return;
       }
-      
+
       console.log("Fetching reservations for user ID:", userId);
-      
+
       // Continue with your existing fetch logic
       const response = await fetch(`http://localhost:8080/api/reservations?userId=${userId}`, {
         headers: {
           'Accept': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
         throw new Error(`Failed to fetch reservation data: ${response.status} ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       console.log('Raw reservation data from API:', data);
-      
+
       if (data.length === 0) {
         console.log("No reservations found for this user");
         setReservations([]);
         return;
       }
-      
+
       // Group by reservation ID - no need to filter by user as the API already did
       const reservationMap = {};
-      
+
       data.forEach(item => {
         if (!reservationMap[item.id_reservation]) {
           reservationMap[item.id_reservation] = {
@@ -326,10 +326,10 @@ const Etudiant = () => {
           });
         }
       });
-      
+
       const finalReservations = Object.values(reservationMap);
       console.log('Final processed reservations:', finalReservations);
-      
+
       // Update state
       setReservations(finalReservations);
     } catch (err) {
@@ -343,14 +343,14 @@ const Etudiant = () => {
     try {
       // Get user ID with multiple fallbacks - similar to fetchReservations
       let userId = formData.id_utilisateur;
-      
+
       // If not found in formData, try currentUser or storage
       if (!userId) {
         let userFromStorage;
         try {
           const localData = localStorage.getItem('userInfo');
           const sessionData = sessionStorage.getItem('userInfo');
-          
+
           if (localData) {
             userFromStorage = JSON.parse(localData);
           } else if (sessionData) {
@@ -359,30 +359,30 @@ const Etudiant = () => {
         } catch (parseErr) {
           console.error("Error parsing storage data:", parseErr);
         }
-        
+
         // Use same fallback pattern as in reservation submission - IMPORTANT: Include _id
-        userId = userFromStorage?._id || 
-                userFromStorage?.id || 
-                userFromStorage?.userId || 
-                (currentUser ? currentUser._id || currentUser.id : null);
+        userId = userFromStorage?._id ||
+          userFromStorage?.id ||
+          userFromStorage?.userId ||
+          (currentUser ? currentUser._id || currentUser.id : null);
       }
-      
+
       if (!userId) {
         console.error("No user ID available for fetching notifications");
         return;
       }
-      
+
       console.log(`Fetching notifications for user ID: ${userId}`);
       const response = await fetch(`http://localhost:8080/api/notifications?userId=${userId}`);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch notifications');
       }
-      
+
       const data = await response.json();
       console.log('Notifications received:', data);
       setNotifications(data);
-      
+
       // Count unread notifications
       const unread = data.filter(notification => notification.statut === 'envoye').length;
       setUnreadCount(unread);
@@ -403,11 +403,11 @@ const Etudiant = () => {
         },
         body: JSON.stringify({ statut: 'lu' }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to mark notification as read');
       }
-      
+
       setNotifications(prevNotifications =>
         prevNotifications.map(notification =>
           notification.id === id ? { ...notification, statut: 'lu' } : notification
@@ -427,7 +427,7 @@ const Etudiant = () => {
     const diffMins = Math.round(diffMs / 60000);
     const diffHrs = Math.round(diffMs / 3600000);
     const diffDays = Math.round(diffMs / 86400000);
-    
+
     if (diffMins < 60) {
       return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
     } else if (diffHrs < 24) {
@@ -454,31 +454,31 @@ const Etudiant = () => {
     setIsLoading(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
       // More robust storage check with error handling
       let userFromStorage;
       try {
         const localData = localStorage.getItem('userInfo');
         const sessionData = sessionStorage.getItem('userInfo');
-        
+
         if (localData) {
           userFromStorage = JSON.parse(localData);
         } else if (sessionData) {
           userFromStorage = JSON.parse(sessionData);
         }
-        
+
         console.log("User data found:", userFromStorage); // Debug output
       } catch (parseErr) {
         console.error("Error parsing storage data:", parseErr);
         throw new Error('Session data is corrupted. Please login again.');
       }
-      
+
       // Check for user ID with fallbacks for different field names
-      const userId = userFromStorage?.id || 
-                     userFromStorage?.userId || 
-                     userFromStorage?._id;
-                     
+      const userId = userFromStorage?.id ||
+        userFromStorage?.userId ||
+        userFromStorage?._id;
+
       if (!userId) {
         // Use currentUser state as fallback if it exists
         if (currentUser && currentUser.id) {
@@ -488,12 +488,12 @@ const Etudiant = () => {
           throw new Error('Unable to identify user. Please login again.');
         }
       }
-      
+
       // Rest of your existing code...
       if (cart.length === 0) {
         throw new Error('Your cart is empty. Please add equipment before reserving.');
       }
-      
+
       if (!formData.date_debut || !formData.date_fin) {
         throw new Error('Please select start and end dates for your reservation');
       }
@@ -527,20 +527,20 @@ const Etudiant = () => {
       }
 
       setSuccess('Reservation submitted successfully! Your request is pending approval.');
-      
+
       // Give the server a moment to complete the transaction
       setTimeout(() => {
         fetchReservations(); // Reload the reservations to show the new ones
         fetchNotifications(); // Check for new notifications
       }, 1000);
-      
+
       clearCart();
       setFormData(prevState => ({
         ...prevState,
         date_debut: '',
         date_fin: ''
       }));
-      
+
       // Change to history view to let user see their reservations
       setTimeout(() => {
         setActiveView('history');
@@ -562,7 +562,7 @@ const Etudiant = () => {
       display: 'block',
       color: 'white'
     };
-    
+
     if (event.status === 'validee') {
       style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
     } else if (event.status === 'refusee') {
@@ -570,7 +570,7 @@ const Etudiant = () => {
     } else {
       style.background = 'linear-gradient(135deg, #f39c12, #e67e22)';
     }
-    
+
     return { style };
   };
 
@@ -592,9 +592,9 @@ const Etudiant = () => {
           <div className="sidebar-header">
             <div className="logo-icon">GP<span className="accent-dot">.</span></div>
           </div>
-          
+
           <nav className="sidebar-nav">
-            <button 
+            <button
               className={`sidebar-nav-item ${activeView === 'browse' ? 'active' : ''}`}
               onClick={() => setActiveView('browse')}
               title="Browse Equipment"
@@ -606,7 +606,7 @@ const Etudiant = () => {
               </svg>
             </button>
 
-            <button 
+            <button
               className={`sidebar-nav-item ${activeView === 'calendar' ? 'active' : ''}`}
               onClick={() => setActiveView('calendar')}
               title="Calendar"
@@ -618,8 +618,8 @@ const Etudiant = () => {
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
             </button>
-            
-            <button 
+
+            <button
               className={`sidebar-nav-item ${activeView === 'reserve' ? 'active' : ''}`}
               onClick={() => setActiveView('reserve')}
               title="Complete Reservation"
@@ -629,8 +629,8 @@ const Etudiant = () => {
                 <line x1="3" y1="22" x2="21" y2="22"></line>
               </svg>
             </button>
-            
-            <button 
+
+            <button
               className={`sidebar-nav-item ${activeView === 'history' ? 'active' : ''}`}
               onClick={() => {
                 setActiveView('history');
@@ -643,8 +643,8 @@ const Etudiant = () => {
                 <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
               </svg>
             </button>
-            
-            <button 
+
+            <button
               className={`sidebar-nav-item ${activeView === 'notifications' ? 'active' : ''}`}
               onClick={() => setActiveView('notifications')}
               title="Notifications"
@@ -655,8 +655,8 @@ const Etudiant = () => {
               </svg>
               {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
             </button>
-            
-            <button 
+
+            <button
               className={`sidebar-nav-item ${activeView === 'help' ? 'active' : ''}`}
               onClick={() => setActiveView('help')}
               title="Help & FAQ"
@@ -668,7 +668,7 @@ const Etudiant = () => {
               </svg>
             </button>
           </nav>
-          
+
           <div className="sidebar-footer">
             <button className="theme-toggle" onClick={toggleDarkMode} title={darkMode ? "Light Mode" : "Dark Mode"}>
               {darkMode ? (
@@ -710,18 +710,18 @@ const Etudiant = () => {
               <h1>Student Dashboard</h1>
               <p className="dashboard-subtitle">
                 {activeView === 'browse' ? 'Browse and select available equipment' :
-                 activeView === 'calendar' ? 'View and plan your equipment reservations' : 
-                 activeView === 'reserve' ? 'Review cart and complete your reservation' :
-                 activeView === 'history' ? 'Track your reservation history and status' :
-                 activeView === 'notifications' ? 'View system notifications and alerts' :
-                 'Get help with equipment reservations'}
+                  activeView === 'calendar' ? 'View and plan your equipment reservations' :
+                    activeView === 'reserve' ? 'Review cart and complete your reservation' :
+                      activeView === 'history' ? 'Track your reservation history and status' :
+                        activeView === 'notifications' ? 'View system notifications and alerts' :
+                          'Get help with equipment reservations'}
               </p>
             </div>
             <div className="dashboard-actions">
               {activeView !== 'reserve' && (
                 <div className="cart-button-container">
-                  <button 
-                    className="cart-button" 
+                  <button
+                    className="cart-button"
                     onClick={() => setShowCart(!showCart)}
                     title="View Cart"
                   >
@@ -747,7 +747,7 @@ const Etudiant = () => {
               </div>
             </div>
           </header>
-          
+
           {/* Shopping Cart Overlay */}
           {showCart && (
             <div className="cart-overlay">
@@ -756,7 +756,7 @@ const Etudiant = () => {
                   <h2>Your Reservation Cart</h2>
                   <button className="close-button" onClick={() => setShowCart(false)}>×</button>
                 </div>
-                
+
                 <div className="cart-content">
                   {cart.length === 0 ? (
                     <p className="empty-cart">Your cart is empty. Browse equipment to add items to your reservation.</p>
@@ -772,19 +772,19 @@ const Etudiant = () => {
                             <div className="item-controls">
                               {item.categorie === 'stockable' && (
                                 <div className="quantity-control">
-                                  <button 
+                                  <button
                                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                     disabled={item.quantity <= 1}
                                   >-</button>
                                   <span>{item.quantity}</span>
-                                  <button 
+                                  <button
                                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                     disabled={item.quantity >= item.quantite}
                                   >+</button>
                                 </div>
                               )}
-                              <button 
-                                className="remove-btn" 
+                              <button
+                                className="remove-btn"
                                 onClick={() => removeFromCart(item.id)}
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -796,15 +796,15 @@ const Etudiant = () => {
                           </li>
                         ))}
                       </ul>
-                      
+
                       <div className="cart-footer">
-                        <button 
-                          className="clear-cart-btn" 
+                        <button
+                          className="clear-cart-btn"
                           onClick={clearCart}
                         >
                           Clear Cart
                         </button>
-                        <button 
+                        <button
                           className="checkout-btn"
                           onClick={() => {
                             setActiveView('reserve');
@@ -820,7 +820,7 @@ const Etudiant = () => {
               </div>
             </div>
           )}
-          
+
           {/* Browse Equipment View */}
           {activeView === 'browse' && (
             <div className="dashboard-content">
@@ -831,18 +831,18 @@ const Etudiant = () => {
                   Browse available equipment and add items to your reservation cart
                 </p>
               </div>
-              
+
               {error && <div className="error-message">{error}</div>}
               {success && <div className="success-message">{success}</div>}
-              
+
               <div className="filter-section glass-effect">
                 <h3>Filter Equipment</h3>
                 <div className="filter-controls">
                   <div className="form-group">
                     <div className="search-container">
-                      <input 
-                        type="text" 
-                        placeholder="Search equipment..." 
+                      <input
+                        type="text"
+                        placeholder="Search equipment..."
                         className="form-control"
                         value={searchTerm}
                         onChange={handleSearchChange}
@@ -854,7 +854,7 @@ const Etudiant = () => {
                     </div>
                   </div>
                   <div className="form-group">
-                    <select 
+                    <select
                       className="form-control"
                       value={filterCategory}
                       onChange={handleFilterChange}
@@ -866,7 +866,7 @@ const Etudiant = () => {
                   </div>
                 </div>
               </div>
-              
+
               {isLoading ? (
                 <div className="loading-spinner"></div>
               ) : (
@@ -905,11 +905,11 @@ const Etudiant = () => {
                           )}
                         </div>
                         <p className="equipment-description">{equipment.description}</p>
-                        <button 
+                        <button
                           className="add-to-cart-btn"
                           onClick={() => addToCart(equipment)}
-                          disabled={!isEquipmentAvailable(equipment) || 
-                                   cart.some(item => item.id === equipment.id)}
+                          disabled={!isEquipmentAvailable(equipment) ||
+                            cart.some(item => item.id === equipment.id)}
                         >
                           {cart.some(item => item.id === equipment.id) ? 'In Cart' : 'Add to Cart'}
                         </button>
@@ -920,12 +920,12 @@ const Etudiant = () => {
               )}
             </div>
           )}
-          
+
           {/* Calendar View */}
           {activeView === 'calendar' && (
             <div className="dashboard-content">
               <div className="dashboard-tabs">
-                <button 
+                <button
                   className={`dashboard-tab ${activeTab === 'upcoming' ? 'active' : ''}`}
                   onClick={() => handleTabChange('upcoming')}
                 >
@@ -935,7 +935,7 @@ const Etudiant = () => {
                   </svg>
                   Upcoming Reservations
                 </button>
-                <button 
+                <button
                   className={`dashboard-tab ${activeTab === 'monthly' ? 'active' : ''}`}
                   onClick={() => handleTabChange('monthly')}
                 >
@@ -948,7 +948,7 @@ const Etudiant = () => {
                   Monthly View
                 </button>
               </div>
-              
+
               <div className="section-header">
                 <h2 className="section-title">Reservation Calendar</h2>
                 <div className="section-divider"></div>
@@ -956,7 +956,7 @@ const Etudiant = () => {
                   View all your current and upcoming equipment reservations
                 </p>
               </div>
-              
+
               <div className="calendar-container glass-effect">
                 {isLoading ? (
                   <div className="loading-spinner"></div>
@@ -978,7 +978,7 @@ const Etudiant = () => {
               </div>
             </div>
           )}
-          
+
           {/* Complete Reservation View */}
           {activeView === 'reserve' && (
             <div className="dashboard-content">
@@ -989,24 +989,24 @@ const Etudiant = () => {
                   Review your cart items and select dates for your reservation
                 </p>
               </div>
-              
+
               <div className="form-container glass-effect">
                 {error && <div className="error-message">{error}</div>}
                 {success && <div className="success-message">{success}</div>}
-                
+
                 <form className="reservation-form" onSubmit={handleReservationSubmit}>
-                  <input 
-                    type="hidden" 
-                    name="id_utilisateur" 
-                    value={formData.id_utilisateur} 
+                  <input
+                    type="hidden"
+                    name="id_utilisateur"
+                    value={formData.id_utilisateur}
                   />
-                  
+
                   <div className="cart-review">
                     <h3>Review Selected Equipment</h3>
                     {cart.length === 0 ? (
                       <div className="empty-cart-message">
                         <p>Your cart is empty. Please browse and select equipment before proceeding.</p>
-                        <button 
+                        <button
                           type="button"
                           className="secondary-button"
                           onClick={() => setActiveView('browse')}
@@ -1027,9 +1027,9 @@ const Etudiant = () => {
                                 )}
                               </div>
                             </div>
-                            <button 
+                            <button
                               type="button"
-                              className="remove-btn" 
+                              className="remove-btn"
                               onClick={() => removeFromCart(item.id)}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1039,8 +1039,8 @@ const Etudiant = () => {
                             </button>
                           </div>
                         ))}
-                        
-                        <button 
+
+                        <button
                           type="button"
                           className="edit-cart-btn"
                           onClick={() => setActiveView('browse')}
@@ -1050,32 +1050,32 @@ const Etudiant = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="date-section">
                     <h3>Select Reservation Dates</h3>
                     <div className="form-row">
                       <div className="form-group">
                         <label htmlFor="date_debut">Start Date:</label>
-                        <input 
-                          type="date" 
-                          name="date_debut" 
-                          id="date_debut" 
-                          required 
-                          value={formData.date_debut} 
+                        <input
+                          type="date"
+                          name="date_debut"
+                          id="date_debut"
+                          required
+                          value={formData.date_debut}
                           onChange={handleInputChange}
                           className="form-control"
                           min={new Date().toISOString().split('T')[0]}
                         />
                       </div>
-                      
+
                       <div className="form-group">
                         <label htmlFor="date_fin">End Date:</label>
-                        <input 
-                          type="date" 
-                          name="date_fin" 
-                          id="date_fin" 
-                          required 
-                          value={formData.date_fin} 
+                        <input
+                          type="date"
+                          name="date_fin"
+                          id="date_fin"
+                          required
+                          value={formData.date_fin}
                           onChange={handleInputChange}
                           className="form-control"
                           min={formData.date_debut || new Date().toISOString().split('T')[0]}
@@ -1083,7 +1083,7 @@ const Etudiant = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="calendar-preview">
                     <h3>Date Preview</h3>
                     <div className="mini-calendar glass-effect">
@@ -1103,7 +1103,7 @@ const Etudiant = () => {
                         style={{ height: '300px' }}
                         className="custom-calendar"
                         eventPropGetter={(event) => ({
-                          style: event.status === 'new' 
+                          style: event.status === 'new'
                             ? { background: 'linear-gradient(135deg, #3498db, #2980b9)', color: 'white', borderRadius: '4px' }
                             : eventStyleGetter(event).style
                         })}
@@ -1112,13 +1112,13 @@ const Etudiant = () => {
                       />
                     </div>
                   </div>
-                  
-                  <button 
-                    type="submit" 
-                    className="submit-button" 
+
+                  <button
+                    type="submit"
+                    className="submit-button"
                     disabled={isLoading || cart.length === 0}
                   >
-                    {isLoading ? 'Processing...' : 'Complete Reservation'} 
+                    {isLoading ? 'Processing...' : 'Complete Reservation'}
                     {!isLoading && (
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12"></polyline>
@@ -1129,7 +1129,7 @@ const Etudiant = () => {
               </div>
             </div>
           )}
-          
+
           {/* History View */}
           {activeView === 'history' && (
             <div className="dashboard-content">
@@ -1140,13 +1140,13 @@ const Etudiant = () => {
                   View the status of all your past and current equipment reservations
                 </p>
               </div>
-              
+
               <div className="filter-section">
                 <h3>Filter Reservations</h3>
                 <div className="filter-controls">
                   <div className="form-group">
                     <label htmlFor="filter_status">Status:</label>
-                    <select 
+                    <select
                       id="filter_status"
                       className="form-control"
                       value={filterStatus}
@@ -1160,7 +1160,7 @@ const Etudiant = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="table-container glass-effect">
                 {isLoading ? (
                   <div className="loading-spinner"></div>
@@ -1187,7 +1187,7 @@ const Etudiant = () => {
                               if (reservation.statut === 'validee') statusClass = 'status-confirmed';
                               else if (reservation.statut === 'attente') statusClass = 'status-pending';
                               else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
-                              
+
                               return (
                                 <tr key={reservation.id_reservation}>
                                   <td>{reservation.id_reservation}</td>
@@ -1209,8 +1209,8 @@ const Etudiant = () => {
                                   <td>{moment(reservation.date_fin).format('MMM DD, YYYY')}</td>
                                   <td>
                                     <span className={`status-badge ${statusClass}`}>
-                                      {reservation.statut === 'validee' ? 'Confirmed' : 
-                                       reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
+                                      {reservation.statut === 'validee' ? 'Confirmed' :
+                                        reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
                                     </span>
                                   </td>
                                 </tr>
@@ -1224,7 +1224,7 @@ const Etudiant = () => {
               </div>
             </div>
           )}
-          
+
           {/* Notifications View */}
           {activeView === 'notifications' && (
             <div className="dashboard-content notifications-view">
@@ -1235,15 +1235,15 @@ const Etudiant = () => {
                   View important alerts and messages about your equipment reservations
                 </p>
               </div>
-              
+
               <div className="notifications-container">
                 {notifications.length === 0 ? (
                   <div className="no-data">No notifications available</div>
                 ) : (
                   <div className="notification-list">
                     {notifications.map(notification => (
-                      <div 
-                        key={notification.id} 
+                      <div
+                        key={notification.id}
                         className={`notification-item ${notification.statut === 'lu' ? '' : 'unread'}`}
                         onClick={() => markAsRead(notification.id)}
                       >
@@ -1280,7 +1280,7 @@ const Etudiant = () => {
               </div>
             </div>
           )}
-          
+
           {/* Help & FAQ View */}
           {activeView === 'help' && (
             <div className="dashboard-content">
@@ -1291,7 +1291,7 @@ const Etudiant = () => {
                   Find answers to common questions about equipment reservations
                 </p>
               </div>
-              
+
               <div className="faq-container">
                 <div className="features">
                   <div className="feature-card">
@@ -1307,7 +1307,7 @@ const Etudiant = () => {
                     <h4>How to Reserve Equipment?</h4>
                     <p>Browse available equipment, add items to your cart, specify reservation dates, and submit your request. You'll receive a confirmation once approved.</p>
                   </div>
-                  
+
                   <div className="feature-card">
                     <div className="feature-icon">
                       <div className="icon-circle">
@@ -1323,7 +1323,7 @@ const Etudiant = () => {
                     <h4>Where to Collect Equipment?</h4>
                     <p>Reserved equipment can be collected from the technician's office during operating hours. Bring your student ID and reservation confirmation.</p>
                   </div>
-                  
+
                   <div className="feature-card">
                     <div className="feature-icon">
                       <div className="icon-circle">
@@ -1338,7 +1338,7 @@ const Etudiant = () => {
                     <p>To cancel a reservation, please contact the technician at least 24 hours before your scheduled pick-up time. Late cancellations may incur penalties.</p>
                   </div>
                 </div>
-                
+
                 <div className="contact-info glass-effect">
                   <h3>Need More Help?</h3>
                   <p>Contact the equipment management team:</p>
@@ -1355,9 +1355,9 @@ const Etudiant = () => {
       </div>
 
       {/* Back to top button */}
-      <button 
-        id="back-to-top" 
-        title="Back to Top" 
+      <button
+        id="back-to-top"
+        title="Back to Top"
         className={showBackToTop ? 'show' : ''}
         onClick={scrollToTop}
       >

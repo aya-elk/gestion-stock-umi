@@ -6,10 +6,10 @@ import '../css/responsable.css';
 const Responsable = () => {
   // Navigation for redirects
   const navigate = useNavigate();
-  
+
   // Current user state for authentication
   const [currentUser, setCurrentUser] = useState(null);
-  
+
   // State variables (keeping existing ones)
   const [reservations, setReservations] = useState([]);
   const [stockableEquipment, setStockableEquipment] = useState([]);
@@ -21,7 +21,7 @@ const Responsable = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
-  const [activeEquipmentTab, setActiveEquipmentTab] = useState('stockable'); 
+  const [activeEquipmentTab, setActiveEquipmentTab] = useState('stockable');
   const [filterStatus, setFilterStatus] = useState('attente');
   const [showLowStock, setShowLowStock] = useState(false);
   const [activeView, setActiveView] = useState('reservations');
@@ -36,7 +36,7 @@ const Responsable = () => {
     try {
       const localData = localStorage.getItem('userInfo');
       const sessionData = sessionStorage.getItem('userInfo');
-      
+
       if (localData) {
         userFromStorage = JSON.parse(localData);
       } else if (sessionData) {
@@ -47,20 +47,20 @@ const Responsable = () => {
       navigate('/login');
       return;
     }
-    
+
     // If no user data or wrong role, redirect to login
     if (!userFromStorage) {
       navigate('/login');
       return;
     }
-    
+
     // Check if user role is 'responsable'
     if (userFromStorage.role !== 'responsable') {
       // Wrong role, redirect to login
       navigate('/login');
       return;
     }
-    
+
     // User is authenticated and has correct role
     setCurrentUser(userFromStorage);
   }, [navigate]);
@@ -113,31 +113,31 @@ const Responsable = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       // Build the endpoint with status filter if needed
       let endpoint = 'http://localhost:8080/api/reservations';
       if (filterStatus !== 'all') {
         endpoint += `?status=${filterStatus}`;
       }
-      
+
       const response = await fetch(endpoint);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch reservations: ${response.status} ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       console.log('Raw reservation data:', data);
-      
+
       if (data.length === 0) {
         setReservations([]);
         setIsLoading(false);
         return;
       }
-      
+
       // Group by reservation ID to handle multiple equipment items per reservation
       const reservationMap = {};
-      
+
       data.forEach(item => {
         if (!reservationMap[item.id_reservation]) {
           reservationMap[item.id_reservation] = {
@@ -157,10 +157,10 @@ const Responsable = () => {
           });
         }
       });
-      
+
       const finalReservations = Object.values(reservationMap);
       console.log('Processed reservations:', finalReservations);
-      
+
       setReservations(finalReservations);
     } catch (err) {
       setError("Error fetching reservations: " + err.message);
@@ -174,17 +174,17 @@ const Responsable = () => {
   const fetchRecentActivity = async () => {
     try {
       setIsLoading(true);
-      
+
       // Get all approved reservations, not just recent ones
       const response = await fetch('http://localhost:8080/api/reservations?status=validee');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch activity history');
       }
-      
+
       const data = await response.json();
       console.log('Activity history data:', data);
-      
+
       // Set the activity data to state
       setActivityHistory(data);
     } catch (err) {
@@ -200,25 +200,25 @@ const Responsable = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const response = await fetch('http://localhost:8080/api/equipments', {
         headers: {
           'Accept': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
         throw new Error(`Failed to fetch equipment data: ${response.status} ${response.statusText}`);
       }
-      
+
       const equipment = await response.json();
-      
+
       // Filter based on the database categories
       const stockable = equipment.filter(item => item.categorie === 'stockable');
       const solo = equipment.filter(item => item.categorie === 'solo');
-      
+
       setStockableEquipment(stockable);
       setSoloEquipment(solo);
 
@@ -236,14 +236,14 @@ const Responsable = () => {
   const fetchNotifications = async () => {
     try {
       const response = await fetch('http://localhost:8080/api/notifications/admin');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch notifications');
       }
-      
+
       const data = await response.json();
       console.log('Fetched notifications:', data);
-      
+
       // Transform the data to match the expected format in the UI
       const formattedNotifications = data.map(notification => ({
         id: notification.id,
@@ -252,9 +252,9 @@ const Responsable = () => {
         date: notification.date_envoi,
         read: notification.statut === 'lu' // Convert 'envoye'/'lu' to boolean
       }));
-      
+
       setNotifications(formattedNotifications);
-      
+
       // Count unread notifications
       const unreadCount = data.filter(n => n.statut === 'envoye').length;
       setUnreadCount(unreadCount);
@@ -272,13 +272,13 @@ const Responsable = () => {
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
     if (diffInDays === 0) {
-      return `Today at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+      return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else if (diffInDays === 1) {
-      return `Yesterday at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+      return `Yesterday at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else if (diffInDays < 7) {
       return `${diffInDays} days ago`;
     } else {
-      return date.toLocaleDateString([], {day: '2-digit', month: 'short', year: 'numeric'});
+      return date.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
     }
   };
 
@@ -291,18 +291,18 @@ const Responsable = () => {
           'Content-Type': 'application/json',
         }
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to mark notification as read');
       }
-      
+
       // Update local state
       setNotifications(prevNotifications =>
         prevNotifications.map(notification =>
           notification.id === id ? { ...notification, read: true } : notification
         )
       );
-      
+
       // Update unread count
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
@@ -313,7 +313,7 @@ const Responsable = () => {
   // Set active tab and handle scrolling
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    
+
     // Fetch activity history when switching to the history tab
     if (tab === 'history') {
       fetchRecentActivity();
@@ -340,26 +340,26 @@ const Responsable = () => {
     setIsSubmitting(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
       const response = await fetch(`http://localhost:8080/api/reservations/${reservationId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           statut: newStatus,
           responsable_id: currentUser.id || currentUser._id // Include responsable ID for notifications
         })
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `Failed to update reservation status to ${newStatus}`);
       }
-      
+
       setSuccess(`Reservation ${reservationId} has been ${newStatus === 'validee' ? 'approved' : 'rejected'} successfully`);
-      
+
       // Refresh the reservations list
       setTimeout(() => {
         fetchReservations();
@@ -369,7 +369,7 @@ const Responsable = () => {
           fetchRecentActivity(); // Refresh activity history if we're on that tab
         }
       }, 1000);
-      
+
     } catch (err) {
       setError(`Error updating reservation: ${err.message}`);
       console.error('Update reservation error:', err);
@@ -384,11 +384,11 @@ const Responsable = () => {
     if (activity.etat === 'en_reparation') {
       return 'In Repair';
     }
-    
+
     const now = new Date();
     const startDate = new Date(activity.date_debut);
     const endDate = new Date(activity.date_fin);
-    
+
     if (now < startDate) {
       return 'Scheduled';
     } else if (now > endDate) {
@@ -402,11 +402,11 @@ const Responsable = () => {
     if (activity.etat === 'en_reparation') {
       return 'status-repair';
     }
-    
+
     const now = new Date();
     const startDate = new Date(activity.date_debut);
     const endDate = new Date(activity.date_fin);
-    
+
     if (now < startDate) {
       return 'status-scheduled';
     } else if (now > endDate) {
@@ -434,9 +434,9 @@ const Responsable = () => {
           <div className="sidebar-header">
             <div className="logo-icon">GP<span className="accent-dot">.</span></div>
           </div>
-          
+
           <nav className="sidebar-nav">
-            <button 
+            <button
               className={`sidebar-nav-item ${activeView === 'reservations' ? 'active' : ''}`}
               onClick={() => setActiveView('reservations')}
               title="Reservations"
@@ -448,8 +448,8 @@ const Responsable = () => {
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
             </button>
-            
-            <button 
+
+            <button
               className={`sidebar-nav-item ${activeView === 'notifications' ? 'active' : ''}`}
               onClick={() => setActiveView('notifications')}
               title="Notifications"
@@ -461,7 +461,7 @@ const Responsable = () => {
               {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
             </button>
           </nav>
-          
+
           <div className="sidebar-footer">
             <button className="theme-toggle" onClick={toggleDarkMode} title={darkMode ? "Light Mode" : "Dark Mode"}>
               {darkMode ? (
@@ -501,8 +501,8 @@ const Responsable = () => {
             <div className="dashboard-title">
               <h1>Manager Dashboard</h1>
               <p className="dashboard-subtitle">
-                {activeView === 'reservations' 
-                  ? 'Manage equipment reservations and monitor stock levels' 
+                {activeView === 'reservations'
+                  ? 'Manage equipment reservations and monitor stock levels'
                   : 'View notifications and system messages'}
               </p>
             </div>
@@ -518,16 +518,16 @@ const Responsable = () => {
               </div>
             </div>
           </header>
-          
+
           {/* Success and error messages */}
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
-          
+
           {/* Reservations View */}
           {activeView === 'reservations' && (
             <div className="dashboard-content reservations-view">
               <div className="dashboard-tabs">
-                <button 
+                <button
                   className={`dashboard-tab ${activeTab === 'pending' ? 'active' : ''}`}
                   onClick={() => handleTabChange('pending')}
                 >
@@ -537,7 +537,7 @@ const Responsable = () => {
                   </svg>
                   Pending Requests
                 </button>
-                <button 
+                <button
                   className={`dashboard-tab ${activeTab === 'stock' ? 'active' : ''}`}
                   onClick={() => handleTabChange('stock')}
                 >
@@ -547,7 +547,7 @@ const Responsable = () => {
                   </svg>
                   Stock Monitoring
                 </button>
-                <button 
+                <button
                   className={`dashboard-tab ${activeTab === 'history' ? 'active' : ''}`}
                   onClick={() => handleTabChange('history')}
                 >
@@ -570,15 +570,15 @@ const Responsable = () => {
                         Review and approve or refuse equipment reservation requests
                       </p>
                     </div>
-                    
+
                     <div className="filter-section">
                       <h3>Filter Reservations</h3>
                       <div className="filter-controls">
                         <div className="form-group">
                           <label htmlFor="filter_status">Status:</label>
-                          <select 
+                          <select
                             id="filter_status"
-                            value={filterStatus} 
+                            value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                             className="form-control"
                           >
@@ -590,7 +590,7 @@ const Responsable = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="table-container glass-effect">
                       <h3>Reservation Requests</h3>
                       <div className="responsive-table">
@@ -621,7 +621,7 @@ const Responsable = () => {
                                 if (reservation.statut === 'validee') statusClass = 'status-confirmed';
                                 else if (reservation.statut === 'attente') statusClass = 'status-pending';
                                 else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
-                                
+
                                 return (
                                   <tr key={reservation.id_reservation}>
                                     <td>#{reservation.id_reservation}</td>
@@ -646,21 +646,21 @@ const Responsable = () => {
                                     <td>{moment(reservation.date_fin).format('MMM DD, YYYY')}</td>
                                     <td>
                                       <span className={`status-badge ${statusClass}`}>
-                                        {reservation.statut === 'validee' ? 'Approved' : 
-                                         reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
+                                        {reservation.statut === 'validee' ? 'Approved' :
+                                          reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
                                       </span>
                                     </td>
                                     <td>
                                       {reservation.statut === 'attente' && (
                                         <div className="action-buttons">
-                                          <button 
+                                          <button
                                             className="approve-btn"
                                             onClick={() => handleApproveReservation(reservation.id_reservation)}
                                             disabled={isSubmitting}
                                           >
                                             {isSubmitting ? 'Processing...' : 'Approve'}
                                           </button>
-                                          <button 
+                                          <button
                                             className="reject-btn"
                                             onClick={() => handleRejectReservation(reservation.id_reservation)}
                                             disabled={isSubmitting}
@@ -696,7 +696,7 @@ const Responsable = () => {
                         Monitor equipment stock levels and identify items approaching critical thresholds
                       </p>
                     </div>
-                    
+
                     <div className="equipment-tabs">
                       <button
                         className={`equipment-tab ${activeEquipmentTab === 'stockable' ? 'active' : ''}`}
@@ -711,14 +711,14 @@ const Responsable = () => {
                         Solo Equipment
                       </button>
                     </div>
-                    
+
                     <div className="filter-section">
                       <div className="filter-controls">
                         <div className="form-group">
                           <label className="checkbox-container">
-                            <input 
-                              type="checkbox" 
-                              checked={showLowStock} 
+                            <input
+                              type="checkbox"
+                              checked={showLowStock}
                               onChange={() => setShowLowStock(!showLowStock)}
                             />
                             <span className="checkmark"></span>
@@ -727,7 +727,7 @@ const Responsable = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     {activeEquipmentTab === 'stockable' && (
                       <div className="table-container glass-effect">
                         <h3>Stockable Equipment Inventory</h3>
@@ -804,10 +804,10 @@ const Responsable = () => {
                                     <td>{item.description}</td>
                                     <td>
                                       <span className={`status-badge status-${item.etat}`}>
-                                        {item.etat === 'disponible' ? 'Available' : 
-                                         item.etat === 'en_cours' ? 'In Use' :
-                                         item.etat === 'en_reparation' ? 'In Repair' :
-                                         'Unavailable'}
+                                        {item.etat === 'disponible' ? 'Available' :
+                                          item.etat === 'en_cours' ? 'In Use' :
+                                            item.etat === 'en_reparation' ? 'In Repair' :
+                                              'Unavailable'}
                                       </span>
                                     </td>
                                   </tr>
@@ -831,14 +831,14 @@ const Responsable = () => {
                         View historical data on equipment reservations and usage patterns
                       </p>
                     </div>
-                    
+
                     <div className="chart-container glass-effect">
                       <h3>Monthly Usage Statistics</h3>
                       <div className="chart-placeholder">
                         <p>Graph will be displayed here</p>
                       </div>
                     </div>
-                    
+
                     <div className="table-container glass-effect">
                       <h3>Recent Equipment Activity</h3>
                       <div className="responsive-table">
@@ -885,7 +885,7 @@ const Responsable = () => {
               </div>
             </div>
           )}
-          
+
           {/* Notifications View */}
           {activeView === 'notifications' && (
             <div className="dashboard-content notifications-view">
@@ -895,15 +895,15 @@ const Responsable = () => {
                   View important alerts and messages related to equipment and reservations
                 </p>
               </div>
-              
+
               <div className="notifications-container">
                 {notifications.length === 0 ? (
                   <div className="no-data">No notifications available</div>
                 ) : (
                   <div className="notification-list">
                     {notifications.map(notification => (
-                      <div 
-                        key={notification.id} 
+                      <div
+                        key={notification.id}
                         className={`notification-item ${notification.read ? '' : 'unread'}`}
                         onClick={() => markAsRead(notification.id)}
                       >
@@ -942,11 +942,11 @@ const Responsable = () => {
           )}
         </main>
       </div>
-      
+
       {/* Back to top button */}
-      <button 
-        id="back-to-top" 
-        title="Back to Top" 
+      <button
+        id="back-to-top"
+        title="Back to Top"
         className={showBackToTop ? 'show' : ''}
         onClick={scrollToTop}
       >

@@ -8,10 +8,10 @@ const { generateContactEmail } = require('../utilities/emailTemplate');
 const sendContactForm = async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
-    
+
     // Generate HTML content using the template
     const htmlContent = generateContactEmail({ name, email, phone, message });
-    
+
     await sendEmail({
       to: process.env.EMAIL_CONTACT,
       subject: `New Contact Message from ${name}`,
@@ -23,7 +23,7 @@ const sendContactForm = async (req, res) => {
       `,
       html: htmlContent
     });
-    
+
     res.status(200).json({ success: true, message: 'Email sent successfully' });
   } catch (error) {
     console.error('Contact form error:', error);

@@ -6,7 +6,7 @@ const { pool } = require('../config/dbConfig');
 const getAllReservations = async (req, res) => {
   try {
     const { userId, status, limit } = req.query;
-    
+
     let query = `
       SELECT r.id as id_reservation, r.date_debut, r.date_fin, r.etat as statut, 
              r.id_utilisateur, e.id as id_equipement, e.nom as nom_equipement,
@@ -17,33 +17,33 @@ const getAllReservations = async (req, res) => {
       JOIN Equipement e ON re.id_equipement = e.id
       JOIN Utilisateur u ON r.id_utilisateur = u.id
     `;
-    
+
     const conditions = [];
     const params = [];
-    
+
     if (userId) {
       conditions.push('r.id_utilisateur = ?');
       params.push(userId);
     }
-    
+
     if (status) {
       conditions.push('r.etat = ?');
       params.push(status);
     }
-    
+
     if (conditions.length) {
       query += ' WHERE ' + conditions.join(' AND ');
     }
-    
+
     // Always order by date, most recent first
     query += ' ORDER BY r.date_debut DESC';
-    
+
     // Add limit if specified
     if (limit) {
       query += ' LIMIT ?';
       params.push(parseInt(limit));
     }
-    
+
     const [reservations] = await pool.execute(query, params);
     res.json(reservations);
   } catch (error) {
@@ -58,7 +58,7 @@ const getAllReservations = async (req, res) => {
 const getReservationById = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const [reservation] = await pool.execute(
       `SELECT r.id as id_reservation, r.date_debut, r.date_fin, r.etat as statut, 
               r.id_utilisateur, e.id as id_equipement, e.nom as nom_equipement,
@@ -71,11 +71,11 @@ const getReservationById = async (req, res) => {
        WHERE r.id = ?`,
       [id]
     );
-    
+
     if (reservation.length === 0) {
       return res.status(404).json({ message: 'Reservation not found' });
     }
-    
+
     res.json(reservation);
   } catch (error) {
     console.error('Error fetching reservation details:', error);
@@ -88,12 +88,12 @@ const getReservationById = async (req, res) => {
 // @access  Private
 const createReservation = async (req, res) => {
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
+
     const { id_utilisateur, id_equipement, date_debut, date_fin, quantite, statut } = req.body;
-    
+
     // Validate required fields
     if (!id_utilisateur || !id_equipement || !date_debut || !date_fin) {
       return res.status(400).json({ message: 'User ID, equipment ID, start date and end date are required' });
@@ -104,39 +104,39 @@ const createReservation = async (req, res) => {
       'SELECT * FROM Equipement e LEFT JOIN Solo s ON e.id = s.id WHERE e.id = ?',
       [id_equipement]
     );
-    
+
     if (equipment.length === 0) {
       await connection.rollback();
       return res.status(404).json({ message: 'Equipment not found' });
     }
-    
+
     const equip = equipment[0];
     // For solo equipment, check if it's available
     if (equip.categorie === 'solo' && equip.etat !== 'disponible') {
       await connection.rollback();
       return res.status(400).json({ message: 'Equipment is not available for reservation' });
     }
-    
+
     // For stockable equipment, check quantity
     if (equip.categorie === 'stockable' && (equip.quantite < quantite || equip.quantite <= 0)) {
       await connection.rollback();
       return res.status(400).json({ message: 'Not enough items available' });
     }
-    
+
     // Insert into Reservation table
     const [result] = await connection.execute(
       'INSERT INTO Reservation (date_debut, date_fin, etat, id_utilisateur) VALUES (?, ?, ?, ?)',
       [date_debut, date_fin, statut || 'attente', id_utilisateur]
     );
-    
+
     const reservationId = result.insertId;
-    
+
     // Insert into Reservation_Equipement table
     await connection.execute(
       'INSERT INTO Reservation_Equipement (id_reservation, id_equipement, quantite_reservee) VALUES (?, ?, ?)',
       [reservationId, id_equipement, quantite || 1]
     );
-    
+
     // If solo equipment, update its status to 'en_cours' if the reservation is confirmed
     if (equip.categorie === 'solo' && statut === 'validee') {
       await connection.execute(
@@ -144,7 +144,7 @@ const createReservation = async (req, res) => {
         [id_equipement]
       );
     }
-    
+
     // If stockable equipment and reservation is confirmed, decrease available quantity
     if (equip.categorie === 'stockable' && statut === 'validee') {
       await connection.execute(
@@ -152,9 +152,9 @@ const createReservation = async (req, res) => {
         [quantite || 1, id_equipement]
       );
     }
-    
+
     await connection.commit();
-    
+
     // Create notification for the user
     try {
       await connection.execute(
@@ -165,7 +165,7 @@ const createReservation = async (req, res) => {
       console.error('Error creating notification:', notifError);
       // Don't fail the request because of notification error
     }
-    
+
     res.status(201).json({
       id: reservationId,
       message: 'Reservation created successfully'
@@ -184,12 +184,12 @@ const createReservation = async (req, res) => {
 // @access  Private
 const createBatchReservation = async (req, res) => {
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
+
     const { id_utilisateur, date_debut, date_fin, items } = req.body;
-    
+
     // Validate required fields
     if (!id_utilisateur || !date_debut || !date_fin || !items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: 'Invalid request data' });
@@ -200,45 +200,45 @@ const createBatchReservation = async (req, res) => {
       'INSERT INTO Reservation (date_debut, date_fin, etat, id_utilisateur) VALUES (?, ?, ?, ?)',
       [date_debut, date_fin, 'attente', id_utilisateur]
     );
-    
+
     const reservationId = result.insertId;
-    
+
     // Add all equipment items to the reservation
     for (const item of items) {
       const { id_equipement, quantite } = item;
-      
+
       // Check if equipment exists and is available
       const [equipment] = await connection.execute(
         'SELECT * FROM Equipement e LEFT JOIN Solo s ON e.id = s.id WHERE e.id = ?',
         [id_equipement]
       );
-      
+
       if (equipment.length === 0) {
         await connection.rollback();
         return res.status(404).json({ message: `Equipment ID ${id_equipement} not found` });
       }
-      
+
       const equip = equipment[0];
-      
+
       // For solo equipment, check if it's available
       if (equip.categorie === 'solo' && equip.etat !== 'disponible') {
         await connection.rollback();
         return res.status(400).json({ message: `Equipment ${equip.nom} is not available for reservation` });
       }
-      
+
       // For stockable equipment, check quantity
       if (equip.categorie === 'stockable' && (equip.quantite < quantite || equip.quantite <= 0)) {
         await connection.rollback();
         return res.status(400).json({ message: `Not enough ${equip.nom} available` });
       }
-      
+
       // Insert into Reservation_Equipement table
       await connection.execute(
         'INSERT INTO Reservation_Equipement (id_reservation, id_equipement, quantite_reservee) VALUES (?, ?, ?)',
         [reservationId, id_equipement, quantite]
       );
     }
-    
+
     // First fetch equipment names for all requested items
     const equipmentItems = await Promise.all(items.map(async (item) => {
       const [equipResult] = await connection.execute(
@@ -256,7 +256,7 @@ const createBatchReservation = async (req, res) => {
       'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), ?)',
       [
         id_utilisateur,
-        `Your reservation request for ${equipmentItems.map(item => 
+        `Your reservation request for ${equipmentItems.map(item =>
           `${item.equipmentName}${item.quantite > 1 ? ` (x${item.quantite})` : ''}`
         ).join(', ')} has been received and is pending approval.`,
         'envoye'
@@ -282,7 +282,7 @@ const createBatchReservation = async (req, res) => {
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
         [
           responsable.id,
-          `Student ${studentFullName} requested ${equipmentItems.map(item => 
+          `Student ${studentFullName} requested ${equipmentItems.map(item =>
             `${item.equipmentName}${item.quantite > 1 ? ` (x${item.quantite})` : ''}`
           ).join(', ')} under reservation #${reservationId}.`,
         ]
@@ -290,7 +290,7 @@ const createBatchReservation = async (req, res) => {
     }
 
     await connection.commit();
-    
+
     res.status(201).json({
       id: reservationId,
       message: 'Batch reservation created successfully'
@@ -309,22 +309,22 @@ const createBatchReservation = async (req, res) => {
 // @access  Private
 const updateReservationStatus = async (req, res) => {
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
+
     const { id } = req.params;
     const { statut, responsable_id } = req.body; // Add responsable_id to request body
-    
+
     if (!statut) {
       return res.status(400).json({ message: 'Status is required' });
     }
-    
+
     // Validate the status is one of the allowed ENUM values
     if (!['attente', 'validee', 'refusee'].includes(statut)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }
-    
+
     // Get ALL equipment items associated with this reservation with equipment names
     const [reservationItems] = await connection.execute(
       `SELECT r.id, r.id_utilisateur, re.id_equipement, re.quantite_reservee, 
@@ -336,41 +336,41 @@ const updateReservationStatus = async (req, res) => {
        WHERE r.id = ?`,
       [id]
     );
-    
+
     if (reservationItems.length === 0) {
       await connection.rollback();
       return res.status(404).json({ message: 'Reservation not found' });
     }
-    
+
     // Update reservation status
     await connection.execute(
       'UPDATE Reservation SET etat = ? WHERE id = ?',
       [statut, id]
     );
-    
+
     // Get the user ID for notifications
     const userId = reservationItems[0].id_utilisateur;
-    
+
     // Get responsable ID - either from request body, req.user, or use a default
     const respId = responsable_id || (req.user ? req.user.id : null);
-    
+
     // Format equipment list for notifications
-    const equipmentList = reservationItems.map(item => 
+    const equipmentList = reservationItems.map(item =>
       `${item.nom}${item.quantite_reservee > 1 ? ` (x${item.quantite_reservee})` : ''}`
     ).join(', ');
-    
+
     // Get student full name
     const studentFullName = `${reservationItems[0].prenom_utilisateur} ${reservationItems[0].nom_utilisateur}`;
-    
+
     let responsableFullName = "A responsible manager";
-    
+
     // Get responsable name if we have the ID
     if (respId) {
       const [responsableDetails] = await connection.execute(
         'SELECT nom, prenom FROM Utilisateur WHERE id = ?',
         [respId]
       );
-      
+
       if (responsableDetails.length > 0) {
         responsableFullName = `${responsableDetails[0].prenom} ${responsableDetails[0].nom}`;
       }
@@ -396,16 +396,16 @@ const updateReservationStatus = async (req, res) => {
           );
         }
       }
-      
+
       // 1. Create notification for the student
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
         [
-          userId, 
+          userId,
           `${responsableFullName} has accepted your reservation #${id} of ${equipmentList}.`
         ]
       );
-      
+
       // 2. Create notification for the responsable
       if (respId) {
         await connection.execute(
@@ -416,12 +416,12 @@ const updateReservationStatus = async (req, res) => {
           ]
         );
       }
-      
+
       // 3. Notify technicians
       const [technicians] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "technicien"'
       );
-      
+
       for (const tech of technicians) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
@@ -431,17 +431,17 @@ const updateReservationStatus = async (req, res) => {
           ]
         );
       }
-      
+
     } else if (statut === 'refusee') {
       // 1. Create notification for the student
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
         [
-          userId, 
+          userId,
           `${responsableFullName} has refused your reservation #${id} of ${equipmentList}.`
         ]
       );
-      
+
       // 2. Create notification for the responsable
       if (respId) {
         await connection.execute(
@@ -455,7 +455,7 @@ const updateReservationStatus = async (req, res) => {
     }
 
     await connection.commit();
-    
+
     res.json({
       id,
       message: `Reservation status updated to ${statut}`
@@ -474,12 +474,12 @@ const updateReservationStatus = async (req, res) => {
 // @access  Private
 const deleteReservation = async (req, res) => {
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
+
     const { id } = req.params;
-    
+
     // Get reservation details before deleting
     const [reservation] = await connection.execute(
       `SELECT r.*, re.id_equipement, re.quantite_reservee, e.categorie
@@ -489,14 +489,14 @@ const deleteReservation = async (req, res) => {
        WHERE r.id = ?`,
       [id]
     );
-    
+
     if (reservation.length === 0) {
       await connection.rollback();
       return res.status(404).json({ message: 'Reservation not found' });
     }
-    
+
     const reservationDetails = reservation[0];
-    
+
     // If the reservation was confirmed, update equipment accordingly
     if (reservationDetails.etat === 'validee') {
       if (reservationDetails.categorie === 'solo') {
@@ -513,21 +513,21 @@ const deleteReservation = async (req, res) => {
         );
       }
     }
-    
+
     // Delete from Reservation_Equipement first due to foreign key constraint
     await connection.execute(
       'DELETE FROM Reservation_Equipement WHERE id_reservation = ?',
       [id]
     );
-    
+
     // Delete the reservation
     await connection.execute(
       'DELETE FROM Reservation WHERE id = ?',
       [id]
     );
-    
+
     await connection.commit();
-    
+
     res.json({ message: 'Reservation deleted successfully' });
   } catch (error) {
     await connection.rollback();
@@ -555,7 +555,7 @@ const getPendingReservations = async (req, res) => {
        WHERE r.etat = 'attente'
        ORDER BY r.date_debut ASC`
     );
-    
+
     res.json(reservations);
   } catch (error) {
     console.error('Error fetching pending reservations:', error);

@@ -6,10 +6,10 @@ import '../css/technicien.css';
 const Technicien = () => {
   // Add navigation for redirects
   const navigate = useNavigate();
-  
+
   // Current user state for authentication
   const [currentUser, setCurrentUser] = useState(null);
-  
+
   // State for equipment list and form
   const [stockableEquipment, setStockableEquipment] = useState([]);
   const [soloEquipment, setSoloEquipment] = useState([]);
@@ -22,24 +22,24 @@ const Technicien = () => {
     etat: 'disponible',
     quantite: '1'
   });
-  
+
   // State for modals
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
-  
+
   // Add state for QR code modal
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrData, setQrData] = useState(null);
-  
+
   // State for filters
   const [filterCategory, setFilterCategory] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
-  
+
   // State for loading and error handling
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
-  
+
   // UI state variables
   const [darkMode, setDarkMode] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
@@ -49,12 +49,12 @@ const Technicien = () => {
   const [showLowStock, setShowLowStock] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  
+
   // Refs for sections and modals
   const equipmentRef = useRef(null);
   const reservationsRef = useRef(null);
   const modalRef = useRef(null);
-  
+
   // Authentication check on component mount
   useEffect(() => {
     // Check if user is logged in and has role 'technicien'
@@ -62,7 +62,7 @@ const Technicien = () => {
     try {
       const localData = localStorage.getItem('userInfo');
       const sessionData = sessionStorage.getItem('userInfo');
-      
+
       if (localData) {
         userFromStorage = JSON.parse(localData);
       } else if (sessionData) {
@@ -73,20 +73,20 @@ const Technicien = () => {
       navigate('/login');
       return;
     }
-    
+
     // If no user data or wrong role, redirect to login
     if (!userFromStorage) {
       navigate('/login');
       return;
     }
-    
+
     // Check if user role is 'technicien'
     if (userFromStorage.role !== 'technicien') {
       // Wrong role, redirect to login
       navigate('/login');
       return;
     }
-    
+
     // User is authenticated and has correct role
     setCurrentUser(userFromStorage);
   }, [navigate]);
@@ -100,18 +100,18 @@ const Technicien = () => {
         setShowQRModal(false);
       }
     }
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [modalRef]);
-  
+
   useEffect(() => {
     const count = notifications.filter(n => !n.read).length;
     setUnreadCount(count);
   }, [notifications]);
-  
+
   // Toggle dark mode
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
@@ -128,18 +128,18 @@ const Technicien = () => {
           'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to mark notification as read');
       }
-      
+
       // Update local state
       setNotifications(prevNotifications =>
         prevNotifications.map(notification =>
           notification.id === id ? { ...notification, read: true } : notification
         )
       );
-      
+
       // Update unread count
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
@@ -183,19 +183,19 @@ const Technicien = () => {
           }
         });
       }, { threshold: 0.1 });
-      
+
       document.querySelectorAll('.hidden').forEach(el => {
         observer.observe(el);
       });
-      
+
       // Check dark mode
       const isDarkMode = document.body.classList.contains('dark-mode');
       setDarkMode(isDarkMode);
-      
+
       fetchEquipments();
       fetchReservations();
       fetchNotifications();
-      
+
       return () => {
         document.querySelectorAll('.hidden').forEach(el => {
           observer.unobserve(el);
@@ -209,29 +209,29 @@ const Technicien = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       console.log('Fetching equipment data from server...');
       const response = await fetch('http://localhost:8080/api/equipments', {
         headers: {
           'Accept': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
         throw new Error(`Failed to fetch equipment data: ${response.status} ${response.statusText}`);
       }
-      
+
       const equipment = await response.json();
       console.log('Equipment data parsed successfully:', equipment.length, 'items');
-      
+
       // Filter based on the database categories
       const stockable = equipment.filter(item => item.categorie === 'stockable');
       const solo = equipment.filter(item => item.categorie === 'solo');
-      
+
       console.log(`Categorized: ${stockable.length} stockable, ${solo.length} solo items`);
-      
+
       setStockableEquipment(stockable);
       setSoloEquipment(solo);
 
@@ -249,20 +249,20 @@ const Technicien = () => {
   const fetchReservations = async () => {
     try {
       setIsLoading(true);
-      
+
       // Get all reservations 
       const response = await fetch('http://localhost:8080/api/reservations');
-      
+
       if (!response.ok) {
         throw new Error(`Failed to fetch reservations: ${response.status} ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       console.log('Reservations data:', data);
-      
+
       // Group by reservation ID to handle multiple equipment items per reservation
       const reservationMap = {};
-      
+
       data.forEach(item => {
         if (!reservationMap[item.id_reservation]) {
           reservationMap[item.id_reservation] = {
@@ -282,7 +282,7 @@ const Technicien = () => {
           });
         }
       });
-      
+
       const finalReservations = Object.values(reservationMap);
       setReservations(finalReservations);
     } catch (err) {
@@ -298,13 +298,13 @@ const Technicien = () => {
   const fetchNotifications = async () => {
     try {
       const response = await fetch('http://localhost:8080/api/notifications/tech');
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch notifications');
       }
-      
+
       const data = await response.json();
-      
+
       // Transform the data to match the expected format in the UI
       const formattedNotifications = data.map(notification => ({
         id: notification.id,
@@ -313,9 +313,9 @@ const Technicien = () => {
         date: notification.date_envoi, // Ensure this field is included
         read: notification.statut === 'lu' // Convert 'envoye'/'lu' to boolean
       }));
-      
+
       setNotifications(formattedNotifications);
-      
+
       // Count unread notifications
       const unreadCount = data.filter(n => n.statut === 'envoye').length;
       setUnreadCount(unreadCount);
@@ -347,7 +347,7 @@ const Technicien = () => {
       nom: equipment.nom,
       description: equipment.description,
       categorie: equipment.categorie,
-      etat: equipment.etat || 'disponible', 
+      etat: equipment.etat || 'disponible',
       quantite: equipment.quantite || '1'
     });
     setShowUpdateModal(true);
@@ -391,16 +391,16 @@ const Technicien = () => {
         },
         body: JSON.stringify(formData),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
         throw new Error('Failed to add equipment');
       }
-      
+
       setSuccess('Equipment added successfully');
       fetchEquipments();
-      
+
       // Close modal after short delay to show success message
       setTimeout(() => {
         setShowAddModal(false);
@@ -421,7 +421,7 @@ const Technicien = () => {
       setError('No equipment selected for update');
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
     setSuccess(null);
@@ -433,16 +433,16 @@ const Technicien = () => {
         },
         body: JSON.stringify(formData),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
         throw new Error('Failed to update equipment');
       }
-      
+
       setSuccess('Equipment updated successfully');
       fetchEquipments();
-      
+
       // Close modal after short delay to show success message
       setTimeout(() => {
         setShowUpdateModal(false);
@@ -462,11 +462,11 @@ const Technicien = () => {
       setError('No equipment selected for deletion');
       return;
     }
-    
+
     if (!window.confirm('Are you sure you want to delete this equipment?')) {
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
     setSuccess(null);
@@ -474,13 +474,13 @@ const Technicien = () => {
       const response = await fetch(`http://localhost:8080/api/equipments/${id}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
         throw new Error('Failed to delete equipment');
       }
-      
+
       setSuccess('Equipment deleted successfully');
       fetchEquipments();
     } catch (err) {
@@ -511,13 +511,13 @@ const Technicien = () => {
       setFilterStatus(e.target.value);
     }
   };
-  
+
   // Handle reservation status update
   const handleUpdateReservationStatus = async (id, status) => {
     setIsLoading(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
       const response = await fetch(`http://localhost:8080/api/reservations/${id}`, {
         method: 'PATCH',
@@ -526,21 +526,21 @@ const Technicien = () => {
         },
         body: JSON.stringify({ statut: status }),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `Failed to update reservation status to ${status}`);
       }
-      
+
       setSuccess(`Reservation status updated to ${status}`);
-      
+
       // Refresh the reservations list after a short delay
       setTimeout(() => {
         fetchReservations();
         fetchEquipments(); // Refresh equipment as status might have changed
         fetchNotifications(); // Check for new system notifications
       }, 1000);
-      
+
     } catch (err) {
       setError(`Error updating reservation: ${err.message}`);
       console.error('Update reservation error:', err);
@@ -553,7 +553,7 @@ const Technicien = () => {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
-  
+
   // Toggle between stockable and solo equipment tabs
   const handleEquipmentTabChange = (tabType) => {
     setActiveEquipmentTab(tabType);
@@ -565,11 +565,11 @@ const Technicien = () => {
       setError('No equipment selected for update');
       return;
     }
-    
+
     setIsLoading(true);
     setError(null);
     setSuccess(null);
-    
+
     try {
       // Get equipment details to include in notification
       const equipmentResponse = await fetch(`http://localhost:8080/api/equipments/${id}`);
@@ -577,37 +577,37 @@ const Technicien = () => {
         throw new Error('Failed to fetch equipment details');
       }
       const equipment = await equipmentResponse.json();
-      
+
       // Ensure previous status is never undefined - use equipment's current state as fallback
       const oldState = previousStatus || equipment.etat || 'disponible';
-      
+
       // Update equipment status
       const response = await fetch(`http://localhost:8080/api/equipments/${id}/state`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           etat: newStatus,
           oldState: oldState || 'disponible', // Ensure we never send undefined
           technicianId: currentUser?.id || null, // Use null instead of undefined
-          technicianName: currentUser?.prenom && currentUser?.nom ? 
+          technicianName: currentUser?.prenom && currentUser?.nom ?
             `${currentUser.prenom} ${currentUser.nom}` : 'Unknown Technician'
         }),
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error Response:', errorText);
         throw new Error('Failed to update equipment status');
       }
-      
-      setSuccess(`Equipment status updated to ${newStatus === 'disponible' ? 'Available' : 
-                                      newStatus === 'en_cours' ? 'In Use' : 
-                                      newStatus === 'en_reparation' ? 'In Repair' :
-                                      newStatus === 'indisponible' ? 'Out of Service' : 
-                                      'Unknown'}`);
-      
+
+      setSuccess(`Equipment status updated to ${newStatus === 'disponible' ? 'Available' :
+        newStatus === 'en_cours' ? 'In Use' :
+          newStatus === 'en_reparation' ? 'In Repair' :
+            newStatus === 'indisponible' ? 'Out of Service' :
+              'Unknown'}`);
+
       // Increase timeout to ensure server has time to process
       setTimeout(() => {
         fetchEquipments();
@@ -639,9 +639,9 @@ const Technicien = () => {
           <div className="sidebar-header">
             <div className="logo-icon">GP<span className="accent-dot">.</span></div>
           </div>
-          
+
           <nav className="sidebar-nav">
-            <button 
+            <button
               className={`sidebar-nav-item ${activeView === 'equipment' ? 'active' : ''}`}
               onClick={() => setActiveView('equipment')}
               title="Equipment Management"
@@ -653,8 +653,8 @@ const Technicien = () => {
                 <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
             </button>
-            
-            <button 
+
+            <button
               className={`sidebar-nav-item ${activeView === 'reservations' ? 'active' : ''}`}
               onClick={() => setActiveView('reservations')}
               title="Reservations"
@@ -666,8 +666,8 @@ const Technicien = () => {
                 <line x1="3" y1="10" x2="21" y2="10"></line>
               </svg>
             </button>
-            
-            <button 
+
+            <button
               className={`sidebar-nav-item ${activeView === 'notifications' ? 'active' : ''}`}
               onClick={() => setActiveView('notifications')}
               title="Notifications"
@@ -679,7 +679,7 @@ const Technicien = () => {
               {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
             </button>
           </nav>
-          
+
           <div className="sidebar-footer">
             <button className="theme-toggle" onClick={toggleDarkMode} title={darkMode ? "Light Mode" : "Dark Mode"}>
               {darkMode ? (
@@ -719,11 +719,11 @@ const Technicien = () => {
             <div className="dashboard-title">
               <h1>Technician Dashboard</h1>
               <p className="dashboard-subtitle">
-                {activeView === 'equipment' 
-                  ? 'Manage equipment inventory and technical status' 
+                {activeView === 'equipment'
+                  ? 'Manage equipment inventory and technical status'
                   : activeView === 'reservations'
-                  ? 'Track and update reservation statuses'
-                  : 'View system notifications and alerts'}
+                    ? 'Track and update reservation statuses'
+                    : 'View system notifications and alerts'}
               </p>
             </div>
             <div className="dashboard-actions">
@@ -738,17 +738,17 @@ const Technicien = () => {
               </div>
             </div>
           </header>
-          
+
           {/* Success and error messages */}
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
-          
+
           {/* Rest of the component remains the same */}
           {/* Equipment Management View */}
           {activeView === 'equipment' && (
             <div className="dashboard-content">
               <div className="dashboard-tabs">
-                <button 
+                <button
                   className={`dashboard-tab ${activeTab === 'inventory' ? 'active' : ''}`}
                   onClick={() => handleTabChange('inventory')}
                 >
@@ -758,7 +758,7 @@ const Technicien = () => {
                   </svg>
                   Inventory Management
                 </button>
-                <button 
+                <button
                   className={`dashboard-tab ${activeTab === 'maintenance' ? 'active' : ''}`}
                   onClick={() => handleTabChange('maintenance')}
                 >
@@ -781,7 +781,7 @@ const Technicien = () => {
                         Add, update, and manage equipment in your inventory system
                       </p>
                     </div>
-                    
+
                     {/* Equipment type tabs */}
                     <div className="equipment-tabs">
                       <button
@@ -797,15 +797,15 @@ const Technicien = () => {
                         Solo Equipment
                       </button>
                     </div>
-                    
+
                     <div className="filter-section">
                       {activeEquipmentTab === 'stockable' ? (
                         // For stockable equipment - only show low stock filter checkbox
                         <div className="form-group">
                           <label className="checkbox-container">
-                            <input 
-                              type="checkbox" 
-                              checked={showLowStock} 
+                            <input
+                              type="checkbox"
+                              checked={showLowStock}
                               onChange={() => setShowLowStock(!showLowStock)}
                             />
                             <span className="checkmark"></span>
@@ -819,10 +819,10 @@ const Technicien = () => {
                           <div className="filter-controls">
                             <div className="form-group">
                               <label htmlFor="filter_status">Status:</label>
-                              <select 
-                                name="filter_status" 
+                              <select
+                                name="filter_status"
                                 id="filter_status"
-                                value={filterStatus} 
+                                value={filterStatus}
                                 onChange={handleFilterChange}
                                 className="form-control"
                               >
@@ -833,8 +833,8 @@ const Technicien = () => {
                                 <option value="indisponible">Unavailable</option>
                               </select>
                             </div>
-                            <button 
-                              className="secondary-button" 
+                            <button
+                              className="secondary-button"
                               onClick={() => setFilterStatus('')}
                             >
                               Clear Filter
@@ -843,14 +843,14 @@ const Technicien = () => {
                         </>
                       )}
                     </div>
-                    
+
                     {/* Stockable Equipment Table */}
                     {activeEquipmentTab === 'stockable' && (
                       <div className="table-container glass-effect">
                         <div className="table-header">
                           <h3>Stockable Equipment List</h3>
-                          <button 
-                            className="add-button" 
+                          <button
+                            className="add-button"
                             onClick={() => {
                               setFormData(prev => ({ ...prev, categorie: 'stockable' }));
                               openAddModal();
@@ -863,7 +863,7 @@ const Technicien = () => {
                             Add Stockable Equipment
                           </button>
                         </div>
-                        
+
                         <div className="responsive-table">
                           {isLoading && !stockableEquipment.length ? (
                             <div className="loading-spinner"></div>
@@ -889,61 +889,61 @@ const Technicien = () => {
                                   stockableEquipment
                                     .filter(item => !showLowStock || item.quantite < 5)
                                     .map(equipment => (
-                                    <tr key={equipment.id}>
-                                      <td>{equipment.id}</td>
-                                      <td>{equipment.nom}</td>
-                                      <td>{equipment.description}</td>
-                                      <td className="qr-cell">
-                                        <div className="qr-inline">
-                                          <QRCodeCanvas 
-                                            value={generateQRData(equipment)}
-                                            size={50}
-                                            level="M"
-                                          />
-                                          <button 
-                                            className="qr-view-btn" 
-                                            onClick={() => openQRModal(equipment)}
-                                            title="View/Download QR"
+                                      <tr key={equipment.id}>
+                                        <td>{equipment.id}</td>
+                                        <td>{equipment.nom}</td>
+                                        <td>{equipment.description}</td>
+                                        <td className="qr-cell">
+                                          <div className="qr-inline">
+                                            <QRCodeCanvas
+                                              value={generateQRData(equipment)}
+                                              size={50}
+                                              level="M"
+                                            />
+                                            <button
+                                              className="qr-view-btn"
+                                              onClick={() => openQRModal(equipment)}
+                                              title="View/Download QR"
+                                            >
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="11" cy="11" r="8"></circle>
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                                <line x1="11" y1="8" x2="11" y2="14"></line>
+                                                <line x1="8" y1="11" x2="14" y2="11"></line>
+                                              </svg>
+                                            </button>
+                                          </div>
+                                        </td>
+                                        <td>{equipment.quantite}</td>
+                                        <td>
+                                          <span className={`stock-level ${equipment.quantite < 5 ? 'low' : 'normal'}`}>
+                                            {equipment.quantite < 5 ? 'Low Stock' : 'Normal'}
+                                          </span>
+                                        </td>
+                                        <td className="action-buttons">
+                                          <button
+                                            onClick={() => openUpdateModal(equipment)}
+                                            className="edit-button"
+                                            title="Edit"
                                           >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                              <circle cx="11" cy="11" r="8"></circle>
-                                              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                              <line x1="11" y1="8" x2="11" y2="14"></line>
-                                              <line x1="8" y1="11" x2="14" y2="11"></line>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                              <path d="M12 20h9"></path>
+                                              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                                             </svg>
                                           </button>
-                                        </div>
-                                      </td>
-                                      <td>{equipment.quantite}</td>
-                                      <td>
-                                        <span className={`stock-level ${equipment.quantite < 5 ? 'low' : 'normal'}`}>
-                                          {equipment.quantite < 5 ? 'Low Stock' : 'Normal'}
-                                        </span>
-                                      </td>
-                                      <td className="action-buttons">
-                                        <button 
-                                          onClick={() => openUpdateModal(equipment)}
-                                          className="edit-button"
-                                          title="Edit"
-                                        >
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M12 20h9"></path>
-                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                          </svg>
-                                        </button>
-                                        <button 
-                                          onClick={() => handleDeleteEquipment(equipment.id)}
-                                          className="delete-button-small"
-                                          title="Delete"
-                                        >
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                          </svg>
-                                        </button>
-                                      </td>
-                                    </tr>
-                                  ))
+                                          <button
+                                            onClick={() => handleDeleteEquipment(equipment.id)}
+                                            className="delete-button-small"
+                                            title="Delete"
+                                          >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                              <polyline points="3 6 5 6 21 6"></polyline>
+                                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            </svg>
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))
                                 )}
                               </tbody>
                             </table>
@@ -951,14 +951,14 @@ const Technicien = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     {/* Solo Equipment Table */}
                     {activeEquipmentTab === 'solo' && (
                       <div className="table-container glass-effect">
                         <div className="table-header">
                           <h3>Solo Equipment List</h3>
-                          <button 
-                            className="add-button" 
+                          <button
+                            className="add-button"
                             onClick={() => {
                               setFormData(prev => ({ ...prev, categorie: 'solo' }));
                               openAddModal();
@@ -971,7 +971,7 @@ const Technicien = () => {
                             Add Solo Equipment
                           </button>
                         </div>
-                        
+
                         <div className="responsive-table">
                           {isLoading && !soloEquipment.length ? (
                             <div className="loading-spinner"></div>
@@ -997,63 +997,63 @@ const Technicien = () => {
                                     // Apply status filter if selected
                                     .filter(item => filterStatus === '' || item.etat === filterStatus)
                                     .map(equipment => (
-                                    <tr key={equipment.id}>
-                                      <td>{equipment.id}</td>
-                                      <td>{equipment.nom}</td>
-                                      <td>{equipment.description}</td>
-                                      <td className="qr-cell">
-                                        <div className="qr-inline">
-                                          <QRCodeCanvas 
-                                            value={generateQRData(equipment)}
-                                            size={50}
-                                            level="M"
-                                          />
-                                          <button 
-                                            className="qr-view-btn" 
-                                            onClick={() => openQRModal(equipment)}
-                                            title="View/Download QR"
+                                      <tr key={equipment.id}>
+                                        <td>{equipment.id}</td>
+                                        <td>{equipment.nom}</td>
+                                        <td>{equipment.description}</td>
+                                        <td className="qr-cell">
+                                          <div className="qr-inline">
+                                            <QRCodeCanvas
+                                              value={generateQRData(equipment)}
+                                              size={50}
+                                              level="M"
+                                            />
+                                            <button
+                                              className="qr-view-btn"
+                                              onClick={() => openQRModal(equipment)}
+                                              title="View/Download QR"
+                                            >
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="11" cy="11" r="8"></circle>
+                                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                                <line x1="11" y1="8" x2="11" y2="14"></line>
+                                                <line x1="8" y1="11" x2="14" y2="11"></line>
+                                              </svg>
+                                            </button>
+                                          </div>
+                                        </td>
+                                        <td>
+                                          <span className={`status-badge status-${equipment.etat}`}>
+                                            {equipment.etat === 'disponible' ? 'Available' :
+                                              equipment.etat === 'en_cours' ? 'In Use' :
+                                                equipment.etat === 'en_reparation' ? 'In Repair' :
+                                                  'Unavailable'}
+                                          </span>
+                                        </td>
+                                        <td className="action-buttons">
+                                          <button
+                                            onClick={() => openUpdateModal(equipment)}
+                                            className="edit-button"
+                                            title="Edit"
                                           >
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                              <circle cx="11" cy="11" r="8"></circle>
-                                              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                                              <line x1="11" y1="8" x2="11" y2="14"></line>
-                                              <line x1="8" y1="11" x2="14" y2="11"></line>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                              <path d="M12 20h9"></path>
+                                              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
                                             </svg>
                                           </button>
-                                        </div>
-                                      </td>
-                                      <td>
-                                        <span className={`status-badge status-${equipment.etat}`}>
-                                          {equipment.etat === 'disponible' ? 'Available' : 
-                                           equipment.etat === 'en_cours' ? 'In Use' : 
-                                           equipment.etat === 'en_reparation' ? 'In Repair' :
-                                           'Unavailable'}
-                                        </span>
-                                      </td>
-                                      <td className="action-buttons">
-                                        <button 
-                                          onClick={() => openUpdateModal(equipment)}
-                                          className="edit-button"
-                                          title="Edit"
-                                        >
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M12 20h9"></path>
-                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                                          </svg>
-                                        </button>
-                                        <button 
-                                          onClick={() => handleDeleteEquipment(equipment.id)}
-                                          className="delete-button-small"
-                                          title="Delete"
-                                        >
-                                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <polyline points="3 6 5 6 21 6"></polyline>
-                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                          </svg>
-                                        </button>
-                                      </td>
-                                    </tr>
-                                  ))
+                                          <button
+                                            onClick={() => handleDeleteEquipment(equipment.id)}
+                                            className="delete-button-small"
+                                            title="Delete"
+                                          >
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                              <polyline points="3 6 5 6 21 6"></polyline>
+                                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                            </svg>
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    ))
                                 )}
                               </tbody>
                             </table>
@@ -1074,7 +1074,7 @@ const Technicien = () => {
                         Track and manage equipment that requires maintenance or is currently under repair
                       </p>
                     </div>
-                    
+
                     <div className="table-container glass-effect">
                       <h3>Equipment Under Maintenance</h3>
                       <div className="responsive-table">
@@ -1111,8 +1111,8 @@ const Technicien = () => {
                                     <td>{equipment.description}</td>
                                     <td className="action-buttons">
                                       {equipment.etat === 'indisponible' && (
-                                        <button 
-                                          className="repair-btn" 
+                                        <button
+                                          className="repair-btn"
                                           title="Mark as In Repair"
                                           onClick={() => handleUpdateEquipmentStatus(equipment.id, 'en_reparation', 'indisponible')}
                                         >
@@ -1123,8 +1123,8 @@ const Technicien = () => {
                                         </button>
                                       )}
                                       {equipment.etat === 'en_reparation' && (
-                                        <button 
-                                          className="confirm-btn" 
+                                        <button
+                                          className="confirm-btn"
                                           title="Mark as Repaired"
                                           onClick={() => handleUpdateEquipmentStatus(equipment.id, 'disponible', 'en_reparation')}
                                         >
@@ -1149,7 +1149,7 @@ const Technicien = () => {
               </div>
             </div>
           )}
-          
+
           {/* Reservations View */}
           {activeView === 'reservations' && (
             <div className="dashboard-content reservations-view">
@@ -1160,16 +1160,16 @@ const Technicien = () => {
                   Manage and track equipment reservations and their statuses
                 </p>
               </div>
-              
+
               <div className="filter-section">
                 <h3>Filter Reservations</h3>
                 <div className="filter-controls">
                   <div className="form-group">
                     <label htmlFor="filter_status">Status:</label>
-                    <select 
-                      name="filter_status" 
+                    <select
+                      name="filter_status"
                       id="filter_status"
-                      value={filterStatus} 
+                      value={filterStatus}
                       onChange={handleFilterChange}
                       className="form-control"
                     >
@@ -1183,7 +1183,7 @@ const Technicien = () => {
                   <button className="secondary-button">Clear Filters</button>
                 </div>
               </div>
-              
+
               <div className="table-container glass-effect">
                 <h3>Reservation Management</h3>
                 <div className="responsive-table">
@@ -1212,20 +1212,20 @@ const Technicien = () => {
                             if (reservation.statut === 'confirmé' || reservation.statut === 'validee') statusClass = 'status-confirmed';
                             else if (reservation.statut === 'en_cours' || reservation.statut === 'attente') statusClass = 'status-pending';
                             else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
-                            
+
                             return (
                               <tr key={reservation.id_reservation}>
                                 <td>#{reservation.id_reservation}</td>
                                 <td>
-                                  {reservation  .nom_utilisateur} {reservation.prenom_utilisateur}
+                                  {reservation.nom_utilisateur} {reservation.prenom_utilisateur}
                                 </td>
                                 <td>{new Date(reservation.date_debut).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
                                 <td>{new Date(reservation.date_fin).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
                                 <td>
                                   <span className={`status-badge ${statusClass}`}>
-                                    {reservation.statut === 'confirmé' || reservation.statut === 'validee' ? 'Confirmed' : 
-                                     reservation.statut === 'en_cours' ? 'In Progress' : 
-                                     reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
+                                    {reservation.statut === 'confirmé' || reservation.statut === 'validee' ? 'Confirmed' :
+                                      reservation.statut === 'en_cours' ? 'In Progress' :
+                                        reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
                                   </span>
                                 </td>
                                 <td className="action-buttons">
@@ -1283,7 +1283,7 @@ const Technicien = () => {
               </div>
             </div>
           )}
-          
+
           {/* Notifications View */}
           {activeView === 'notifications' && (
             <div className="dashboard-content notifications-view">
@@ -1293,15 +1293,15 @@ const Technicien = () => {
                   View important alerts and messages related to equipment maintenance and reservations
                 </p>
               </div>
-              
+
               <div className="notifications-container">
                 {notifications.length === 0 ? (
                   <div className="no-data">No notifications available</div>
                 ) : (
                   <div className="notification-list">
                     {notifications.map(notification => (
-                      <div 
-                        key={notification.id} 
+                      <div
+                        key={notification.id}
                         className={`notification-item ${notification.read ? '' : 'unread'}`}
                         onClick={() => markAsRead(notification.id)}
                       >
@@ -1326,8 +1326,8 @@ const Technicien = () => {
                           </div>
                         </div>
                         <div className="notification-actions">
-                          <button 
-                            className="mark-read-btn" 
+                          <button
+                            className="mark-read-btn"
                             title={notification.read ? "Mark as unread" : "Mark as read"}
                             onClick={(e) => {
                               e.stopPropagation(); // Prevent the parent onClick from firing
@@ -1353,7 +1353,7 @@ const Technicien = () => {
           )}
         </main>
       </div>
-      
+
       {/* Add Equipment Modal */}
       {showAddModal && (
         <div className="modal-overlay">
@@ -1365,35 +1365,35 @@ const Technicien = () => {
             <div className="modal-body">
               {error && <div className="error-message">{error}</div>}
               {success && <div className="success-message">{success}</div>}
-              
+
               <form className="equipment-form" onSubmit={handleAddEquipment}>
                 <div className="form-group">
                   <label htmlFor="nom">Name:</label>
-                  <input 
-                    type="text" 
-                    name="nom" 
+                  <input
+                    type="text"
+                    name="nom"
                     id="nom"
-                    placeholder="Equipment name" 
-                    required 
-                    value={formData.nom || ''} 
-                    onChange={handleInputChange} 
+                    placeholder="Equipment name"
+                    required
+                    value={formData.nom || ''}
+                    onChange={handleInputChange}
                     className="form-control"
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label htmlFor="description">Description:</label>
-                  <textarea 
-                    name="description" 
+                  <textarea
+                    name="description"
                     id="description"
-                    placeholder="Equipment description" 
-                    required 
-                    value={formData.description || ''} 
+                    placeholder="Equipment description"
+                    required
+                    value={formData.description || ''}
                     onChange={handleInputChange}
-                    className="form-control" 
+                    className="form-control"
                   />
                 </div>
-                
+
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="categorie">Type:</label>
@@ -1409,14 +1409,14 @@ const Technicien = () => {
                       <option value="solo">Solo</option>
                     </select>
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="etat">Status:</label>
-                    <select 
-                      name="etat" 
+                    <select
+                      name="etat"
                       id="etat"
-                      required 
-                      value={formData.etat || 'disponible'} 
+                      required
+                      value={formData.etat || 'disponible'}
                       onChange={handleInputChange}
                       className="form-control"
                     >
@@ -1427,34 +1427,34 @@ const Technicien = () => {
                     </select>
                   </div>
                 </div>
-                
+
                 {formData.categorie === 'stockable' && (
                   <div className="form-group">
                     <label htmlFor="quantite">Quantity:</label>
-                    <input 
-                      type="number" 
-                      name="quantite" 
+                    <input
+                      type="number"
+                      name="quantite"
                       id="quantite"
-                      placeholder="Quantity" 
-                      required 
-                      value={formData.quantite || '1'} 
+                      placeholder="Quantity"
+                      required
+                      value={formData.quantite || '1'}
                       onChange={handleInputChange}
-                      className="form-control" 
+                      className="form-control"
                       min="1"
                     />
                   </div>
                 )}
-                
+
                 <div className="modal-actions">
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={isLoading}
                     className="submit-button"
                   >
                     {isLoading ? 'Processing...' : 'Add Equipment'}
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={closeModals}
                     className="cancel-button"
                   >
@@ -1466,7 +1466,7 @@ const Technicien = () => {
           </div>
         </div>
       )}
-      
+
       {/* Update Equipment Modal */}
       {showUpdateModal && (
         <div className="modal-overlay">
@@ -1478,36 +1478,36 @@ const Technicien = () => {
             <div className="modal-body">
               {error && <div className="error-message">{error}</div>}
               {success && <div className="success-message">{success}</div>}
-              
+
               <form className="equipment-form" onSubmit={handleUpdateEquipment}>
                 <input type="hidden" name="id" value={formData.id || ''} />
                 <div className="form-group">
                   <label htmlFor="update_nom">Name:</label>
-                  <input 
-                    type="text" 
-                    name="nom" 
+                  <input
+                    type="text"
+                    name="nom"
                     id="update_nom"
-                    placeholder="Equipment name" 
-                    required 
-                    value={formData.nom || ''} 
-                    onChange={handleInputChange} 
+                    placeholder="Equipment name"
+                    required
+                    value={formData.nom || ''}
+                    onChange={handleInputChange}
                     className="form-control"
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label htmlFor="update_description">Description:</label>
-                  <textarea 
-                    name="description" 
+                  <textarea
+                    name="description"
                     id="update_description"
-                    placeholder="Equipment description" 
-                    required 
-                    value={formData.description || ''} 
+                    placeholder="Equipment description"
+                    required
+                    value={formData.description || ''}
                     onChange={handleInputChange}
-                    className="form-control" 
+                    className="form-control"
                   />
                 </div>
-                
+
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="update_categorie">Type:</label>
@@ -1526,11 +1526,11 @@ const Technicien = () => {
                   </div>
                   <div className="form-group">
                     <label htmlFor="update_etat">Status:</label>
-                    <select 
-                      name="etat" 
+                    <select
+                      name="etat"
                       id="update_etat"
-                      required 
-                      value={formData.etat || 'disponible'} 
+                      required
+                      value={formData.etat || 'disponible'}
                       onChange={handleInputChange}
                       className="form-control"
                     >
@@ -1541,34 +1541,34 @@ const Technicien = () => {
                     </select>
                   </div>
                 </div>
-                
+
                 {formData.categorie === 'stockable' && (
                   <div className="form-group">
                     <label htmlFor="update_quantite">Quantity:</label>
-                    <input 
-                      type="number" 
-                      name="quantite" 
+                    <input
+                      type="number"
+                      name="quantite"
                       id="update_quantite"
-                      placeholder="Quantity" 
-                      required 
-                      value={formData.quantite || '1'} 
+                      placeholder="Quantity"
+                      required
+                      value={formData.quantite || '1'}
                       onChange={handleInputChange}
-                      className="form-control" 
+                      className="form-control"
                       min="1"
                     />
                   </div>
                 )}
-                
+
                 <div className="modal-actions">
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     disabled={isLoading}
                     className="update-button"
                   >
                     {isLoading ? 'Processing...' : 'Update Equipment'}
                   </button>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={closeModals}
                     className="cancel-button"
                   >
@@ -1580,7 +1580,7 @@ const Technicien = () => {
           </div>
         </div>
       )}
-      
+
       {/* QR Code Modal */}
       {showQRModal && (
         <div className="modal-overlay">
@@ -1593,8 +1593,8 @@ const Technicien = () => {
               {qrData && (
                 <>
                   <div className="qr-code">
-                    <QRCodeCanvas 
-                      value={qrData} 
+                    <QRCodeCanvas
+                      value={qrData}
                       size={200}
                       level="H"
                       includeMargin={true}
@@ -1612,7 +1612,7 @@ const Technicien = () => {
                         </>
                       )}
                     </ul>
-                    <button 
+                    <button
                       className="submit-button"
                       onClick={() => {
                         // Function to download QR code
@@ -1634,10 +1634,10 @@ const Technicien = () => {
           </div>
         </div>
       )}
-      
-      <button 
-        id="back-to-top" 
-        title="Back to Top" 
+
+      <button
+        id="back-to-top"
+        title="Back to Top"
         className={showBackToTop ? 'show' : ''}
         onClick={scrollToTop}
       >

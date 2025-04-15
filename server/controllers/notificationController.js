@@ -6,18 +6,18 @@ const { pool } = require('../config/dbConfig');
 const getUserNotifications = async (req, res) => {
   try {
     const { userId } = req.query;
-    
+
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required' });
     }
-    
+
     const [notifications] = await pool.execute(
       `SELECT * FROM Notification 
        WHERE id_utilisateur = ? 
        ORDER BY date_envoi DESC`,
       [userId]
     );
-    
+
     res.json(notifications);
   } catch (error) {
     console.error('Error fetching user notifications:', error);
@@ -37,7 +37,7 @@ const getAdminNotifications = async (req, res) => {
        WHERE u.role = 'responsable'
        ORDER BY n.date_envoi DESC`
     );
-    
+
     res.json(notifications);
   } catch (error) {
     console.error('Error fetching admin notifications:', error);
@@ -57,7 +57,7 @@ const getTechnicianNotifications = async (req, res) => {
        WHERE u.role = 'technicien'
        ORDER BY n.date_envoi DESC`
     );
-    
+
     res.json(notifications);
   } catch (error) {
     console.error('Error fetching technician notifications:', error);
@@ -71,12 +71,12 @@ const getTechnicianNotifications = async (req, res) => {
 const markNotificationAsRead = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     await pool.execute(
       'UPDATE Notification SET statut = "lu" WHERE id = ?',
       [id]
     );
-    
+
     res.json({ message: 'Notification marked as read' });
   } catch (error) {
     console.error('Error marking notification as read:', error);

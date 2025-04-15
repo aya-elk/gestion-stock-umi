@@ -9,7 +9,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  
+
   const navigate = useNavigate();
 
   // Check if dark mode is active when component mounts
@@ -30,7 +30,7 @@ const Login = () => {
       setError('Please enter your email');
       return;
     }
-    
+
     if (password === '') {
       setError('Please enter your password');
       return;
@@ -39,7 +39,7 @@ const Login = () => {
     try {
       setLoading(true);
       setError('');
-      
+
       const response = await fetch('http://localhost:8080/api/users/login', {
         method: 'POST',
         headers: {
@@ -71,7 +71,7 @@ const Login = () => {
       } else {
         setError('Unauthorized role');
       }
-      
+
     } catch (err) {
       setError(err.message || 'An error occurred during login');
     } finally {
@@ -91,7 +91,7 @@ const Login = () => {
             </span>
             <span className="logo-text">GP<span className="accent-dot">.</span></span>
           </div>
-          
+
           <nav>
             <ul className="nav-links">
               <li><Link to="/">Home</Link></li>
@@ -100,7 +100,7 @@ const Login = () => {
               <li><Link to="/#contact">Contact</Link></li>
             </ul>
           </nav>
-          
+
           <div className="nav-actions">
             <button onClick={toggleDarkMode} className="theme-toggle" aria-label="Toggle Dark Mode">
               {darkMode ? (
@@ -132,7 +132,7 @@ const Login = () => {
           <div className="shape shape-2" data-speed="0.4"></div>
           <div className="shape shape-3" data-speed="0.3"></div>
         </div>
-        
+
         <div className="login-container">
           <h2>Login<span className="accent-dot">.</span></h2>
           {error && <p className="error-message">{error}</p>}

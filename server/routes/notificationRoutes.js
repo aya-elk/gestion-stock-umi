@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { 
-  getUserNotifications, 
-  getAdminNotifications, 
+const {
+  getUserNotifications,
+  getAdminNotifications,
   markNotificationAsRead,
   getTechnicianNotifications
 } = require('../controllers/notificationController');

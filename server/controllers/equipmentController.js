@@ -6,7 +6,7 @@ const { pool } = require('../config/dbConfig');
 const getAllEquipment = async (req, res) => {
   try {
     const { category, status, available } = req.query;
-    
+
     let query = `
       SELECT e.id, e.nom, e.description, e.categorie, e.quantite,
              s.etat,
@@ -15,28 +15,28 @@ const getAllEquipment = async (req, res) => {
       LEFT JOIN Solo s ON e.id = s.id
       LEFT JOIN Stockable st ON e.id = st.id
     `;
-    
+
     const conditions = [];
     const params = [];
-    
+
     if (category) {
       conditions.push('e.categorie = ?');
       params.push(category);
     }
-    
+
     if (status) {
       conditions.push('s.etat = ?');
       params.push(status);
     }
-    
+
     if (available === 'true') {
       conditions.push('(e.categorie = "stockable" AND e.quantite > 0) OR (e.categorie = "solo" AND s.etat = "disponible")');
     }
-    
+
     if (conditions.length) {
       query += ' WHERE ' + conditions.join(' AND ');
     }
-    
+
     const [equipment] = await pool.execute(query, params);
     res.json(equipment);
   } catch (error) {
@@ -51,7 +51,7 @@ const getAllEquipment = async (req, res) => {
 const getEquipmentById = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const [equipment] = await pool.execute(
       `SELECT e.id, e.nom, e.description, e.categorie, e.quantite,
               CASE WHEN s.id IS NOT NULL THEN s.etat ELSE NULL END as etat,
@@ -62,11 +62,11 @@ const getEquipmentById = async (req, res) => {
        WHERE e.id = ?`,
       [id]
     );
-    
+
     if (equipment.length === 0) {
       return res.status(404).json({ message: 'Equipment not found' });
     }
-    
+
     res.json(equipment[0]);
   } catch (error) {
     console.error('Error fetching equipment details:', error);
@@ -79,20 +79,20 @@ const getEquipmentById = async (req, res) => {
 // @access  Private
 const createEquipment = async (req, res) => {
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
+
     const { nom, description, categorie, quantite, etat, qr_code } = req.body;
-    
+
     // Insert into main Equipement table first
     const [result] = await connection.execute(
       'INSERT INTO Equipement (nom, description, categorie, quantite) VALUES (?, ?, ?, ?)',
       [nom, description, categorie, quantite]
     );
-    
+
     const equipmentId = result.insertId;
-    
+
     // Insert into specific type table
     if (categorie === 'solo') {
       await connection.execute(
@@ -105,9 +105,9 @@ const createEquipment = async (req, res) => {
         [equipmentId, quantite, qr_code || null]
       );
     }
-    
+
     await connection.commit();
-    
+
     res.status(201).json({
       id: equipmentId,
       nom,
@@ -131,37 +131,37 @@ const createEquipment = async (req, res) => {
 // @access  Private
 const updateEquipment = async (req, res) => {
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
+
     const { id } = req.params;
     const { nom, description, categorie, quantite, etat, qr_code, previousStatus, technicianId, technicianName } = req.body;
-    
+
     // Check if equipment exists
     const [existing] = await connection.execute(
       'SELECT * FROM Equipement WHERE id = ?',
       [id]
     );
-    
+
     if (existing.length === 0) {
       await connection.rollback();
       return res.status(404).json({ message: 'Equipment not found' });
     }
-    
+
     // Update main Equipement table
     await connection.execute(
       'UPDATE Equipement SET nom = ?, description = ?, quantite = ? WHERE id = ?',
       [nom, description, quantite, id]
     );
-    
+
     // Update specific type table based on category
     if (categorie === 'solo') {
       const [soloCheck] = await connection.execute(
         'SELECT * FROM Solo WHERE id = ?',
         [id]
       );
-      
+
       if (soloCheck.length > 0) {
         await connection.execute(
           'UPDATE Solo SET etat = ? WHERE id = ?',
@@ -184,7 +184,7 @@ const updateEquipment = async (req, res) => {
         'SELECT * FROM Stockable WHERE id = ?',
         [id]
       );
-      
+
       if (stockableCheck.length > 0) {
         await connection.execute(
           'UPDATE Stockable SET quantite = ?, qr_code = ? WHERE id = ?',
@@ -203,7 +203,7 @@ const updateEquipment = async (req, res) => {
         );
       }
     }
-    
+
     // Get equipment details
     const [equipResult] = await connection.execute(
       'SELECT nom FROM Equipement WHERE id = ?',
@@ -218,31 +218,31 @@ const updateEquipment = async (req, res) => {
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
         [technicianId, `${equipmentName} #${id} is marked as unavailable`]
       );
-      
+
       // Notify responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
-      
+
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
           [resp.id, `${technicianName} has marked ${equipmentName} #${id} as unavailable`]
         );
       }
-    } 
+    }
     else if (previousStatus === 'indisponible' && etat === 'en_reparation') {
       // Unavailable to in repair
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
         [technicianId, `${equipmentName} #${id} is now in repair`]
       );
-      
+
       // Notify responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
-      
+
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
@@ -256,12 +256,12 @@ const updateEquipment = async (req, res) => {
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
         [technicianId, `${equipmentName} #${id} has been repaired and is now available`]
       );
-      
+
       // Notify responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
-      
+
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
@@ -269,9 +269,9 @@ const updateEquipment = async (req, res) => {
         );
       }
     }
-    
+
     await connection.commit();
-    
+
     res.json({
       id,
       message: 'Equipment updated successfully'
@@ -290,34 +290,34 @@ const updateEquipment = async (req, res) => {
 // @access  Private
 const deleteEquipment = async (req, res) => {
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
+
     const { id } = req.params;
-    
+
     // Check for reservations
     const [reservations] = await connection.execute(
       'SELECT * FROM Reservation_Equipement WHERE id_equipement = ?',
       [id]
     );
-    
+
     if (reservations.length > 0) {
       await connection.rollback();
-      return res.status(400).json({ 
-        message: 'Cannot delete equipment that has reservations' 
+      return res.status(400).json({
+        message: 'Cannot delete equipment that has reservations'
       });
     }
-    
+
     // Delete from specific type tables first (due to foreign key constraints)
     await connection.execute('DELETE FROM Solo WHERE id = ?', [id]);
     await connection.execute('DELETE FROM Stockable WHERE id = ?', [id]);
-    
+
     // Then delete from main table
     await connection.execute('DELETE FROM Equipement WHERE id = ?', [id]);
-    
+
     await connection.commit();
-    
+
     res.json({ message: 'Equipment deleted successfully' });
   } catch (error) {
     await connection.rollback();
@@ -340,7 +340,7 @@ const getStockableEquipment = async (req, res) => {
       JOIN Stockable st ON e.id = st.id
       WHERE e.categorie = 'stockable'
     `);
-    
+
     res.json(equipment);
   } catch (error) {
     console.error('Error fetching stockable equipment:', error);
@@ -359,7 +359,7 @@ const getSoloEquipment = async (req, res) => {
       JOIN Solo s ON e.id = s.id
       WHERE e.categorie = 'solo'
     `);
-    
+
     res.json(equipment);
   } catch (error) {
     console.error('Error fetching solo equipment:', error);
@@ -374,25 +374,25 @@ const updateEquipmentStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { etat } = req.body;
-    
+
     if (!etat) {
       return res.status(400).json({ message: 'Status is required' });
     }
-    
+
     // Validate the status is one of the allowed ENUM values
     if (!['disponible', 'en_cours', 'indisponible', 'en_reparation'].includes(etat)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }
-    
+
     const [result] = await pool.execute(
       'UPDATE Solo SET etat = ? WHERE id = ?',
       [etat, id]
     );
-    
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: 'Equipment not found or not of type Solo' });
     }
-    
+
     res.json({ message: 'Equipment status updated successfully' });
   } catch (error) {
     console.error('Error updating equipment status:', error);
@@ -406,31 +406,31 @@ const updateEquipmentStatus = async (req, res) => {
 const updateEquipmentState = async (req, res) => {
   const { id } = req.params;
   const { etat: newState, oldState, technicianId, technicianName } = req.body;
-  
+
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
-    
+
     // Update equipment state in database
     await connection.execute(
       'UPDATE Solo SET etat = ? WHERE id = ?',
       [newState, id]
     );
-    
+
     // Get equipment details
     const [equipment] = await connection.execute(
       'SELECT nom FROM Equipement WHERE id = ?',
       [id]
     );
-    
+
     if (equipment.length === 0) {
       await connection.rollback();
       return res.status(404).json({ message: 'Equipment not found' });
     }
-    
+
     const equipmentName = equipment[0].nom;
-    
+
     // Get technician details if not provided
     let techFullName = technicianName;
     if (!techFullName && technicianId) {
@@ -438,14 +438,14 @@ const updateEquipmentState = async (req, res) => {
         'SELECT nom, prenom FROM Utilisateur WHERE id = ?',
         [technicianId]
       );
-      
+
       if (techDetails.length > 0) {
         techFullName = `${techDetails[0].prenom} ${techDetails[0].nom}`;
       } else {
         techFullName = 'A technician';
       }
     }
-    
+
     // Handle state transitions for notifications
     if (oldState === 'disponible' && newState === 'indisponible') {
       // Notification to technician
@@ -453,31 +453,31 @@ const updateEquipmentState = async (req, res) => {
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
         [technicianId, `${equipmentName} #${id} is now unavailable`]
       );
-      
+
       // Notification to responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
-      
+
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
           [resp.id, `${techFullName} has marked ${equipmentName} #${id} as unavailable`]
         );
       }
-    } 
+    }
     else if (oldState === 'indisponible' && newState === 'en_reparation') {
       // Notification to technician
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
         [technicianId, `${equipmentName} #${id} is now in repair`]
       );
-      
+
       // Notification to responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
-      
+
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
@@ -491,12 +491,12 @@ const updateEquipmentState = async (req, res) => {
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
         [technicianId, `${equipmentName} #${id} has been repaired`]
       );
-      
+
       // Notification to responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
-      
+
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
@@ -504,10 +504,10 @@ const updateEquipmentState = async (req, res) => {
         );
       }
     }
-    
+
     await connection.commit();
-    
-    res.json({ 
+
+    res.json({
       message: `Equipment status changed from ${oldState} to ${newState}`,
       equipment: {
         id,
