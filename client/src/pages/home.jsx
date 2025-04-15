@@ -5,6 +5,11 @@ import '../css/home.css'; // Import your CSS files
 const Home = () => {
     const [darkMode, setDarkMode] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [formStatus, setFormStatus] = useState({
+        submitting: false,
+        success: false,
+        error: null
+    });
 
     useEffect(() => {
         // Animate counters
@@ -74,6 +79,37 @@ const Home = () => {
     const toggleDarkMode = () => {
         setDarkMode(!darkMode);
         document.body.classList.toggle('dark-mode');
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setFormStatus({ submitting: true, success: false, error: null });
+        
+        const formData = {
+            name: e.target.name.value,
+            email: e.target.email.value,
+            phone: e.target.phone.value,
+            message: e.target.message.value
+        };
+        
+        try {
+            const response = await fetch('http://localhost:8080/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to send message');
+            }
+            
+            setFormStatus({ submitting: false, success: true, error: null });
+            e.target.reset(); // Clear form
+        } catch (err) {
+            setFormStatus({ submitting: false, success: false, error: err.message });
+        }
     };
 
     return (
@@ -404,7 +440,7 @@ const Home = () => {
                 </div>
             </div>
             
-            <form className="contact-form scale-in hidden">
+            <form className="contact-form scale-in hidden" onSubmit={handleSubmit}>
                 <div className="form-group">
                 <label htmlFor="name">Full Name</label>
                 <input type="text" id="name" name="name" placeholder="Your name" required />
@@ -425,8 +461,11 @@ const Home = () => {
                 <textarea id="message" name="message" placeholder="Tell us about your project..." required></textarea>
                 </div>
                 
-                <button type="submit" className="submit-button">
-                <span>Send Message</span>
+                {formStatus.success && <div className="success-message">Message sent successfully!</div>}
+                {formStatus.error && <div className="error-message">Error: {formStatus.error}</div>}
+                
+                <button type="submit" className="submit-button" disabled={formStatus.submitting}>
+                <span>{formStatus.submitting ? 'Sending...' : 'Send Message'}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                     <polyline points="12 5 19 12 12 19"></polyline>
