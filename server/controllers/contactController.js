@@ -1,4 +1,6 @@
+require('dotenv-flow').config();
 const { sendEmail } = require('../utilities/mailer');
+const { generateContactEmail } = require('../utilities/emailTemplate');
 
 // @desc    Send contact form email
 // @route   POST /api/contact
@@ -7,22 +9,19 @@ const sendContactForm = async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
     
+    // Generate HTML content using the template
+    const htmlContent = generateContactEmail({ name, email, phone, message });
+    
     await sendEmail({
-      to: 'essarhir.t@outlook.com', // Your admin email
-      subject: 'New Contact Form Submission',
+      to: process.env.EMAIL_CONTACT,
+      subject: `New Contact Message from ${name}`,
       text: `
         Name: ${name}
         Email: ${email}
         Phone: ${phone}
         Message: ${message}
       `,
-      html: `
-        <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone:</strong> ${phone}</p>
-        <p><strong>Message:</strong> ${message}</p>
-      `
+      html: htmlContent
     });
     
     res.status(200).json({ success: true, message: 'Email sent successfully' });
