@@ -1,4 +1,6 @@
 const { pool } = require('../config/dbConfig');
+const { sendEmail } = require('../utilities/mailer');
+const { generateReservationEmail } = require('../utilities/templates/reservationEmail');
 
 // @desc    Get all reservations
 // @route   GET /api/reservations
@@ -166,6 +168,43 @@ const createReservation = async (req, res) => {
       // Don't fail the request because of notification error
     }
 
+    // Get student email for sending confirmation
+    const [userDetails] = await connection.execute(
+      'SELECT email, nom, prenom FROM Utilisateur WHERE id = ?',
+      [id_utilisateur]
+    );
+
+    if (userDetails.length > 0) {
+      const studentEmail = userDetails[0].email;
+      const studentFullName = `${userDetails[0].prenom} ${userDetails[0].nom}`;
+      
+      // Generate email content
+      const emailContent = generateReservationEmail({
+        studentName: studentFullName,
+        reservationId: reservationId,
+        equipment: [{
+          name: equip.nom || `Equipment #${id_equipement}`,
+          quantity: quantite || 1
+        }],
+        startDate: date_debut,
+        endDate: date_fin
+      });
+      
+      // Send the confirmation email
+      try {
+        await sendEmail({
+          to: studentEmail,
+          subject: `Equipment Reservation Confirmation #${reservationId}`,
+          text: `Your reservation #${reservationId} has been submitted and is awaiting approval.`,
+          html: emailContent
+        });
+        console.log(`Confirmation email sent to ${studentEmail}`);
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+        // Don't stop the process if email fails
+      }
+    }
+
     res.status(201).json({
       id: reservationId,
       message: 'Reservation created successfully'
@@ -287,6 +326,52 @@ const createBatchReservation = async (req, res) => {
           ).join(', ')} under reservation #${reservationId}.`,
         ]
       );
+    }
+
+    // Get student email for sending confirmation
+    const [userDetails] = await connection.execute(
+      'SELECT email, nom, prenom FROM Utilisateur WHERE id = ?',
+      [id_utilisateur]
+    );
+    
+    if (userDetails.length > 0) {
+      const studentEmail = userDetails[0].email;
+      const studentFullName = `${userDetails[0].prenom} ${userDetails[0].nom}`;
+      
+      // Format equipment items for the email
+      const equipmentItems = await Promise.all(items.map(async (item) => {
+        const [equipResult] = await connection.execute(
+          'SELECT nom FROM Equipement WHERE id = ?',
+          [item.id_equipement]
+        );
+        return {
+          name: equipResult[0]?.nom || `Equipment #${item.id_equipement}`,
+          quantity: item.quantite || 1
+        };
+      }));
+      
+      // Generate email content
+      const emailContent = generateReservationEmail({
+        studentName: studentFullName,
+        reservationId: reservationId,
+        equipment: equipmentItems,
+        startDate: date_debut,
+        endDate: date_fin
+      });
+      
+      // Send the confirmation email
+      try {
+        await sendEmail({
+          to: studentEmail,
+          subject: `Equipment Reservation Confirmation #${reservationId}`,
+          text: `Your reservation #${reservationId} has been submitted and is awaiting approval.`,
+          html: emailContent
+        });
+        console.log(`Confirmation email sent to ${studentEmail}`);
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+        // Don't stop the process if email fails
+      }
     }
 
     await connection.commit();
