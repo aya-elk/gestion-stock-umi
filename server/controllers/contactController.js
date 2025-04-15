@@ -1,6 +1,6 @@
 require('dotenv-flow').config();
 const { sendEmail } = require('../utilities/mailer');
-const { generateContactEmail } = require('../utilities/emailTemplate');
+const { generateContactEmail } = require('../utilities/templates/contactEmail');
 
 // @desc    Send contact form email
 // @route   POST /api/contact
