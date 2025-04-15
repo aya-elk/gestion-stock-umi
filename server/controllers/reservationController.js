@@ -1,6 +1,7 @@
 const { pool } = require('../config/dbConfig');
 const { sendEmail } = require('../utilities/mailer');
 const { generateReservationEmail } = require('../utilities/templates/reservationEmail');
+const { generateReservationStatusEmail } = require('../utilities/templates/reservationStatusEmail');
 
 // @desc    Get all reservations
 // @route   GET /api/reservations
@@ -412,8 +413,8 @@ const updateReservationStatus = async (req, res) => {
 
     // Get ALL equipment items associated with this reservation with equipment names
     const [reservationItems] = await connection.execute(
-      `SELECT r.id, r.id_utilisateur, re.id_equipement, re.quantite_reservee, 
-              e.categorie, e.nom, u.nom as nom_utilisateur, u.prenom as prenom_utilisateur
+      `SELECT r.id, r.id_utilisateur, r.date_debut, r.date_fin, re.id_equipement, re.quantite_reservee, 
+              e.categorie, e.nom, u.nom as nom_utilisateur, u.prenom as prenom_utilisateur, u.email as email_utilisateur
        FROM Reservation r
        JOIN Reservation_Equipement re ON r.id = re.id_reservation
        JOIN Equipement e ON re.id_equipement = e.id
@@ -435,6 +436,7 @@ const updateReservationStatus = async (req, res) => {
 
     // Get the user ID for notifications
     const userId = reservationItems[0].id_utilisateur;
+    const studentEmail = reservationItems[0].email_utilisateur;
 
     // Get responsable ID - either from request body, req.user, or use a default
     const respId = responsable_id || (req.user ? req.user.id : null);
@@ -448,18 +450,26 @@ const updateReservationStatus = async (req, res) => {
     const studentFullName = `${reservationItems[0].prenom_utilisateur} ${reservationItems[0].nom_utilisateur}`;
 
     let responsableFullName = "A responsible manager";
+    let responsableEmail = null;
 
     // Get responsable name if we have the ID
     if (respId) {
       const [responsableDetails] = await connection.execute(
-        'SELECT nom, prenom FROM Utilisateur WHERE id = ?',
+        'SELECT nom, prenom, email FROM Utilisateur WHERE id = ?',
         [respId]
       );
 
       if (responsableDetails.length > 0) {
         responsableFullName = `${responsableDetails[0].prenom} ${responsableDetails[0].nom}`;
+        responsableEmail = responsableDetails[0].email;
       }
     }
+
+    // Format equipment items for email
+    const equipmentItems = reservationItems.map(item => ({
+      name: item.nom || `Equipment #${item.id_equipement}`,
+      quantity: item.quantite_reservee || 1
+    }));
 
     // Handle equipment status and quantity based on reservation status
     if (statut === 'validee') {
@@ -517,6 +527,66 @@ const updateReservationStatus = async (req, res) => {
         );
       }
 
+      // 4. Send approval emails to student and responsable
+      if (studentEmail) {
+        // Generate email for student
+        const studentEmailContent = generateReservationStatusEmail({
+          recipientName: studentFullName,
+          studentName: studentFullName,
+          responsableName: responsableFullName,
+          reservationId: id,
+          equipment: equipmentItems,
+          startDate: reservationItems[0].date_debut,
+          endDate: reservationItems[0].date_fin,
+          status: 'validee',
+          isResponsable: false
+        });
+
+        // Send email to student
+        try {
+          await sendEmail({
+            to: studentEmail,
+            subject: `Equipment Reservation #${id} Approved`,
+            text: `Your reservation #${id} for ${equipmentList} has been approved by ${responsableFullName}.`,
+            html: studentEmailContent
+          });
+          console.log(`Approval email sent to student: ${studentEmail}`);
+        } catch (emailError) {
+          console.error('Failed to send approval email to student:', emailError);
+          // Don't stop the process if email fails
+        }
+      }
+
+      // Send confirmation email to responsable
+      if (responsableEmail) {
+        // Generate email for responsable
+        const responsableEmailContent = generateReservationStatusEmail({
+          recipientName: responsableFullName,
+          studentName: studentFullName,
+          responsableName: responsableFullName,
+          reservationId: id,
+          equipment: equipmentItems,
+          startDate: reservationItems[0].date_debut,
+          endDate: reservationItems[0].date_fin,
+          status: 'validee',
+          isResponsable: true
+        });
+
+        // Send email to responsable
+        try {
+          await sendEmail({
+            to: responsableEmail,
+            subject: `Reservation #${id} Approval Confirmation`,
+            text: `You have approved reservation #${id} for ${equipmentList} requested by ${studentFullName}.`,
+            html: responsableEmailContent
+          });
+          console.log(`Confirmation email sent to responsable: ${responsableEmail}`);
+        } catch (emailError) {
+          console.error('Failed to send confirmation email to responsable:', emailError);
+          // Don't stop the process if email fails
+        }
+      }
+
     } else if (statut === 'refusee') {
       // 1. Create notification for the student
       await connection.execute(
@@ -536,6 +606,66 @@ const updateReservationStatus = async (req, res) => {
             `You refused ${studentFullName}'s reservation #${id} of ${equipmentList}.`
           ]
         );
+      }
+      
+      // 3. Send rejection emails to student and responsable
+      if (studentEmail) {
+        // Generate email for student
+        const studentEmailContent = generateReservationStatusEmail({
+          recipientName: studentFullName,
+          studentName: studentFullName,
+          responsableName: responsableFullName,
+          reservationId: id,
+          equipment: equipmentItems,
+          startDate: reservationItems[0].date_debut,
+          endDate: reservationItems[0].date_fin,
+          status: 'refusee',
+          isResponsable: false
+        });
+
+        // Send email to student
+        try {
+          await sendEmail({
+            to: studentEmail,
+            subject: `Equipment Reservation #${id} Rejected`,
+            text: `Your reservation #${id} for ${equipmentList} has been rejected by ${responsableFullName}.`,
+            html: studentEmailContent
+          });
+          console.log(`Rejection email sent to student: ${studentEmail}`);
+        } catch (emailError) {
+          console.error('Failed to send rejection email to student:', emailError);
+          // Don't stop the process if email fails
+        }
+      }
+
+      // Send confirmation email to responsable
+      if (responsableEmail) {
+        // Generate email for responsable
+        const responsableEmailContent = generateReservationStatusEmail({
+          recipientName: responsableFullName,
+          studentName: studentFullName,
+          responsableName: responsableFullName,
+          reservationId: id,
+          equipment: equipmentItems,
+          startDate: reservationItems[0].date_debut,
+          endDate: reservationItems[0].date_fin,
+          status: 'refusee',
+          isResponsable: true
+        });
+
+        // Send email to responsable
+        try {
+          await sendEmail({
+            to: responsableEmail,
+            subject: `Reservation #${id} Rejection Confirmation`,
+            text: `You have rejected reservation #${id} for ${equipmentList} requested by ${studentFullName}.`,
+            html: responsableEmailContent
+          });
+          console.log(`Confirmation email sent to responsable: ${responsableEmail}`);
+        } catch (emailError) {
+          console.error('Failed to send confirmation email to responsable:', emailError);
+          // Don't stop the process if email fails
+        }
       }
     }
 
