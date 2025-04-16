@@ -107,7 +107,7 @@ const Home = () => {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to send message");
+        throw new Error("Échec d'envoi du message");
       }
 
       setFormStatus({ submitting: false, success: true, error: null });
@@ -155,17 +155,17 @@ const Home = () => {
             <ul className="nav-links">
               <li>
                 <a className="active" href="#">
-                  Home
+                  Accueil
                 </a>
               </li>
               <li>
-                <a href="#about">About</a>
+                <a href="#about">À propos</a>
               </li>
               <li>
                 <a href="#services">Services</a>
               </li>
               <li>
-                <a href="#testimonials">Testimonials</a>
+                <a href="#testimonials">Témoignages</a>
               </li>
               <li>
                 <a href="#contact">Contact</a>
@@ -177,7 +177,7 @@ const Home = () => {
             <button
               onClick={toggleDarkMode}
               className="theme-toggle"
-              aria-label="Toggle Dark Mode"
+              aria-label="Mode Sombre"
             >
               {darkMode ? (
                 <svg
@@ -218,7 +218,7 @@ const Home = () => {
               )}
             </button>
             <Link className="cta-button" to="/login">
-              Get Started
+              Commencer
             </Link>
           </div>
         </div>
@@ -233,38 +233,38 @@ const Home = () => {
 
         <div className="hero-content">
           <span className="tag-line fade-in hidden">
-            Welcome to GP Solutions
+            Bienvenue chez GP Solutions
           </span>
           <h1 className="headline fade-in hidden">
-            Powerful Digital
+            Solutions Digitales
             <br />
-            Solutions With{" "}
+            Puissantes Avec{" "}
             <span className="highlight">
               GP<span className="accent-dot">.</span>
             </span>
           </h1>
           <p className="subheading fade-in hidden">
-            Transforming ideas into exceptional digital experiences
+            Transformer des idées en expériences digitales exceptionnelles
           </p>
 
           <div className="hero-actions">
             <a href="#contact" className="cta-button fade-in">
-              Get in Touch
+              Nous Contacter
             </a>
             <a href="#services" className="secondary-button fade-in">
-              Explore Services
+              Explorer les Services
             </a>
           </div>
 
           <div className="hero-stats fade-in hidden">
             <div className="stat-item">
               <span className="stat-number">10+</span>
-              <span className="stat-label">Years Experience</span>
+              <span className="stat-label">Années d'Expérience</span>
             </div>
             <div className="stat-divider"></div>
             <div className="stat-item">
               <span className="stat-number">500+</span>
-              <span className="stat-label">Projects Delivered</span>
+              <span className="stat-label">Projets Réalisés</span>
             </div>
           </div>
         </div>
@@ -273,34 +273,31 @@ const Home = () => {
           <div className="mouse">
             <div className="wheel"></div>
           </div>
-          <div className="scroll-text">Scroll Down</div>
+          <div className="scroll-text">Défiler vers le bas</div>
         </div>
       </section>
 
       <section id="about" className="about-section">
         <div className="section-header">
-          <span className="section-tag fade-in hidden">Our Story</span>
-          <h2 className="section-title fade-in hidden">About Us</h2>
+          <span className="section-tag fade-in hidden">Notre Histoire</span>
+          <h2 className="section-title fade-in hidden">À Propos</h2>
           <div className="section-divider fade-in hidden"></div>
         </div>
 
         <div className="about-content">
           <div className="about-text">
             <p className="fade-in hidden">
-              We provide cutting-edge digital solutions to help businesses grow
-              and succeed in the digital age, combining innovation with
-              practical results.
+              Nous fournissons des solutions digitales innovantes pour aider les entreprises à se développer et à réussir dans l'ère numérique, en combinant innovation et résultats pratiques.
             </p>
             <p className="fade-in hidden">
-              Founded in 2013, our team has been at the forefront of digital
-              transformation across multiple industries.
+              Fondée en 2013, notre équipe a été à l'avant-garde de la transformation digitale dans de nombreux secteurs.
             </p>
           </div>
 
           <div className="about-image fade-in hidden">
             <img
               src="https://images.unsplash.com/photo-1522071820081-009f0129c71c"
-              alt="Team collaboration"
+              alt="Collaboration d'équipe"
             />
             <div className="about-image-overlay"></div>
           </div>
@@ -327,7 +324,7 @@ const Home = () => {
             <h3 className="counter" data-target="500">
               0
             </h3>
-            <p>Projects Completed</p>
+            <p>Projets Terminés</p>
           </div>
           <div className="stat scale-in hidden">
             <div className="stat-icon">
@@ -350,7 +347,7 @@ const Home = () => {
             <h3 className="counter" data-target="300">
               0
             </h3>
-            <p>Happy Clients</p>
+            <p>Clients Satisfaits</p>
           </div>
           <div className="stat scale-in hidden">
             <div className="stat-icon">
@@ -374,7 +371,7 @@ const Home = () => {
             <h3 className="counter" data-target="50">
               0
             </h3>
-            <p>Team Members</p>
+            <p>Membres d'Équipe</p>
           </div>
           <div className="stat scale-in hidden">
             <div className="stat-icon">
@@ -396,20 +393,20 @@ const Home = () => {
             <h3 className="counter" data-target="25">
               0
             </h3>
-            <p>Industry Awards</p>
+            <p>Prix du Secteur</p>
           </div>
         </div>
       </section>
 
       <section id="services" className="services-section">
         <div className="section-header">
-          <span className="section-tag fade-in hidden">What We Do</span>
-          <h2 className="section-title fade-in hidden">Our Services</h2>
+          <span className="section-tag fade-in hidden">Ce Que Nous Faisons</span>
+          <h2 className="section-title fade-in hidden">Nos Services</h2>
           <div className="section-divider fade-in hidden"></div>
         </div>
 
         <p className="section-description fade-in hidden">
-          We offer comprehensive solutions tailored to your specific needs
+          Nous offrons des solutions complètes adaptées à vos besoins spécifiques
         </p>
 
         <div className="features">
@@ -432,13 +429,12 @@ const Home = () => {
                 </svg>
               </div>
             </div>
-            <h4>Strategic Consulting</h4>
+            <h4>Conseil Stratégique</h4>
             <p>
-              Expert advice to optimize your digital strategy and business
-              growth initiatives.
+              Conseils d'experts pour optimiser votre stratégie digitale et initiatives de croissance.
             </p>
             <a href="#contact" className="feature-link">
-              Learn more →
+              En savoir plus →
             </a>
           </div>
 
@@ -462,13 +458,12 @@ const Home = () => {
                 </svg>
               </div>
             </div>
-            <h4>Digital Marketing</h4>
+            <h4>Marketing Digital</h4>
             <p>
-              Targeted campaigns to reach your audience and convert leads into
-              loyal customers.
+              Campagnes ciblées pour atteindre votre audience et convertir les prospects en clients fidèles.
             </p>
             <a href="#contact" className="feature-link">
-              Learn more →
+              En savoir plus →
             </a>
           </div>
 
@@ -492,13 +487,12 @@ const Home = () => {
                 </svg>
               </div>
             </div>
-            <h4>Custom Development</h4>
+            <h4>Développement Sur Mesure</h4>
             <p>
-              Bespoke software solutions tailored to your exact business
-              requirements.
+              Solutions logicielles sur mesure adaptées exactement aux besoins de votre entreprise.
             </p>
             <a href="#contact" className="feature-link">
-              Learn more →
+              En savoir plus →
             </a>
           </div>
 
@@ -521,13 +515,12 @@ const Home = () => {
                 </svg>
               </div>
             </div>
-            <h4>UX/UI Design</h4>
+            <h4>Design UX/UI</h4>
             <p>
-              Creating intuitive, engaging interfaces that enhance user
-              experience.
+              Création d'interfaces intuitives et engageantes qui améliorent l'expérience utilisateur.
             </p>
             <a href="#contact" className="feature-link">
-              Learn more →
+              En savoir plus →
             </a>
           </div>
         </div>
@@ -535,8 +528,8 @@ const Home = () => {
 
       <section id="testimonials" className="testimonials-section">
         <div className="section-header">
-          <span className="section-tag fade-in hidden">Client Feedback</span>
-          <h2 className="section-title fade-in hidden">What Our Clients Say</h2>
+          <span className="section-tag fade-in hidden">Avis Clients</span>
+          <h2 className="section-title fade-in hidden">Ce Que Disent Nos Clients</h2>
           <div className="section-divider fade-in hidden"></div>
         </div>
 
@@ -544,9 +537,7 @@ const Home = () => {
           <div className="testimonial-card fade-in hidden">
             <div className="testimonial-rating">★★★★★</div>
             <p className="testimonial-text">
-              GP transformed our business with their innovative approach to
-              digital solutions. Their team exceeded our expectations at every
-              turn.
+              GP a transformé notre entreprise grâce à leur approche innovante des solutions digitales. Leur équipe a dépassé nos attentes à chaque étape.
             </p>
             <div className="testimonial-author">
               <img
@@ -556,7 +547,7 @@ const Home = () => {
               />
               <div className="author-details">
                 <h4>Tarik Ahmed</h4>
-                <p>CEO, TechStart</p>
+                <p>PDG, TechStart</p>
               </div>
             </div>
           </div>
@@ -564,8 +555,7 @@ const Home = () => {
           <div className="testimonial-card fade-in hidden">
             <div className="testimonial-rating">★★★★★</div>
             <p className="testimonial-text">
-              Working with GP was a game-changer for our marketing strategy. The
-              results were immediate and impressive.
+              Travailler avec GP a changé la donne pour notre stratégie marketing. Les résultats ont été immédiats et impressionnants.
             </p>
             <div className="testimonial-author">
               <img
@@ -575,7 +565,7 @@ const Home = () => {
               />
               <div className="author-details">
                 <h4>Aya Benali</h4>
-                <p>Marketing Director, Innovate Inc.</p>
+                <p>Directrice Marketing, Innovate Inc.</p>
               </div>
             </div>
           </div>
@@ -583,8 +573,7 @@ const Home = () => {
           <div className="testimonial-card fade-in hidden">
             <div className="testimonial-rating">★★★★★</div>
             <p className="testimonial-text">
-              The team at GP consistently delivers high-quality work with
-              attention to detail that sets them apart from other agencies.
+              L'équipe de GP fournit constamment un travail de haute qualité avec une attention aux détails qui les distingue des autres agences.
             </p>
             <div className="testimonial-author">
               <img
@@ -605,14 +594,13 @@ const Home = () => {
         <div className="contact-container">
           <div className="contact-info">
             <div className="section-header">
-              <span className="section-tag fade-in hidden">Get In Touch</span>
-              <h2 className="section-title fade-in hidden">Contact Us</h2>
+              <span className="section-tag fade-in hidden">Contactez-nous</span>
+              <h2 className="section-title fade-in hidden">Contact</h2>
               <div className="section-divider fade-in hidden"></div>
             </div>
 
             <p className="contact-description fade-in hidden">
-              Have a project in mind? Let's discuss how we can help you achieve
-              your goals.
+              Vous avez un projet en tête ? Discutons de comment nous pouvons vous aider à atteindre vos objectifs.
             </p>
 
             <div className="contact-details">
@@ -634,8 +622,8 @@ const Home = () => {
                   </svg>
                 </div>
                 <div>
-                  <h4>Our Address</h4>
-                  <p>123 Innovation Street, Tech District, CA 94107</p>
+                  <h4>Notre Adresse</h4>
+                  <p>123 Rue de l'Innovation, Quartier Tech, CA 94107</p>
                 </div>
               </div>
 
@@ -656,7 +644,7 @@ const Home = () => {
                   </svg>
                 </div>
                 <div>
-                  <h4>Phone</h4>
+                  <h4>Téléphone</h4>
                   <p>+1 (555) 123-4567</p>
                 </div>
               </div>
@@ -691,34 +679,34 @@ const Home = () => {
             onSubmit={handleSubmit}
           >
             <div className="form-group">
-              <label htmlFor="name">Full Name</label>
+              <label htmlFor="name">Nom Complet</label>
               <input
                 type="text"
                 id="name"
                 name="name"
-                placeholder="Your name"
+                placeholder="Votre nom"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">Adresse Email</label>
               <input
                 type="email"
                 id="email"
                 name="email"
-                placeholder="your@email.com"
+                placeholder="votre@email.com"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label htmlFor="phone">Phone Number</label>
+              <label htmlFor="phone">Numéro de Téléphone</label>
               <input
                 type="text"
                 id="phone"
                 name="phone"
-                placeholder="Your phone number"
+                placeholder="Votre numéro de téléphone"
                 required
               />
             </div>
@@ -728,16 +716,16 @@ const Home = () => {
               <textarea
                 id="message"
                 name="message"
-                placeholder="Tell us about your project..."
+                placeholder="Parlez-nous de votre projet..."
                 required
               ></textarea>
             </div>
 
             {formStatus.success && (
-              <div className="success-message">Message sent successfully!</div>
+              <div className="success-message">Message envoyé avec succès!</div>
             )}
             {formStatus.error && (
-              <div className="error-message">Error: {formStatus.error}</div>
+              <div className="error-message">Erreur: {formStatus.error}</div>
             )}
 
             <button
@@ -746,7 +734,7 @@ const Home = () => {
               disabled={formStatus.submitting}
             >
               <span>
-                {formStatus.submitting ? "Sending..." : "Send Message"}
+                {formStatus.submitting ? "Envoi en cours..." : "Envoyer le Message"}
               </span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -793,28 +781,28 @@ const Home = () => {
 
             <div className="footer-links">
               <div className="footer-col">
-                <h4>Company</h4>
+                <h4>Entreprise</h4>
                 <ul>
                   <li>
-                    <a href="#about">About Us</a>
+                    <a href="#about">À Propos</a>
                   </li>
                   <li>
                     <a href="#services">Services</a>
                   </li>
                   <li>
-                    <a href="#testimonials">Testimonials</a>
+                    <a href="#testimonials">Témoignages</a>
                   </li>
                 </ul>
               </div>
 
               <div className="footer-col">
-                <h4>Resources</h4>
+                <h4>Ressources</h4>
                 <ul>
                   <li>
                     <a href="#">Blog</a>
                   </li>
                   <li>
-                    <a href="#">Case Studies</a>
+                    <a href="#">Études de Cas</a>
                   </li>
                   <li>
                     <a href="#">FAQ</a>
@@ -823,16 +811,16 @@ const Home = () => {
               </div>
 
               <div className="footer-col">
-                <h4>Legal</h4>
+                <h4>Légal</h4>
                 <ul>
                   <li>
-                    <a href="#">Privacy Policy</a>
+                    <a href="#">Politique de Confidentialité</a>
                   </li>
                   <li>
-                    <a href="#">Terms of Service</a>
+                    <a href="#">Conditions d'Utilisation</a>
                   </li>
                   <li>
-                    <a href="#">Cookie Policy</a>
+                    <a href="#">Politique des Cookies</a>
                   </li>
                 </ul>
               </div>
@@ -840,7 +828,7 @@ const Home = () => {
           </div>
 
           <div className="footer-bottom">
-            <p>&copy; 2025 GP Digital Solutions. All rights reserved.</p>
+            <p>&copy; 2025 GP Solutions Digitales. Tous droits réservés.</p>
             <div className="social-icons">
               <a href="#" aria-label="Twitter">
                 <svg
@@ -891,7 +879,7 @@ const Home = () => {
         </div>
       </footer>
 
-      <button id="back-to-top" title="Back to Top">
+      <button id="back-to-top" title="Retour en Haut">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
