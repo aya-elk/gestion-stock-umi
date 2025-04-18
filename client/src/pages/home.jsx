@@ -244,7 +244,7 @@ const Home = () => {
             </span>
           </h1>
           <p className="subheading fade-in hidden">
-            Transformer des idées en expériences digitales exceptionnelles
+            Gérer vos équipements universitaires n'a jamais été aussi simple.
           </p>
 
           <div className="hero-actions">
@@ -262,10 +262,6 @@ const Home = () => {
               <span className="stat-label">Années d'Expérience</span>
             </div>
             <div className="stat-divider"></div>
-            <div className="stat-item">
-              <span className="stat-number">500+</span>
-              <span className="stat-label">Projets Réalisés</span>
-            </div>
           </div>
         </div>
 
@@ -278,312 +274,320 @@ const Home = () => {
       </section>
 
       <section id="about" className="about-section">
-        <div className="section-header">
-          <span className="section-tag fade-in hidden">Notre Histoire</span>
-          <h2 className="section-title fade-in hidden">À Propos</h2>
-          <div className="section-divider fade-in hidden"></div>
-        </div>
-
-        <div className="about-content">
-          <div className="about-text">
-            <p className="fade-in hidden">
-              Nous fournissons des solutions digitales innovantes pour aider les entreprises à se développer et à réussir dans l'ère numérique, en combinant innovation et résultats pratiques.
-            </p>
-            <p className="fade-in hidden">
-              Fondée en 2013, notre équipe a été à l'avant-garde de la transformation digitale dans de nombreux secteurs.
-            </p>
+        <div className="section-container">
+          <div className="section-header">
+            <span className="section-tag fade-in hidden">Notre Plateforme</span>
+            <h2 className="section-title fade-in hidden">À Propos</h2>
+            <div className="section-divider fade-in hidden"></div>
           </div>
 
-          <div className="about-image fade-in hidden">
-            <img
-              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c"
-              alt="Collaboration d'équipe"
-            />
-            <div className="about-image-overlay"></div>
-          </div>
-        </div>
+          <div className="about-content">
+            <div className="about-text">
+              <p className="fade-in hidden">
+                Notre système de gestion d'équipements universitaires simplifie le processus de réservation et d'inventaire pour tous les acteurs de l'université, offrant une interface intuitive et des fonctionnalités complètes.
+              </p>
+              <p className="fade-in hidden">
+                Développé spécifiquement pour l'Université Moulay Ismail, notre plateforme facilite l'accès aux ressources techniques et scientifiques pour les étudiants et les enseignants.
+              </p>
+            </div>
 
-        <div className="stats-container">
-          <div className="stat scale-in hidden">
-            <div className="stat-icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="36"
-                height="36"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M22 2L11 13"></path>
-                <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
-              </svg>
+            <div className="about-image fade-in hidden">
+              <img
+                src="https://images.unsplash.com/photo-1522071820081-009f0129c71c"
+                alt="Collaboration d'équipe"
+              />
+              <div className="about-image-overlay"></div>
             </div>
-            <h3 className="counter" data-target="500">
-              0
-            </h3>
-            <p>Projets Terminés</p>
           </div>
-          <div className="stat scale-in hidden">
-            <div className="stat-icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="36"
-                height="36"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="8" r="5"></circle>
-                <path d="M20 21v-2a7 7 0 0 0-7-7h-2a7 7 0 0 0-7 7v2"></path>
-                <path d="M8 14l3 3 5-5"></path>
-              </svg>
+
+          <div className="stats-container">
+            <div className="stat scale-in hidden">
+              <div className="stat-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M22 2L11 13"></path>
+                  <path d="M22 2l-7 20-4-9-9-4 20-7z"></path>
+                </svg>
+              </div>
+              <h3 className="counter" data-target="500">
+                0
+              </h3>
+              <p>Équipements disponibles</p>
             </div>
-            <h3 className="counter" data-target="300">
-              0
-            </h3>
-            <p>Clients Satisfaits</p>
-          </div>
-          <div className="stat scale-in hidden">
-            <div className="stat-icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="36"
-                height="36"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
+            <div className="stat scale-in hidden">
+              <div className="stat-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="8" r="5"></circle>
+                  <path d="M20 21v-2a7 7 0 0 0-7-7h-2a7 7 0 0 0-7 7v2"></path>
+                  <path d="M8 14l3 3 5-5"></path>
+                </svg>
+              </div>
+              <h3 className="counter" data-target="750">
+                0
+              </h3>
+              <p>Étudiants utilisateurs</p>
             </div>
-            <h3 className="counter" data-target="50">
-              0
-            </h3>
-            <p>Membres d'Équipe</p>
-          </div>
-          <div className="stat scale-in hidden">
-            <div className="stat-icon">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="36"
-                height="36"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="8" r="7"></circle>
-                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-              </svg>
+            <div className="stat scale-in hidden">
+              <div className="stat-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+              <h3 className="counter" data-target="50">
+                0
+              </h3>
+              <p>Personnel technique</p>
             </div>
-            <h3 className="counter" data-target="25">
-              0
-            </h3>
-            <p>Prix du Secteur</p>
+            <div className="stat scale-in hidden">
+              <div className="stat-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="36"
+                  height="36"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="8" r="7"></circle>
+                  <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                </svg>
+              </div>
+              <h3 className="counter" data-target="5">
+                0
+              </h3>
+              <p>Départements connectés</p>
+            </div>
           </div>
         </div>
       </section>
 
       <section id="services" className="services-section">
-        <div className="section-header">
-          <span className="section-tag fade-in hidden">Ce Que Nous Faisons</span>
-          <h2 className="section-title fade-in hidden">Nos Services</h2>
-          <div className="section-divider fade-in hidden"></div>
-        </div>
-
-        <p className="section-description fade-in hidden">
-          Nous offrons des solutions complètes adaptées à vos besoins spécifiques
-        </p>
-
-        <div className="features">
-          <div className="feature-card slide-in hidden">
-            <div className="feature-icon">
-              <div className="icon-circle">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                </svg>
-              </div>
-            </div>
-            <h4>Conseil Stratégique</h4>
-            <p>
-              Conseils d'experts pour optimiser votre stratégie digitale et initiatives de croissance.
-            </p>
-            <a href="#contact" className="feature-link">
-              En savoir plus →
-            </a>
+        <div className="section-container">
+          <div className="section-header">
+            <span className="section-tag fade-in hidden">Nos Fonctionnalités</span>
+            <h2 className="section-title fade-in hidden">Services Proposés</h2>
+            <div className="section-divider fade-in hidden"></div>
           </div>
 
-          <div className="feature-card slide-in hidden">
-            <div className="feature-icon">
-              <div className="icon-circle">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <circle cx="12" cy="12" r="6"></circle>
-                  <circle cx="12" cy="12" r="2"></circle>
-                </svg>
-              </div>
-            </div>
-            <h4>Marketing Digital</h4>
-            <p>
-              Campagnes ciblées pour atteindre votre audience et convertir les prospects en clients fidèles.
-            </p>
-            <a href="#contact" className="feature-link">
-              En savoir plus →
-            </a>
-          </div>
+          <p className="section-description fade-in hidden">
+            Notre plateforme offre des solutions complètes pour la gestion des équipements universitaires
+          </p>
 
-          <div className="feature-card slide-in hidden">
-            <div className="feature-icon">
-              <div className="icon-circle">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                  <line x1="8" y1="21" x2="16" y2="21"></line>
-                  <line x1="12" y1="17" x2="12" y2="21"></line>
-                </svg>
+          <div className="features">
+            <div className="feature-card slide-in hidden">
+              <div className="feature-icon">
+                <div className="icon-circle">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
               </div>
+              <h4>Réservation d'Équipement</h4>
+              <p>
+                Système intuitif permettant aux étudiants de consulter, réserver et suivre le statut de leurs demandes d'équipements.
+              </p>
+              <a href="#contact" className="feature-link">
+                En savoir plus →
+              </a>
             </div>
-            <h4>Développement Sur Mesure</h4>
-            <p>
-              Solutions logicielles sur mesure adaptées exactement aux besoins de votre entreprise.
-            </p>
-            <a href="#contact" className="feature-link">
-              En savoir plus →
-            </a>
-          </div>
 
-          <div className="feature-card slide-in hidden">
-            <div className="feature-icon">
-              <div className="icon-circle">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                </svg>
+            <div className="feature-card slide-in hidden">
+              <div className="feature-icon">
+                <div className="icon-circle">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 7h-9"></path>
+                    <path d="M14 17H5"></path>
+                    <circle cx="17" cy="17" r="3"></circle>
+                    <circle cx="7" cy="7" r="3"></circle>
+                  </svg>
+                </div>
               </div>
+              <h4>Gestion d'Inventaire</h4>
+              <p>
+                Outils pour les techniciens permettant d'ajouter, modifier et suivre le statut technique de tous les équipements disponibles.
+              </p>
+              <a href="#contact" className="feature-link">
+                En savoir plus →
+              </a>
             </div>
-            <h4>Design UX/UI</h4>
-            <p>
-              Création d'interfaces intuitives et engageantes qui améliorent l'expérience utilisateur.
-            </p>
-            <a href="#contact" className="feature-link">
-              En savoir plus →
-            </a>
+
+            <div className="feature-card slide-in hidden">
+              <div className="feature-icon">
+                <div className="icon-circle">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <h4>Processus d'Approbation</h4>
+              <p>
+                Système de validation permettant aux responsables d'approuver, refuser et gérer efficacement les demandes d'équipement.
+              </p>
+              <a href="#contact" className="feature-link">
+                En savoir plus →
+              </a>
+            </div>
+
+            <div className="feature-card slide-in hidden">
+              <div className="feature-icon">
+                <div className="icon-circle">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                  </svg>
+                </div>
+              </div>
+              <h4>Système de Notifications</h4>
+              <p>
+                Notifications en temps réel et alertes par email pour informer les utilisateurs des changements de statut des réservations et équipements.
+              </p>
+              <a href="#contact" className="feature-link">
+                En savoir plus →
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
       <section id="testimonials" className="testimonials-section">
-        <div className="section-header">
-          <span className="section-tag fade-in hidden">Avis Clients</span>
-          <h2 className="section-title fade-in hidden">Ce Que Disent Nos Clients</h2>
-          <div className="section-divider fade-in hidden"></div>
-        </div>
-
-        <div className="testimonials-container">
-          <div className="testimonial-card fade-in hidden">
-            <div className="testimonial-rating">★★★★★</div>
-            <p className="testimonial-text">
-              GP a transformé notre entreprise grâce à leur approche innovante des solutions digitales. Leur équipe a dépassé nos attentes à chaque étape.
-            </p>
-            <div className="testimonial-author">
-              <img
-                src="https://randomuser.me/api/portraits/men/32.jpg"
-                alt="Tarik"
-                className="author-image"
-              />
-              <div className="author-details">
-                <h4>Tarik Ahmed</h4>
-                <p>PDG, TechStart</p>
-              </div>
-            </div>
+        <div className="section-container">
+          <div className="section-header">
+            <span className="section-tag fade-in hidden">Témoignages d'Utilisateurs</span>
+            <h2 className="section-title fade-in hidden">Retours d'Expérience</h2>
+            <div className="section-divider fade-in hidden"></div>
           </div>
 
-          <div className="testimonial-card fade-in hidden">
-            <div className="testimonial-rating">★★★★★</div>
-            <p className="testimonial-text">
-              Travailler avec GP a changé la donne pour notre stratégie marketing. Les résultats ont été immédiats et impressionnants.
-            </p>
-            <div className="testimonial-author">
-              <img
-                src="https://randomuser.me/api/portraits/women/44.jpg"
-                alt="Aya"
-                className="author-image"
-              />
-              <div className="author-details">
-                <h4>Aya Benali</h4>
-                <p>Directrice Marketing, Innovate Inc.</p>
+          <div className="testimonials-container">
+            <div className="testimonial-card fade-in hidden">
+              <div className="testimonial-rating">★★★★★</div>
+              <p className="testimonial-text">
+                Le système de réservation d'équipements a considérablement simplifié nos travaux pratiques. L'interface est intuitive et le processus de validation est rapide et efficace.
+              </p>
+              <div className="testimonial-author">
+                <img
+                  src="https://randomuser.me/api/portraits/men/32.jpg"
+                  alt="Mohamed"
+                  className="author-image"
+                />
+                <div className="author-details">
+                  <h4>Mohamed Alami</h4>
+                  <p>Étudiant, Département d'Informatique</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="testimonial-card fade-in hidden">
-            <div className="testimonial-rating">★★★★★</div>
-            <p className="testimonial-text">
-              L'équipe de GP fournit constamment un travail de haute qualité avec une attention aux détails qui les distingue des autres agences.
-            </p>
-            <div className="testimonial-author">
-              <img
-                src="https://randomuser.me/api/portraits/women/68.jpg"
-                alt="Mariam"
-                className="author-image"
-              />
-              <div className="author-details">
-                <h4>Mariam El Fassi</h4>
-                <p>CTO, DataDrive</p>
+            <div className="testimonial-card fade-in hidden">
+              <div className="testimonial-rating">★★★★★</div>
+              <p className="testimonial-text">
+                En tant qu'enseignante, cette plateforme me permet de suivre facilement les équipements disponibles et de réserver à l'avance pour mes cours. Une solution très bien pensée.
+              </p>
+              <div className="testimonial-author">
+                <img
+                  src="https://randomuser.me/api/portraits/women/44.jpg"
+                  alt="Nadia"
+                  className="author-image"
+                />
+                <div className="author-details">
+                  <h4>Nadia Benkirane</h4>
+                  <p>Professeure, Département de Physique</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="testimonial-card fade-in hidden">
+              <div className="testimonial-rating">★★★★★</div>
+              <p className="testimonial-text">
+                Le système d'inventaire nous a permis d'améliorer considérablement le suivi du matériel et de réduire les pertes. La maintenance préventive est désormais beaucoup plus efficace.
+              </p>
+              <div className="testimonial-author">
+                <img
+                  src="https://randomuser.me/api/portraits/women/68.jpg"
+                  alt="Rachid"
+                  className="author-image"
+                />
+                <div className="author-details">
+                  <h4>Rachid El Ouazzani</h4>
+                  <p>Responsable Technique, Service Logistique</p>
+                </div>
               </div>
             </div>
           </div>
@@ -591,167 +595,169 @@ const Home = () => {
       </section>
 
       <section id="contact" className="contact-section">
-        <div className="contact-container">
-          <div className="contact-info">
-            <div className="section-header">
-              <span className="section-tag fade-in hidden">Contactez-nous</span>
-              <h2 className="section-title fade-in hidden">Contact</h2>
-              <div className="section-divider fade-in hidden"></div>
-            </div>
-
-            <p className="contact-description fade-in hidden">
-              Vous avez un projet en tête ? Discutons de comment nous pouvons vous aider à atteindre vos objectifs.
-            </p>
-
-            <div className="contact-details">
-              <div className="contact-item fade-in hidden">
-                <div className="contact-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
-                  </svg>
-                </div>
-                <div>
-                  <h4>Notre Adresse</h4>
-                  <p>123 Rue de l'Innovation, Quartier Tech, CA 94107</p>
-                </div>
+        <div className="section-container">
+          <div className="contact-container">
+            <div className="contact-info">
+              <div className="section-header">
+                <span className="section-tag fade-in hidden">Contactez-nous</span>
+                <h2 className="section-title fade-in hidden">Contact</h2>
+                <div className="section-divider fade-in hidden"></div>
               </div>
 
-              <div className="contact-item fade-in hidden">
-                <div className="contact-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                  </svg>
+              <p className="contact-description fade-in hidden">
+                Vous avez un projet en tête ? Discutons de comment nous pouvons vous aider à atteindre vos objectifs.
+              </p>
+
+              <div className="contact-details">
+                <div className="contact-item fade-in hidden">
+                  <div className="contact-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4>Notre Adresse</h4>
+                    <p>Avenue Abdelkrim al Khattabi, 50000 Meknès, Maroc</p>
+                  </div>
                 </div>
-                <div>
-                  <h4>Téléphone</h4>
-                  <p>+1 (555) 123-4567</p>
+
+                <div className="contact-item fade-in hidden">
+                  <div className="contact-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4>Téléphone</h4>
+                    <p>+212 5 35 53 73 21</p>
+                  </div>
+                </div>
+
+                <div className="contact-item fade-in hidden">
+                  <div className="contact-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                      <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4>Email</h4>
+                    <p>contact@gpsolutions.com</p>
+                  </div>
                 </div>
               </div>
-
-              <div className="contact-item fade-in hidden">
-                <div className="contact-icon">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                    <polyline points="22,6 12,13 2,6"></polyline>
-                  </svg>
-                </div>
-                <div>
-                  <h4>Email</h4>
-                  <p>contact@gpsolutions.com</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <form
-            className="contact-form scale-in hidden"
-            onSubmit={handleSubmit}
-          >
-            <div className="form-group">
-              <label htmlFor="name">Nom Complet</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                placeholder="Votre nom"
-                required
-              />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="email">Adresse Email</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                placeholder="votre@email.com"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="phone">Numéro de Téléphone</label>
-              <input
-                type="text"
-                id="phone"
-                name="phone"
-                placeholder="Votre numéro de téléphone"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="message">Message</label>
-              <textarea
-                id="message"
-                name="message"
-                placeholder="Parlez-nous de votre projet..."
-                required
-              ></textarea>
-            </div>
-
-            {formStatus.success && (
-              <div className="success-message">Message envoyé avec succès!</div>
-            )}
-            {formStatus.error && (
-              <div className="error-message">Erreur: {formStatus.error}</div>
-            )}
-
-            <button
-              type="submit"
-              className="submit-button"
-              disabled={formStatus.submitting}
+            <form
+              className="contact-form scale-in hidden"
+              onSubmit={handleSubmit}
             >
-              <span>
-                {formStatus.submitting ? "Envoi en cours..." : "Envoyer le Message"}
-              </span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+              <div className="form-group">
+                <label htmlFor="name">Nom Complet</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  placeholder="Votre nom"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Adresse Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="votre@email.com"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="phone">Numéro de Téléphone</label>
+                <input
+                  type="text"
+                  id="phone"
+                  name="phone"
+                  placeholder="Votre numéro de téléphone"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="message">Message</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  placeholder="Parlez-nous de votre projet..."
+                  required
+                ></textarea>
+              </div>
+
+              {formStatus.success && (
+                <div className="success-message">Message envoyé avec succès!</div>
+              )}
+              {formStatus.error && (
+                <div className="error-message">Erreur: {formStatus.error}</div>
+              )}
+
+              <button
+                type="submit"
+                className="submit-button"
+                disabled={formStatus.submitting}
               >
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </button>
-          </form>
+                <span>
+                  {formStatus.submitting ? "Envoi en cours..." : "Envoyer le Message"}
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </form>
+          </div>
         </div>
       </section>
 
