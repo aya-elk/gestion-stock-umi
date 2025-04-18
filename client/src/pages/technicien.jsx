@@ -4,13 +4,13 @@ import { QRCodeCanvas } from 'qrcode.react';
 import '../css/technicien.css';
 
 const Technicien = () => {
-  // Add navigation for redirects
+  // Ajouter la navigation pour les redirections
   const navigate = useNavigate();
 
-  // Current user state for authentication
+  // État de l'utilisateur actuel pour l'authentification
   const [currentUser, setCurrentUser] = useState(null);
 
-  // State for equipment list and form
+  // État pour la liste d'équipements et le formulaire
   const [stockableEquipment, setStockableEquipment] = useState([]);
   const [soloEquipment, setSoloEquipment] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -18,29 +18,29 @@ const Technicien = () => {
     id: '',
     nom: '',
     description: '',
-    categorie: 'stockable', // Default category
+    categorie: 'stockable', // Catégorie par défaut
     etat: 'disponible',
     quantite: '1'
   });
 
-  // State for modals
+  // État pour les modales
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
 
-  // Add state for QR code modal
+  // Ajouter l'état pour la modale de code QR
   const [showQRModal, setShowQRModal] = useState(false);
   const [qrData, setQrData] = useState(null);
 
-  // State for filters
+  // État pour les filtres
   const [filterCategory, setFilterCategory] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
 
-  // State for loading and error handling
+  // État pour le chargement et la gestion des erreurs
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // UI state variables
+  // Variables d'état pour l'interface utilisateur
   const [darkMode, setDarkMode] = useState(false);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [activeView, setActiveView] = useState('equipment');
@@ -50,14 +50,14 @@ const Technicien = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Refs for sections and modals
+  // Références pour les sections et modales
   const equipmentRef = useRef(null);
   const reservationsRef = useRef(null);
   const modalRef = useRef(null);
 
-  // Authentication check on component mount
+  // Vérification d'authentification au montage du composant
   useEffect(() => {
-    // Check if user is logged in and has role 'technicien'
+    // Vérifier si l'utilisateur est connecté et a le rôle 'technicien'
     let userFromStorage;
     try {
       const localData = localStorage.getItem('userInfo');
@@ -69,29 +69,29 @@ const Technicien = () => {
         userFromStorage = JSON.parse(sessionData);
       }
     } catch (parseErr) {
-      console.error("Error parsing storage data:", parseErr);
+      console.error("Erreur lors de l'analyse des données de stockage:", parseErr);
       navigate('/login');
       return;
     }
 
-    // If no user data or wrong role, redirect to login
+    // Si aucune donnée utilisateur ou mauvais rôle, rediriger vers la connexion
     if (!userFromStorage) {
       navigate('/login');
       return;
     }
 
-    // Check if user role is 'technicien'
+    // Vérifier si le rôle de l'utilisateur est 'technicien'
     if (userFromStorage.role !== 'technicien') {
-      // Wrong role, redirect to login
+      // Mauvais rôle, rediriger vers la connexion
       navigate('/login');
       return;
     }
 
-    // User is authenticated and has correct role
+    // L'utilisateur est authentifié et a le bon rôle
     setCurrentUser(userFromStorage);
   }, [navigate]);
 
-  // Click outside modal handler
+  // Gestionnaire de clic en dehors de la modale
   useEffect(() => {
     function handleClickOutside(event) {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -112,14 +112,14 @@ const Technicien = () => {
     setUnreadCount(count);
   }, [notifications]);
 
-  // Toggle dark mode
+  // Basculer le mode sombre
   const toggleDarkMode = () => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
     document.body.classList.toggle('dark-mode', newDarkMode);
   };
 
-  // Mark notification as read
+  // Marquer une notification comme lue
   const markAsRead = async (id) => {
     try {
       const response = await fetch(`http://localhost:8080/api/notifications/${id}`, {
@@ -130,24 +130,24 @@ const Technicien = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to mark notification as read');
+        throw new Error('Échec du marquage de la notification comme lue');
       }
 
-      // Update local state
+      // Mettre à jour l'état local
       setNotifications(prevNotifications =>
         prevNotifications.map(notification =>
           notification.id === id ? { ...notification, read: true } : notification
         )
       );
 
-      // Update unread count
+      // Mettre à jour le compteur de non lus
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
-      console.error('Error marking notification as read:', err);
+      console.error('Erreur lors du marquage de la notification comme lue:', err);
     }
   };
 
-  // Handle scroll for back to top button
+  // Gérer le défilement pour le bouton retour en haut
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 300) {
@@ -163,7 +163,7 @@ const Technicien = () => {
     };
   }, []);
 
-  // Scroll to top
+  // Défiler vers le haut
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -171,11 +171,11 @@ const Technicien = () => {
     });
   };
 
-  // Load equipment data when component mounts or filters change
+  // Charger les données d'équipement lors du montage du composant ou du changement de filtres
   useEffect(() => {
-    // Only fetch data if authenticated
+    // Ne récupérer les données que si authentifié
     if (currentUser) {
-      // Animate elements on scroll
+      // Animer les éléments au défilement
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -188,7 +188,7 @@ const Technicien = () => {
         observer.observe(el);
       });
 
-      // Check dark mode
+      // Vérifier le mode sombre
       const isDarkMode = document.body.classList.contains('dark-mode');
       setDarkMode(isDarkMode);
 
@@ -204,13 +204,13 @@ const Technicien = () => {
     }
   }, [filterCategory, filterStatus, currentUser]);
 
-  // Fetch equipment data with filters applied
+  // Récupérer les données d'équipement avec les filtres appliqués
   const fetchEquipments = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      console.log('Fetching equipment data from server...');
+      console.log('Récupération des données d\'équipement depuis le serveur...');
       const response = await fetch('http://localhost:8080/api/equipments', {
         headers: {
           'Accept': 'application/json'
@@ -219,25 +219,25 @@ const Technicien = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error(`Failed to fetch equipment data: ${response.status} ${response.statusText}`);
+        console.error('Réponse d\'erreur API:', errorText);
+        throw new Error(`Échec de récupération des données d'équipement: ${response.status} ${response.statusText}`);
       }
 
       const equipment = await response.json();
-      console.log('Equipment data parsed successfully:', equipment.length, 'items');
+      console.log('Données d\'équipement analysées avec succès:', equipment.length, 'éléments');
 
-      // Filter based on the database categories
+      // Filtrer selon les catégories de la base de données
       const stockable = equipment.filter(item => item.categorie === 'stockable');
       const solo = equipment.filter(item => item.categorie === 'solo');
 
-      console.log(`Categorized: ${stockable.length} stockable, ${solo.length} solo items`);
+      console.log(`Catégorisé: ${stockable.length} stockables, ${solo.length} solos`);
 
       setStockableEquipment(stockable);
       setSoloEquipment(solo);
 
     } catch (err) {
-      setError("Error fetching equipment: " + err.message);
-      console.error('Equipment fetch error:', err);
+      setError("Erreur lors de la récupération des équipements: " + err.message);
+      console.error('Erreur de récupération des équipements:', err);
       setStockableEquipment([]);
       setSoloEquipment([]);
     } finally {
@@ -245,22 +245,22 @@ const Technicien = () => {
     }
   };
 
-  // Fetch reservation data
+  // Récupérer les données de réservation
   const fetchReservations = async () => {
     try {
       setIsLoading(true);
 
-      // Get all reservations 
+      // Obtenir toutes les réservations 
       const response = await fetch('http://localhost:8080/api/reservations');
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch reservations: ${response.status} ${response.statusText}`);
+        throw new Error(`Échec de récupération des réservations: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log('Reservations data:', data);
+      console.log('Données des réservations:', data);
 
-      // Group by reservation ID to handle multiple equipment items per reservation
+      // Regrouper par ID de réservation pour gérer plusieurs équipements par réservation
       const reservationMap = {};
 
       data.forEach(item => {
@@ -274,7 +274,7 @@ const Technicien = () => {
             }]
           };
         } else {
-          // Add additional equipment to existing reservation
+          // Ajouter un équipement supplémentaire à la réservation existante
           reservationMap[item.id_reservation].equipment_items.push({
             id: item.id_equipement,
             name: item.nom_equipement,
@@ -286,46 +286,46 @@ const Technicien = () => {
       const finalReservations = Object.values(reservationMap);
       setReservations(finalReservations);
     } catch (err) {
-      console.error('Error loading reservation data:', err);
-      setError("Failed to load reservations. Please try again later.");
+      console.error('Erreur lors du chargement des données de réservation:', err);
+      setError("Échec de chargement des réservations. Veuillez réessayer plus tard.");
       setReservations([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Fetch notifications from API
+  // Récupérer les notifications depuis l'API
   const fetchNotifications = async () => {
     try {
       const response = await fetch('http://localhost:8080/api/notifications/tech');
 
       if (!response.ok) {
-        throw new Error('Failed to fetch notifications');
+        throw new Error('Échec de récupération des notifications');
       }
 
       const data = await response.json();
 
-      // Transform the data to match the expected format in the UI
+      // Transformer les données pour correspondre au format attendu dans l'interface utilisateur
       const formattedNotifications = data.map(notification => ({
         id: notification.id,
-        title: 'System Notification', // Add a default title since database doesn't have this
+        title: 'Notification Système', // Ajouter un titre par défaut puisque la base de données n'en a pas
         message: notification.message,
-        date: notification.date_envoi, // Ensure this field is included
-        read: notification.statut === 'lu' // Convert 'envoye'/'lu' to boolean
+        date: notification.date_envoi, // S'assurer que ce champ est inclus
+        read: notification.statut === 'lu' // Convertir 'envoye'/'lu' en booléen
       }));
 
       setNotifications(formattedNotifications);
 
-      // Count unread notifications
+      // Compter les notifications non lues
       const unreadCount = data.filter(n => n.statut === 'envoye').length;
       setUnreadCount(unreadCount);
     } catch (err) {
-      console.error('Notification fetch error:', err);
-      // Fallback data if needed
+      console.error('Erreur de récupération des notifications:', err);
+      // Données de secours si nécessaire
     }
   };
 
-  // Handle changes in form inputs
+  // Gérer les changements dans les entrées du formulaire
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
@@ -334,13 +334,13 @@ const Technicien = () => {
     }));
   };
 
-  // Open add modal with empty form
+  // Ouvrir la modale d'ajout avec un formulaire vide
   const openAddModal = () => {
     resetForm();
     setShowAddModal(true);
   };
 
-  // Open update modal with equipment data
+  // Ouvrir la modale de mise à jour avec les données d'équipement
   const openUpdateModal = (equipment) => {
     setFormData({
       id: equipment.id,
@@ -353,7 +353,7 @@ const Technicien = () => {
     setShowUpdateModal(true);
   };
 
-  // Function to generate QR code data
+  // Fonction pour générer les données de code QR
   const generateQRData = (equipment) => {
     return JSON.stringify({
       id: equipment.id,
@@ -362,13 +362,13 @@ const Technicien = () => {
     });
   };
 
-  // Function to open QR code modal
+  // Fonction pour ouvrir la modale de code QR
   const openQRModal = (equipment) => {
     setQrData(generateQRData(equipment));
     setShowQRModal(true);
   };
 
-  // Close modals
+  // Fermer les modales
   const closeModals = () => {
     setShowAddModal(false);
     setShowUpdateModal(false);
@@ -377,7 +377,7 @@ const Technicien = () => {
     setSuccess(null);
   };
 
-  // Handle form submission for adding equipment
+  // Gérer la soumission du formulaire pour ajouter un équipement
   const handleAddEquipment = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -394,31 +394,31 @@ const Technicien = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error('Failed to add equipment');
+        console.error('Réponse d\'erreur API:', errorText);
+        throw new Error('Échec d\'ajout d\'équipement');
       }
 
-      setSuccess('Equipment added successfully');
+      setSuccess('Équipement ajouté avec succès');
       fetchEquipments();
 
-      // Close modal after short delay to show success message
+      // Fermer la modale après un court délai pour montrer le message de succès
       setTimeout(() => {
         setShowAddModal(false);
         resetForm();
       }, 1500);
     } catch (err) {
-      setError('Error adding equipment: ' + err.message);
+      setError('Erreur lors de l\'ajout d\'équipement: ' + err.message);
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle form submission for updating equipment
+  // Gérer la soumission du formulaire pour mettre à jour un équipement
   const handleUpdateEquipment = async (e) => {
     e.preventDefault();
     if (!formData.id) {
-      setError('No equipment selected for update');
+      setError('Aucun équipement sélectionné pour la mise à jour');
       return;
     }
 
@@ -436,34 +436,34 @@ const Technicien = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error('Failed to update equipment');
+        console.error('Réponse d\'erreur API:', errorText);
+        throw new Error('Échec de mise à jour de l\'équipement');
       }
 
-      setSuccess('Equipment updated successfully');
+      setSuccess('Équipement mis à jour avec succès');
       fetchEquipments();
 
-      // Close modal after short delay to show success message
+      // Fermer la modale après un court délai pour montrer le message de succès
       setTimeout(() => {
         setShowUpdateModal(false);
         resetForm();
       }, 1500);
     } catch (err) {
-      setError('Error updating equipment: ' + err.message);
+      setError('Erreur lors de la mise à jour de l\'équipement: ' + err.message);
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle equipment deletion
+  // Gérer la suppression d'équipement
   const handleDeleteEquipment = async (id) => {
     if (!id) {
-      setError('No equipment selected for deletion');
+      setError('Aucun équipement sélectionné pour la suppression');
       return;
     }
 
-    if (!window.confirm('Are you sure you want to delete this equipment?')) {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet équipement?')) {
       return;
     }
 
@@ -477,21 +477,21 @@ const Technicien = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error('Failed to delete equipment');
+        console.error('Réponse d\'erreur API:', errorText);
+        throw new Error('Échec de suppression de l\'équipement');
       }
 
-      setSuccess('Equipment deleted successfully');
+      setSuccess('Équipement supprimé avec succès');
       fetchEquipments();
     } catch (err) {
-      setError('Error deleting equipment: ' + err.message);
+      setError('Erreur lors de la suppression de l\'équipement: ' + err.message);
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Reset form to initial state
+  // Réinitialiser le formulaire à l'état initial
   const resetForm = () => {
     setFormData({
       id: '',
@@ -503,7 +503,7 @@ const Technicien = () => {
     });
   };
 
-  // Handle filter changes
+  // Gérer les changements de filtre
   const handleFilterChange = (e) => {
     if (e.target.name === 'filter_category') {
       setFilterCategory(e.target.value);
@@ -512,7 +512,7 @@ const Technicien = () => {
     }
   };
 
-  // Handle reservation status update
+  // Gérer la mise à jour du statut de réservation
   const handleUpdateReservationStatus = async (id, status) => {
     setIsLoading(true);
     setError(null);
@@ -529,40 +529,40 @@ const Technicien = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to update reservation status to ${status}`);
+        throw new Error(errorData.message || `Échec de mise à jour du statut de réservation en ${status}`);
       }
 
-      setSuccess(`Reservation status updated to ${status}`);
+      setSuccess(`Statut de réservation mis à jour en ${status}`);
 
-      // Refresh the reservations list after a short delay
+      // Rafraîchir la liste des réservations après un court délai
       setTimeout(() => {
         fetchReservations();
-        fetchEquipments(); // Refresh equipment as status might have changed
-        fetchNotifications(); // Check for new system notifications
+        fetchEquipments(); // Rafraîchir l'équipement car le statut a pu changer
+        fetchNotifications(); // Vérifier les nouvelles notifications système
       }, 1000);
 
     } catch (err) {
-      setError(`Error updating reservation: ${err.message}`);
-      console.error('Update reservation error:', err);
+      setError(`Erreur lors de la mise à jour de la réservation: ${err.message}`);
+      console.error('Erreur de mise à jour de réservation:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle tab change
+  // Gérer le changement d'onglet
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
-  // Toggle between stockable and solo equipment tabs
+  // Basculer entre les onglets d'équipement stockable et solo
   const handleEquipmentTabChange = (tabType) => {
     setActiveEquipmentTab(tabType);
   };
 
-  // Update equipment status (e.g., mark as available/under repair/unavailable)
+  // Mettre à jour le statut de l'équipement (ex., marquer comme disponible/en réparation/indisponible)
   const handleUpdateEquipmentStatus = async (id, newStatus, previousStatus) => {
     if (!id) {
-      setError('No equipment selected for update');
+      setError('Aucun équipement sélectionné pour la mise à jour');
       return;
     }
 
@@ -571,17 +571,17 @@ const Technicien = () => {
     setSuccess(null);
 
     try {
-      // Get equipment details to include in notification
+      // Obtenir les détails de l'équipement à inclure dans la notification
       const equipmentResponse = await fetch(`http://localhost:8080/api/equipments/${id}`);
       if (!equipmentResponse.ok) {
-        throw new Error('Failed to fetch equipment details');
+        throw new Error('Échec de récupération des détails de l\'équipement');
       }
       const equipment = await equipmentResponse.json();
 
-      // Ensure previous status is never undefined - use equipment's current state as fallback
+      // S'assurer que le statut précédent n'est jamais indéfini - utiliser l'état actuel de l'équipement comme solution de secours
       const oldState = previousStatus || equipment.etat || 'disponible';
 
-      // Update equipment status
+      // Mettre à jour le statut de l'équipement
       const response = await fetch(`http://localhost:8080/api/equipments/${id}/state`, {
         method: 'PATCH',
         headers: {
@@ -589,44 +589,44 @@ const Technicien = () => {
         },
         body: JSON.stringify({
           etat: newStatus,
-          oldState: oldState || 'disponible', // Ensure we never send undefined
-          technicianId: currentUser?.id || null, // Use null instead of undefined
+          oldState: oldState || 'disponible', // S'assurer que nous n'envoyons jamais undefined
+          technicianId: currentUser?.id || null, // Utiliser null au lieu de undefined
           technicianName: currentUser?.prenom && currentUser?.nom ?
-            `${currentUser.prenom} ${currentUser.nom}` : 'Unknown Technician'
+            `${currentUser.prenom} ${currentUser.nom}` : 'Technicien Inconnu'
         }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error('Failed to update equipment status');
+        console.error('Réponse d\'erreur API:', errorText);
+        throw new Error('Échec de mise à jour du statut de l\'équipement');
       }
 
-      setSuccess(`Equipment status updated to ${newStatus === 'disponible' ? 'Available' :
-        newStatus === 'en_cours' ? 'In Use' :
-          newStatus === 'en_reparation' ? 'In Repair' :
-            newStatus === 'indisponible' ? 'Out of Service' :
-              'Unknown'}`);
+      setSuccess(`Statut de l'équipement mis à jour en ${newStatus === 'disponible' ? 'Disponible' :
+        newStatus === 'en_cours' ? 'En Utilisation' :
+          newStatus === 'en_reparation' ? 'En Réparation' :
+            newStatus === 'indisponible' ? 'Hors Service' :
+              'Inconnu'}`);
 
-      // Increase timeout to ensure server has time to process
+      // Augmenter le délai pour s'assurer que le serveur a le temps de traiter
       setTimeout(() => {
         fetchEquipments();
-        fetchNotifications(); // Refresh notifications after status change
+        fetchNotifications(); // Rafraîchir les notifications après le changement de statut
       }, 1000);
     } catch (err) {
-      setError('Error updating equipment status: ' + err.message);
+      setError('Erreur lors de la mise à jour du statut de l\'équipement: ' + err.message);
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // If not authenticated yet, show loading
+  // Si pas encore authentifié, afficher le chargement
   if (!currentUser) {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
-        <p>Verifying authentication...</p>
+        <p>Vérification de l'authentification...</p>
       </div>
     );
   }
@@ -634,7 +634,7 @@ const Technicien = () => {
   return (
     <div className={darkMode ? "dark-mode" : ""}>
       <div className="dashboard-layout">
-        {/* Sidebar */}
+        {/* Barre latérale */}
         <aside className="dashboard-sidebar">
           <div className="sidebar-header">
             <div className="logo-icon">GP<span className="accent-dot">.</span></div>
@@ -644,7 +644,7 @@ const Technicien = () => {
             <button
               className={`sidebar-nav-item ${activeView === 'equipment' ? 'active' : ''}`}
               onClick={() => setActiveView('equipment')}
-              title="Equipment Management"
+              title="Gestion d'Équipement"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="7" height="7"></rect>
@@ -657,7 +657,7 @@ const Technicien = () => {
             <button
               className={`sidebar-nav-item ${activeView === 'reservations' ? 'active' : ''}`}
               onClick={() => setActiveView('reservations')}
-              title="Reservations"
+              title="Réservations"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -681,7 +681,7 @@ const Technicien = () => {
           </nav>
 
           <div className="sidebar-footer">
-            <button className="theme-toggle" onClick={toggleDarkMode} title={darkMode ? "Light Mode" : "Dark Mode"}>
+            <button className="theme-toggle" onClick={toggleDarkMode} title={darkMode ? "Mode Clair" : "Mode Sombre"}>
               {darkMode ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="5"></circle>
@@ -700,7 +700,7 @@ const Technicien = () => {
                 </svg>
               )}
             </button>
-            <Link to="/login" className="sidebar-logout" title="Logout" onClick={() => {
+            <Link to="/login" className="sidebar-logout" title="Déconnexion" onClick={() => {
               localStorage.removeItem('userInfo');
               sessionStorage.removeItem('userInfo');
             }}>
@@ -713,22 +713,22 @@ const Technicien = () => {
           </div>
         </aside>
 
-        {/* Main Content */}
+        {/* Contenu Principal */}
         <main className="dashboard-main">
           <header className="dashboard-header">
             <div className="dashboard-title">
-              <h1>Technician Dashboard</h1>
+              <h1>Tableau de Bord Technicien</h1>
               <p className="dashboard-subtitle">
                 {activeView === 'equipment'
-                  ? 'Manage equipment inventory and technical status'
+                  ? 'Gérer l\'inventaire et l\'état technique des équipements'
                   : activeView === 'reservations'
-                    ? 'Track and update reservation statuses'
-                    : 'View system notifications and alerts'}
+                    ? 'Suivre et mettre à jour les statuts des réservations'
+                    : 'Consulter les notifications et alertes du système'}
               </p>
             </div>
             <div className="dashboard-actions">
               <div className="user-profile">
-                <span className="user-greeting">Welcome, {currentUser.prenom || 'Technician'}</span>
+                <span className="user-greeting">Bienvenue, {currentUser.prenom || 'Technicien'}</span>
                 <div className="user-avatar">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -739,12 +739,12 @@ const Technicien = () => {
             </div>
           </header>
 
-          {/* Success and error messages */}
+          {/* Messages de succès et d'erreur */}
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
 
-          {/* Rest of the component remains the same */}
-          {/* Equipment Management View */}
+          {/* Le reste du composant reste le même */}
+          {/* Vue de Gestion des Équipements */}
           {activeView === 'equipment' && (
             <div className="dashboard-content">
               <div className="dashboard-tabs">
@@ -756,7 +756,7 @@ const Technicien = () => {
                     <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
                     <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                   </svg>
-                  Inventory Management
+                  Gestion d'Inventaire
                 </button>
                 <button
                   className={`dashboard-tab ${activeTab === 'maintenance' ? 'active' : ''}`}
@@ -766,41 +766,41 @@ const Technicien = () => {
                     <circle cx="12" cy="12" r="3"></circle>
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                   </svg>
-                  Maintenance & Repairs
+                  Maintenance et Réparations
                 </button>
               </div>
 
               <div className="dashboard-sections">
-                {/* Equipment Inventory Section */}
+                {/* Section Inventaire des Équipements */}
                 {activeTab === 'inventory' && (
                   <section id="inventory" className="dashboard-section active-section">
                     <div className="section-header">
-                      <h2 className="section-title">Equipment Inventory</h2>
+                      <h2 className="section-title">Inventaire des Équipements</h2>
                       <div className="section-divider"></div>
                       <p className="section-description">
-                        Add, update, and manage equipment in your inventory system
+                        Ajouter, mettre à jour et gérer les équipements dans votre système d'inventaire
                       </p>
                     </div>
 
-                    {/* Equipment type tabs */}
+                    {/* Onglets de type d'équipement */}
                     <div className="equipment-tabs">
                       <button
                         className={`equipment-tab ${activeEquipmentTab === 'stockable' ? 'active' : ''}`}
                         onClick={() => handleEquipmentTabChange('stockable')}
                       >
-                        Stockable Equipment
+                        Équipements Stockables
                       </button>
                       <button
                         className={`equipment-tab ${activeEquipmentTab === 'solo' ? 'active' : ''}`}
                         onClick={() => handleEquipmentTabChange('solo')}
                       >
-                        Solo Equipment
+                        Équipements Solo
                       </button>
                     </div>
 
                     <div className="filter-section">
                       {activeEquipmentTab === 'stockable' ? (
-                        // For stockable equipment - only show low stock filter checkbox
+                        // Pour les équipements stockables - montrer uniquement la case à cocher de stock faible
                         <div className="form-group">
                           <label className="checkbox-container">
                             <input
@@ -809,16 +809,16 @@ const Technicien = () => {
                               onChange={() => setShowLowStock(!showLowStock)}
                             />
                             <span className="checkmark"></span>
-                            Show only low stock items
+                            Afficher uniquement les articles à stock faible
                           </label>
                         </div>
                       ) : (
-                        // For solo equipment - only show status filter
+                        // Pour les équipements solo - montrer uniquement le filtre de statut
                         <>
-                          <h3>Filter Equipment</h3>
+                          <h3>Filtrer les Équipements</h3>
                           <div className="filter-controls">
                             <div className="form-group">
-                              <label htmlFor="filter_status">Status:</label>
+                              <label htmlFor="filter_status">Statut:</label>
                               <select
                                 name="filter_status"
                                 id="filter_status"
@@ -826,29 +826,29 @@ const Technicien = () => {
                                 onChange={handleFilterChange}
                                 className="form-control"
                               >
-                                <option value="">All Status</option>
-                                <option value="disponible">Available</option>
-                                <option value="en_cours">In Use</option>
-                                <option value="en_reparation">In Repair</option>
-                                <option value="indisponible">Unavailable</option>
+                                <option value="">Tous les Statuts</option>
+                                <option value="disponible">Disponible</option>
+                                <option value="en_cours">En Utilisation</option>
+                                <option value="en_reparation">En Réparation</option>
+                                <option value="indisponible">Indisponible</option>
                               </select>
                             </div>
                             <button
                               className="secondary-button"
                               onClick={() => setFilterStatus('')}
                             >
-                              Clear Filter
+                              Effacer le Filtre
                             </button>
                           </div>
                         </>
                       )}
                     </div>
 
-                    {/* Stockable Equipment Table */}
+                    {/* Tableau des Équipements Stockables */}
                     {activeEquipmentTab === 'stockable' && (
                       <div className="table-container glass-effect">
                         <div className="table-header">
-                          <h3>Stockable Equipment List</h3>
+                          <h3>Liste des Équipements Stockables</h3>
                           <button
                             className="add-button"
                             onClick={() => {
@@ -860,7 +860,7 @@ const Technicien = () => {
                               <line x1="12" y1="5" x2="12" y2="19"></line>
                               <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
-                            Add Stockable Equipment
+                            Ajouter un Équipement Stockable
                           </button>
                         </div>
 
@@ -872,18 +872,18 @@ const Technicien = () => {
                               <thead>
                                 <tr>
                                   <th>ID</th>
-                                  <th>Name</th>
+                                  <th>Nom</th>
                                   <th>Description</th>
-                                  <th>QR Code</th>
-                                  <th>Quantity</th>
-                                  <th>Status</th>
+                                  <th>Code QR</th>
+                                  <th>Quantité</th>
+                                  <th>Statut</th>
                                   <th>Actions</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {stockableEquipment.length === 0 ? (
                                   <tr>
-                                    <td colSpan="7" className="centered-cell">No stockable equipment found</td>
+                                    <td colSpan="7" className="centered-cell">Aucun équipement stockable trouvé</td>
                                   </tr>
                                 ) : (
                                   stockableEquipment
@@ -903,7 +903,7 @@ const Technicien = () => {
                                             <button
                                               className="qr-view-btn"
                                               onClick={() => openQRModal(equipment)}
-                                              title="View/Download QR"
+                                              title="Voir/Télécharger QR"
                                             >
                                               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <circle cx="11" cy="11" r="8"></circle>
@@ -917,14 +917,14 @@ const Technicien = () => {
                                         <td>{equipment.quantite}</td>
                                         <td>
                                           <span className={`stock-level ${equipment.quantite < 5 ? 'low' : 'normal'}`}>
-                                            {equipment.quantite < 5 ? 'Low Stock' : 'Normal'}
+                                            {equipment.quantite < 5 ? 'Stock Faible' : 'Normal'}
                                           </span>
                                         </td>
                                         <td className="action-buttons">
                                           <button
                                             onClick={() => openUpdateModal(equipment)}
                                             className="edit-button"
-                                            title="Edit"
+                                            title="Modifier"
                                           >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                               <path d="M12 20h9"></path>
@@ -934,7 +934,7 @@ const Technicien = () => {
                                           <button
                                             onClick={() => handleDeleteEquipment(equipment.id)}
                                             className="delete-button-small"
-                                            title="Delete"
+                                            title="Supprimer"
                                           >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                               <polyline points="3 6 5 6 21 6"></polyline>
@@ -952,11 +952,11 @@ const Technicien = () => {
                       </div>
                     )}
 
-                    {/* Solo Equipment Table */}
+                    {/* Tableau des Équipements Solo */}
                     {activeEquipmentTab === 'solo' && (
                       <div className="table-container glass-effect">
                         <div className="table-header">
-                          <h3>Solo Equipment List</h3>
+                          <h3>Liste des Équipements Solo</h3>
                           <button
                             className="add-button"
                             onClick={() => {
@@ -968,7 +968,7 @@ const Technicien = () => {
                               <line x1="12" y1="5" x2="12" y2="19"></line>
                               <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
-                            Add Solo Equipment
+                            Ajouter un Équipement Solo
                           </button>
                         </div>
 
@@ -980,21 +980,21 @@ const Technicien = () => {
                               <thead>
                                 <tr>
                                   <th>ID</th>
-                                  <th>Name</th>
+                                  <th>Nom</th>
                                   <th>Description</th>
-                                  <th>QR Code</th>
-                                  <th>Status</th>
+                                  <th>Code QR</th>
+                                  <th>Statut</th>
                                   <th>Actions</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {soloEquipment.length === 0 ? (
                                   <tr>
-                                    <td colSpan="6" className="centered-cell">No solo equipment found</td>
+                                    <td colSpan="6" className="centered-cell">Aucun équipement solo trouvé</td>
                                   </tr>
                                 ) : (
                                   soloEquipment
-                                    // Apply status filter if selected
+                                    // Appliquer le filtre de statut si sélectionné
                                     .filter(item => filterStatus === '' || item.etat === filterStatus)
                                     .map(equipment => (
                                       <tr key={equipment.id}>
@@ -1011,7 +1011,7 @@ const Technicien = () => {
                                             <button
                                               className="qr-view-btn"
                                               onClick={() => openQRModal(equipment)}
-                                              title="View/Download QR"
+                                              title="Voir/Télécharger QR"
                                             >
                                               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                                 <circle cx="11" cy="11" r="8"></circle>
@@ -1024,17 +1024,17 @@ const Technicien = () => {
                                         </td>
                                         <td>
                                           <span className={`status-badge status-${equipment.etat}`}>
-                                            {equipment.etat === 'disponible' ? 'Available' :
-                                              equipment.etat === 'en_cours' ? 'In Use' :
-                                                equipment.etat === 'en_reparation' ? 'In Repair' :
-                                                  'Unavailable'}
+                                            {equipment.etat === 'disponible' ? 'Disponible' :
+                                              equipment.etat === 'en_cours' ? 'En Utilisation' :
+                                                equipment.etat === 'en_reparation' ? 'En Réparation' :
+                                                  'Indisponible'}
                                           </span>
                                         </td>
                                         <td className="action-buttons">
                                           <button
                                             onClick={() => openUpdateModal(equipment)}
                                             className="edit-button"
-                                            title="Edit"
+                                            title="Modifier"
                                           >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                               <path d="M12 20h9"></path>
@@ -1044,7 +1044,7 @@ const Technicien = () => {
                                           <button
                                             onClick={() => handleDeleteEquipment(equipment.id)}
                                             className="delete-button-small"
-                                            title="Delete"
+                                            title="Supprimer"
                                           >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                               <polyline points="3 6 5 6 21 6"></polyline>
@@ -1064,19 +1064,19 @@ const Technicien = () => {
                   </section>
                 )}
 
-                {/* Maintenance Section */}
+                {/* Section Maintenance */}
                 {activeTab === 'maintenance' && (
                   <section id="maintenance" className="dashboard-section active-section">
                     <div className="section-header">
-                      <h2 className="section-title">Maintenance & Repairs</h2>
+                      <h2 className="section-title">Maintenance et Réparations</h2>
                       <div className="section-divider"></div>
                       <p className="section-description">
-                        Track and manage equipment that requires maintenance or is currently under repair
+                        Suivre et gérer les équipements nécessitant une maintenance ou actuellement en réparation
                       </p>
                     </div>
 
                     <div className="table-container glass-effect">
-                      <h3>Equipment Under Maintenance</h3>
+                      <h3>Équipements en Maintenance</h3>
                       <div className="responsive-table">
                         {isLoading ? (
                           <div className="loading-spinner"></div>
@@ -1085,9 +1085,9 @@ const Technicien = () => {
                             <thead>
                               <tr>
                                 <th>ID</th>
-                                <th>Name</th>
-                                <th>Category</th>
-                                <th>Status</th>
+                                <th>Nom</th>
+                                <th>Catégorie</th>
+                                <th>Statut</th>
                                 <th>Description</th>
                                 <th>Actions</th>
                               </tr>
@@ -1095,7 +1095,7 @@ const Technicien = () => {
                             <tbody>
                               {soloEquipment.filter(item => item.etat === 'indisponible' || item.etat === 'en_reparation').length === 0 ? (
                                 <tr>
-                                  <td colSpan="6" className="centered-cell">No equipment currently under maintenance</td>
+                                  <td colSpan="6" className="centered-cell">Aucun équipement actuellement en maintenance</td>
                                 </tr>
                               ) : (
                                 soloEquipment.filter(item => item.etat === 'indisponible' || item.etat === 'en_reparation').map(equipment => (
@@ -1105,7 +1105,7 @@ const Technicien = () => {
                                     <td><span className="category-badge">{equipment.categorie}</span></td>
                                     <td>
                                       <span className={`status-badge status-${equipment.etat}`}>
-                                        {equipment.etat === 'en_reparation' ? 'In Repair' : 'Unavailable'}
+                                        {equipment.etat === 'en_reparation' ? 'En Réparation' : 'Indisponible'}
                                       </span>
                                     </td>
                                     <td>{equipment.description}</td>
@@ -1113,26 +1113,26 @@ const Technicien = () => {
                                       {equipment.etat === 'indisponible' && (
                                         <button
                                           className="repair-btn"
-                                          title="Mark as In Repair"
+                                          title="Marquer comme En Réparation"
                                           onClick={() => handleUpdateEquipmentStatus(equipment.id, 'en_reparation', 'indisponible')}
                                         >
                                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                                           </svg>
-                                          Start Repair
+                                          Commencer Réparation
                                         </button>
                                       )}
                                       {equipment.etat === 'en_reparation' && (
                                         <button
                                           className="confirm-btn"
-                                          title="Mark as Repaired"
+                                          title="Marquer comme Réparé"
                                           onClick={() => handleUpdateEquipmentStatus(equipment.id, 'disponible', 'en_reparation')}
                                         >
                                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                             <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                           </svg>
-                                          Mark as Repaired
+                                          Marquer comme Réparé
                                         </button>
                                       )}
                                     </td>
@@ -1150,22 +1150,22 @@ const Technicien = () => {
             </div>
           )}
 
-          {/* Reservations View */}
+          {/* Vue des Réservations */}
           {activeView === 'reservations' && (
             <div className="dashboard-content reservations-view">
               <div className="section-header">
-                <h2 className="section-title">Reservation Tracking</h2>
+                <h2 className="section-title">Suivi des Réservations</h2>
                 <div className="section-divider"></div>
                 <p className="section-description">
-                  Manage and track equipment reservations and their statuses
+                  Gérer et suivre les réservations d'équipement et leurs statuts
                 </p>
               </div>
 
               <div className="filter-section">
-                <h3>Filter Reservations</h3>
+                <h3>Filtrer les Réservations</h3>
                 <div className="filter-controls">
                   <div className="form-group">
-                    <label htmlFor="filter_status">Status:</label>
+                    <label htmlFor="filter_status">Statut:</label>
                     <select
                       name="filter_status"
                       id="filter_status"
@@ -1173,19 +1173,19 @@ const Technicien = () => {
                       onChange={handleFilterChange}
                       className="form-control"
                     >
-                      <option value="">All Status</option>
-                      <option value="disponible">Available</option>
-                      <option value="en_cours">In Use</option>
-                      <option value="en_reparation">In Repair</option>
-                      <option value="indisponible">Unavailable</option>
+                      <option value="">Tous les Statuts</option>
+                      <option value="disponible">Disponible</option>
+                      <option value="en_cours">En Utilisation</option>
+                      <option value="en_reparation">En Réparation</option>
+                      <option value="indisponible">Indisponible</option>
                     </select>
                   </div>
-                  <button className="secondary-button">Clear Filters</button>
+                  <button className="secondary-button">Effacer les Filtres</button>
                 </div>
               </div>
 
               <div className="table-container glass-effect">
-                <h3>Reservation Management</h3>
+                <h3>Gestion des Réservations</h3>
                 <div className="responsive-table">
                   {isLoading ? (
                     <div className="loading-spinner"></div>
@@ -1194,17 +1194,17 @@ const Technicien = () => {
                       <thead>
                         <tr>
                           <th>ID</th>
-                          <th>Student</th>
-                          <th>Start Date</th>
-                          <th>End Date</th>
-                          <th>Status</th>
+                          <th>Étudiant</th>
+                          <th>Date de Début</th>
+                          <th>Date de Fin</th>
+                          <th>Statut</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {reservations.length === 0 ? (
                           <tr>
-                            <td colSpan="6" className="centered-cell">No reservations found</td>
+                            <td colSpan="6" className="centered-cell">Aucune réservation trouvée</td>
                           </tr>
                         ) : (
                           reservations.map(reservation => {
@@ -1219,13 +1219,13 @@ const Technicien = () => {
                                 <td>
                                   {reservation.nom_utilisateur} {reservation.prenom_utilisateur}
                                 </td>
-                                <td>{new Date(reservation.date_debut).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
-                                <td>{new Date(reservation.date_fin).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
+                                <td>{new Date(reservation.date_debut).toLocaleDateString('fr-FR', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
+                                <td>{new Date(reservation.date_fin).toLocaleDateString('fr-FR', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
                                 <td>
                                   <span className={`status-badge ${statusClass}`}>
-                                    {reservation.statut === 'confirmé' || reservation.statut === 'validee' ? 'Confirmed' :
-                                      reservation.statut === 'en_cours' ? 'In Progress' :
-                                        reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
+                                    {reservation.statut === 'confirmé' || reservation.statut === 'validee' ? 'Confirmé' :
+                                      reservation.statut === 'en_cours' ? 'En Cours' :
+                                        reservation.statut === 'attente' ? 'En Attente' : 'Rejetée'}
                                   </span>
                                 </td>
                                 <td className="action-buttons">
@@ -1234,24 +1234,24 @@ const Technicien = () => {
                                       <button
                                         onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'confirmé')}
                                         className="approve-btn"
-                                        title="Confirm"
+                                        title="Confirmer"
                                       >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                           <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                         </svg>
-                                        Confirm
+                                        Confirmer
                                       </button>
                                       <button
                                         onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'en_cours')}
                                         className="progress-btn"
-                                        title="Mark In Progress"
+                                        title="Marquer En Cours"
                                       >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                           <circle cx="12" cy="12" r="10"></circle>
                                           <polyline points="12 6 12 12 16 14"></polyline>
                                         </svg>
-                                        In Progress
+                                        En Cours
                                       </button>
                                     </>
                                   )}
@@ -1259,17 +1259,17 @@ const Technicien = () => {
                                     <button
                                       onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'confirmé')}
                                       className="approve-btn"
-                                      title="Mark Completed"
+                                      title="Marquer Terminée"
                                     >
                                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                         <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                       </svg>
-                                      Complete
+                                      Terminer
                                     </button>
                                   )}
                                   {reservation.statut === 'confirmé' || reservation.statut === 'validee' && (
-                                    <span className="status-text">Completed</span>
+                                    <span className="status-text">Terminée</span>
                                   )}
                                 </td>
                               </tr>
@@ -1284,19 +1284,19 @@ const Technicien = () => {
             </div>
           )}
 
-          {/* Notifications View */}
+          {/* Vue des Notifications */}
           {activeView === 'notifications' && (
             <div className="dashboard-content notifications-view">
               <div className="section-header">
-                <h2 className="section-title">System Notifications</h2>
+                <h2 className="section-title">Notifications Système</h2>
                 <p className="section-description">
-                  View important alerts and messages related to equipment maintenance and reservations
+                  Consulter les alertes importantes et les messages liés à la maintenance des équipements et aux réservations
                 </p>
               </div>
 
               <div className="notifications-container">
                 {notifications.length === 0 ? (
-                  <div className="no-data">No notifications available</div>
+                  <div className="no-data">Aucune notification disponible</div>
                 ) : (
                   <div className="notification-list">
                     {notifications.map(notification => (
@@ -1321,16 +1321,16 @@ const Technicien = () => {
                           <p>{notification.message}</p>
                           <div className="notification-meta">
                             <span className="notification-time">
-                              {notification.date ? new Date(notification.date).toLocaleString() : 'Recent'}
+                              {notification.date ? new Date(notification.date).toLocaleString('fr-FR') : 'Récent'}
                             </span>
                           </div>
                         </div>
                         <div className="notification-actions">
                           <button
                             className="mark-read-btn"
-                            title={notification.read ? "Mark as unread" : "Mark as read"}
+                            title={notification.read ? "Marquer comme non lu" : "Marquer comme lu"}
                             onClick={(e) => {
-                              e.stopPropagation(); // Prevent the parent onClick from firing
+                              e.stopPropagation(); // Empêcher le déclenchement du onClick parent
                               markAsRead(notification.id);
                             }}
                           >
@@ -1354,12 +1354,12 @@ const Technicien = () => {
         </main>
       </div>
 
-      {/* Add Equipment Modal */}
+      {/* Modale d'Ajout d'Équipement */}
       {showAddModal && (
         <div className="modal-overlay">
           <div className="modal-container" ref={modalRef}>
             <div className="modal-header">
-              <h3>Add New Equipment</h3>
+              <h3>Ajouter un Nouvel Équipement</h3>
               <button className="modal-close" onClick={closeModals}>×</button>
             </div>
             <div className="modal-body">
@@ -1368,12 +1368,12 @@ const Technicien = () => {
 
               <form className="equipment-form" onSubmit={handleAddEquipment}>
                 <div className="form-group">
-                  <label htmlFor="nom">Name:</label>
+                  <label htmlFor="nom">Nom:</label>
                   <input
                     type="text"
                     name="nom"
                     id="nom"
-                    placeholder="Equipment name"
+                    placeholder="Nom de l'équipement"
                     required
                     value={formData.nom || ''}
                     onChange={handleInputChange}
@@ -1386,7 +1386,7 @@ const Technicien = () => {
                   <textarea
                     name="description"
                     id="description"
-                    placeholder="Equipment description"
+                    placeholder="Description de l'équipement"
                     required
                     value={formData.description || ''}
                     onChange={handleInputChange}
@@ -1411,7 +1411,7 @@ const Technicien = () => {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="etat">Status:</label>
+                    <label htmlFor="etat">Statut:</label>
                     <select
                       name="etat"
                       id="etat"
@@ -1420,22 +1420,22 @@ const Technicien = () => {
                       onChange={handleInputChange}
                       className="form-control"
                     >
-                      <option value="disponible">Available</option>
-                      <option value="en_cours">In Use</option>
-                      <option value="en_reparation">In Repair</option>
-                      <option value="indisponible">Unavailable</option>
+                      <option value="disponible">Disponible</option>
+                      <option value="en_cours">En Utilisation</option>
+                      <option value="en_reparation">En Réparation</option>
+                      <option value="indisponible">Indisponible</option>
                     </select>
                   </div>
                 </div>
 
                 {formData.categorie === 'stockable' && (
                   <div className="form-group">
-                    <label htmlFor="quantite">Quantity:</label>
+                    <label htmlFor="quantite">Quantité:</label>
                     <input
                       type="number"
                       name="quantite"
                       id="quantite"
-                      placeholder="Quantity"
+                      placeholder="Quantité"
                       required
                       value={formData.quantite || '1'}
                       onChange={handleInputChange}
@@ -1451,14 +1451,14 @@ const Technicien = () => {
                     disabled={isLoading}
                     className="submit-button"
                   >
-                    {isLoading ? 'Processing...' : 'Add Equipment'}
+                    {isLoading ? 'Traitement en cours...' : 'Ajouter l\'équipement'}
                   </button>
                   <button
                     type="button"
                     onClick={closeModals}
                     className="cancel-button"
                   >
-                    Cancel
+                    Annuler
                   </button>
                 </div>
               </form>
@@ -1467,12 +1467,12 @@ const Technicien = () => {
         </div>
       )}
 
-      {/* Update Equipment Modal */}
+      {/* Modale de Mise à Jour d'Équipement */}
       {showUpdateModal && (
         <div className="modal-overlay">
           <div className="modal-container" ref={modalRef}>
             <div className="modal-header">
-              <h3>Update Equipment</h3>
+              <h3>Mettre à Jour l'Équipement</h3>
               <button className="modal-close" onClick={closeModals}>×</button>
             </div>
             <div className="modal-body">
@@ -1482,12 +1482,12 @@ const Technicien = () => {
               <form className="equipment-form" onSubmit={handleUpdateEquipment}>
                 <input type="hidden" name="id" value={formData.id || ''} />
                 <div className="form-group">
-                  <label htmlFor="update_nom">Name:</label>
+                  <label htmlFor="update_nom">Nom:</label>
                   <input
                     type="text"
                     name="nom"
                     id="update_nom"
-                    placeholder="Equipment name"
+                    placeholder="Nom de l'équipement"
                     required
                     value={formData.nom || ''}
                     onChange={handleInputChange}
@@ -1500,7 +1500,7 @@ const Technicien = () => {
                   <textarea
                     name="description"
                     id="update_description"
-                    placeholder="Equipment description"
+                    placeholder="Description de l'équipement"
                     required
                     value={formData.description || ''}
                     onChange={handleInputChange}
@@ -1525,7 +1525,7 @@ const Technicien = () => {
                     </select>
                   </div>
                   <div className="form-group">
-                    <label htmlFor="update_etat">Status:</label>
+                    <label htmlFor="update_etat">Statut:</label>
                     <select
                       name="etat"
                       id="update_etat"
@@ -1534,22 +1534,22 @@ const Technicien = () => {
                       onChange={handleInputChange}
                       className="form-control"
                     >
-                      <option value="disponible">Available</option>
-                      <option value="en_cours">In Use</option>
-                      <option value="en_reparation">In Repair</option>
-                      <option value="indisponible">Unavailable</option>
+                      <option value="disponible">Disponible</option>
+                      <option value="en_cours">En Utilisation</option>
+                      <option value="en_reparation">En Réparation</option>
+                      <option value="indisponible">Indisponible</option>
                     </select>
                   </div>
                 </div>
 
                 {formData.categorie === 'stockable' && (
                   <div className="form-group">
-                    <label htmlFor="update_quantite">Quantity:</label>
+                    <label htmlFor="update_quantite">Quantité:</label>
                     <input
                       type="number"
                       name="quantite"
                       id="update_quantite"
-                      placeholder="Quantity"
+                      placeholder="Quantité"
                       required
                       value={formData.quantite || '1'}
                       onChange={handleInputChange}
@@ -1565,14 +1565,14 @@ const Technicien = () => {
                     disabled={isLoading}
                     className="update-button"
                   >
-                    {isLoading ? 'Processing...' : 'Update Equipment'}
+                    {isLoading ? 'Traitement en cours...' : 'Mettre à jour l\'équipement'}
                   </button>
                   <button
                     type="button"
                     onClick={closeModals}
                     className="cancel-button"
                   >
-                    Cancel
+                    Annuler
                   </button>
                 </div>
               </form>
@@ -1581,12 +1581,12 @@ const Technicien = () => {
         </div>
       )}
 
-      {/* QR Code Modal */}
+      {/* Modale de Code QR */}
       {showQRModal && (
         <div className="modal-overlay">
           <div className="modal-container qr-modal" ref={modalRef}>
             <div className="modal-header">
-              <h3>Equipment QR Code</h3>
+              <h3>Code QR de l'Équipement</h3>
               <button className="modal-close" onClick={() => setShowQRModal(false)}>×</button>
             </div>
             <div className="modal-body qr-container">
@@ -1601,13 +1601,13 @@ const Technicien = () => {
                     />
                   </div>
                   <div className="qr-info">
-                    <p><strong>Equipment Information:</strong></p>
-                    <p>When scanned, this QR code will show:</p>
+                    <p><strong>Informations sur l'Équipement:</strong></p>
+                    <p>Lorsqu'il est scanné, ce code QR affichera:</p>
                     <ul>
                       {JSON.parse(qrData) && (
                         <>
                           <li><strong>ID:</strong> {JSON.parse(qrData).id}</li>
-                          <li><strong>Name:</strong> {JSON.parse(qrData).name}</li>
+                          <li><strong>Nom:</strong> {JSON.parse(qrData).name}</li>
                           <li><strong>Description:</strong> {JSON.parse(qrData).description}</li>
                         </>
                       )}
@@ -1625,7 +1625,7 @@ const Technicien = () => {
                         link.click();
                       }}
                     >
-                      Download QR Code
+                      Télécharger le Code QR
                     </button>
                   </div>
                 </>
