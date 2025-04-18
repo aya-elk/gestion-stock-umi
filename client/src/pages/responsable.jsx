@@ -4,13 +4,13 @@ import moment from 'moment';
 import '../css/responsable.css';
 
 const Responsable = () => {
-  // Navigation for redirects
+  // Navigation pour les redirections
   const navigate = useNavigate();
 
-  // Current user state for authentication
+  // État de l'utilisateur actuel pour l'authentification
   const [currentUser, setCurrentUser] = useState(null);
 
-  // State variables (keeping existing ones)
+  // Variables d'état (conservation des existantes)
   const [reservations, setReservations] = useState([]);
   const [stockableEquipment, setStockableEquipment] = useState([]);
   const [soloEquipment, setSoloEquipment] = useState([]);
@@ -29,9 +29,9 @@ const Responsable = () => {
   const [activityHistory, setActivityHistory] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  // Authentication check on component mount
+  // Vérification d'authentification au montage du composant
   useEffect(() => {
-    // Check if user is logged in and has role 'responsable'
+    // Vérifier si l'utilisateur est connecté et a le rôle 'responsable'
     let userFromStorage;
     try {
       const localData = localStorage.getItem('userInfo');
@@ -43,41 +43,41 @@ const Responsable = () => {
         userFromStorage = JSON.parse(sessionData);
       }
     } catch (parseErr) {
-      console.error("Error parsing storage data:", parseErr);
+      console.error("Erreur d'analyse des données stockées:", parseErr);
       navigate('/login');
       return;
     }
 
-    // If no user data or wrong role, redirect to login
+    // Si aucune donnée utilisateur ou mauvais rôle, rediriger vers la page de connexion
     if (!userFromStorage) {
       navigate('/login');
       return;
     }
 
-    // Check if user role is 'responsable'
+    // Vérifier si le rôle de l'utilisateur est 'responsable'
     if (userFromStorage.role !== 'responsable') {
-      // Wrong role, redirect to login
+      // Mauvais rôle, rediriger vers la page de connexion
       navigate('/login');
       return;
     }
 
-    // User is authenticated and has correct role
+    // L'utilisateur est authentifié et a le bon rôle
     setCurrentUser(userFromStorage);
   }, [navigate]);
 
-  // Initial data loading
+  // Chargement initial des données
   useEffect(() => {
     fetchStocks();
     fetchNotifications();
     fetchRecentActivity();
   }, []);
 
-  // Toggle dark mode
+  // Basculer le mode sombre
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
 
-  // Handle scroll for back to top button
+  // Gérer le défilement pour le bouton retour en haut
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 300) {
@@ -91,7 +91,7 @@ const Responsable = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Fetch data when user is authenticated and when filter changes
+  // Récupérer les données lorsque l'utilisateur est authentifié et lorsque le filtre change
   useEffect(() => {
     if (currentUser) {
       fetchReservations();
@@ -103,18 +103,18 @@ const Responsable = () => {
     }
   }, [filterStatus, currentUser, activeTab]);
 
-  // Scroll to top
+  // Défiler vers le haut
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Fetch reservation data from API with proper grouping
+  // Récupérer les données de réservation depuis l'API avec un regroupement approprié
   const fetchReservations = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      // Build the endpoint with status filter if needed
+      // Construire le point de terminaison avec filtre de statut si nécessaire
       let endpoint = 'http://localhost:8080/api/reservations';
       if (filterStatus !== 'all') {
         endpoint += `?status=${filterStatus}`;
@@ -123,11 +123,11 @@ const Responsable = () => {
       const response = await fetch(endpoint);
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch reservations: ${response.status} ${response.statusText}`);
+        throw new Error(`Échec de récupération des réservations: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
-      console.log('Raw reservation data:', data);
+      console.log('Données brutes de réservation:', data);
 
       if (data.length === 0) {
         setReservations([]);
@@ -135,7 +135,7 @@ const Responsable = () => {
         return;
       }
 
-      // Group by reservation ID to handle multiple equipment items per reservation
+      // Regrouper par ID de réservation pour gérer plusieurs équipements par réservation
       const reservationMap = {};
 
       data.forEach(item => {
@@ -149,7 +149,7 @@ const Responsable = () => {
             }]
           };
         } else {
-          // Add additional equipment to existing reservation
+          // Ajouter des équipements supplémentaires à la réservation existante
           reservationMap[item.id_reservation].equipment_items.push({
             id: item.id_equipement,
             name: item.nom_equipement,
@@ -159,43 +159,43 @@ const Responsable = () => {
       });
 
       const finalReservations = Object.values(reservationMap);
-      console.log('Processed reservations:', finalReservations);
+      console.log('Réservations traitées:', finalReservations);
 
       setReservations(finalReservations);
     } catch (err) {
-      setError("Error fetching reservations: " + err.message);
-      console.error('Reservation fetch error:', err);
+      setError("Erreur lors de la récupération des réservations: " + err.message);
+      console.error('Erreur de récupération des réservations:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Update the fetchRecentActivity function to get all validated reservations, not just recent ones
+  // Mettre à jour la fonction fetchRecentActivity pour obtenir toutes les réservations validées, pas seulement les récentes
   const fetchRecentActivity = async () => {
     try {
       setIsLoading(true);
 
-      // Get all approved reservations, not just recent ones
+      // Obtenir toutes les réservations approuvées, pas seulement les récentes
       const response = await fetch('http://localhost:8080/api/reservations?status=validee');
 
       if (!response.ok) {
-        throw new Error('Failed to fetch activity history');
+        throw new Error('Échec de récupération de l\'historique des activités');
       }
 
       const data = await response.json();
-      console.log('Activity history data:', data);
+      console.log('Données d\'historique d\'activité:', data);
 
-      // Set the activity data to state
+      // Définir les données d'activité dans l'état
       setActivityHistory(data);
     } catch (err) {
-      console.error('Error fetching activity history:', err);
+      console.error('Erreur lors de la récupération de l\'historique des activités:', err);
       setActivityHistory([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Updated fetch stocks function 
+  // Fonction de récupération des stocks mise à jour 
   const fetchStocks = async () => {
     try {
       setIsLoading(true);
@@ -209,13 +209,13 @@ const Responsable = () => {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error(`Failed to fetch equipment data: ${response.status} ${response.statusText}`);
+        console.error('Réponse d\'erreur API:', errorText);
+        throw new Error(`Échec de récupération des données d'équipement: ${response.status} ${response.statusText}`);
       }
 
       const equipment = await response.json();
 
-      // Filter based on the database categories
+      // Filtrer en fonction des catégories de la base de données
       const stockable = equipment.filter(item => item.categorie === 'stockable');
       const solo = equipment.filter(item => item.categorie === 'solo');
 
@@ -223,8 +223,8 @@ const Responsable = () => {
       setSoloEquipment(solo);
 
     } catch (err) {
-      setError("Error fetching equipment: " + err.message);
-      console.error('Equipment fetch error:', err);
+      setError("Erreur lors de la récupération des équipements: " + err.message);
+      console.error('Erreur de récupération des équipements:', err);
       setStockableEquipment([]);
       setSoloEquipment([]);
     } finally {
@@ -232,39 +232,39 @@ const Responsable = () => {
     }
   };
 
-  // Improved fetchNotifications function
+  // Fonction fetchNotifications améliorée
   const fetchNotifications = async () => {
     try {
       const response = await fetch('http://localhost:8080/api/notifications/admin');
 
       if (!response.ok) {
-        throw new Error('Failed to fetch notifications');
+        throw new Error('Échec de récupération des notifications');
       }
 
       const data = await response.json();
-      console.log('Fetched notifications:', data);
+      console.log('Notifications récupérées:', data);
 
-      // Transform the data to match the expected format in the UI
+      // Transformer les données pour correspondre au format attendu dans l'interface utilisateur
       const formattedNotifications = data.map(notification => ({
         id: notification.id,
-        title: 'System Notification', // Add a default title since database doesn't have this
+        title: 'Notification Système', // Ajouter un titre par défaut car la base de données n'en a pas
         message: notification.message,
         date: notification.date_envoi,
-        read: notification.statut === 'lu' // Convert 'envoye'/'lu' to boolean
+        read: notification.statut === 'lu' // Convertir 'envoye'/'lu' en booléen
       }));
 
       setNotifications(formattedNotifications);
 
-      // Count unread notifications
+      // Compter les notifications non lues
       const unreadCount = data.filter(n => n.statut === 'envoye').length;
       setUnreadCount(unreadCount);
     } catch (err) {
-      console.error('Notification fetch error:', err);
-      // You can keep the fallback data if needed
+      console.error('Erreur de récupération des notifications:', err);
+      // Vous pouvez conserver les données de secours si nécessaire
     }
   };
 
-  // Format date for notifications
+  // Formater la date pour les notifications
   const formatNotificationDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -272,17 +272,17 @@ const Responsable = () => {
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
     if (diffInDays === 0) {
-      return `Today at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return `Aujourd'hui à ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else if (diffInDays === 1) {
-      return `Yesterday at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      return `Hier à ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
     } else if (diffInDays < 7) {
-      return `${diffInDays} days ago`;
+      return `Il y a ${diffInDays} jours`;
     } else {
       return date.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
     }
   };
 
-  // Update markAsRead function to send request to server
+  // Mettre à jour la fonction markAsRead pour envoyer une requête au serveur
   const markAsRead = async (id) => {
     try {
       const response = await fetch(`http://localhost:8080/api/notifications/${id}`, {
@@ -293,49 +293,49 @@ const Responsable = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to mark notification as read');
+        throw new Error('Échec de marquage de la notification comme lue');
       }
 
-      // Update local state
+      // Mettre à jour l'état local
       setNotifications(prevNotifications =>
         prevNotifications.map(notification =>
           notification.id === id ? { ...notification, read: true } : notification
         )
       );
 
-      // Update unread count
+      // Mettre à jour le nombre de non lus
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (err) {
-      console.error('Error marking notification as read:', err);
+      console.error('Erreur lors du marquage de la notification comme lue:', err);
     }
   };
 
-  // Set active tab and handle scrolling
+  // Définir l'onglet actif et gérer le défilement
   const handleTabChange = (tab) => {
     setActiveTab(tab);
 
-    // Fetch activity history when switching to the history tab
+    // Récupérer l'historique des activités lors du passage à l'onglet historique
     if (tab === 'history') {
       fetchRecentActivity();
     }
   };
 
-  // Toggle between equipment types
+  // Basculer entre les types d'équipement
   const handleEquipmentTabChange = (tabType) => {
     setActiveEquipmentTab(tabType);
   };
 
-  // Handle reservation approval
+  // Gérer l'approbation de réservation
   const handleApproveReservation = async (reservationId) => {
     await handleReservationStatusUpdate(reservationId, 'validee');
   };
 
-  // Handle reservation rejection
+  // Gérer le rejet de réservation
   const handleRejectReservation = async (reservationId) => {
     await handleReservationStatusUpdate(reservationId, 'refusee');
   };
 
-  // Generic function for updating reservation status
+  // Fonction générique pour mettre à jour le statut de réservation
   const handleReservationStatusUpdate = async (reservationId, newStatus) => {
     setIsSubmitting(true);
     setError(null);
@@ -349,40 +349,40 @@ const Responsable = () => {
         },
         body: JSON.stringify({
           statut: newStatus,
-          responsable_id: currentUser.id || currentUser._id // Include responsable ID for notifications
+          responsable_id: currentUser.id || currentUser._id // Inclure l'ID du responsable pour les notifications
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to update reservation status to ${newStatus}`);
+        throw new Error(errorData.message || `Échec de mise à jour du statut de réservation à ${newStatus}`);
       }
 
-      setSuccess(`Reservation ${reservationId} has been ${newStatus === 'validee' ? 'approved' : 'rejected'} successfully`);
+      setSuccess(`La réservation ${reservationId} a été ${newStatus === 'validee' ? 'approuvée' : 'rejetée'} avec succès`);
 
-      // Refresh the reservations list
+      // Rafraîchir la liste des réservations
       setTimeout(() => {
         fetchReservations();
-        fetchStocks(); // Refresh stock as it might have changed
-        fetchNotifications(); // Check for new system notifications
+        fetchStocks(); // Rafraîchir le stock car il pourrait avoir changé
+        fetchNotifications(); // Vérifier les nouvelles notifications système
         if (activeTab === 'history') {
-          fetchRecentActivity(); // Refresh activity history if we're on that tab
+          fetchRecentActivity(); // Rafraîchir l'historique des activités si nous sommes sur cet onglet
         }
       }, 1000);
 
     } catch (err) {
-      setError(`Error updating reservation: ${err.message}`);
-      console.error('Update reservation error:', err);
+      setError(`Erreur lors de la mise à jour de la réservation: ${err.message}`);
+      console.error('Erreur de mise à jour de réservation:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Add these helper functions before the return statement
+  // Ajouter ces fonctions d'aide avant l'instruction return
   const getActivityStatus = (activity) => {
-    // For equipment activities, check if the equipment is in repair
+    // Pour les activités d'équipement, vérifier si l'équipement est en réparation
     if (activity.etat === 'en_reparation') {
-      return 'In Repair';
+      return 'En Réparation';
     }
 
     const now = new Date();
@@ -390,11 +390,11 @@ const Responsable = () => {
     const endDate = new Date(activity.date_fin);
 
     if (now < startDate) {
-      return 'Scheduled';
+      return 'Planifié';
     } else if (now > endDate) {
-      return 'Returned';
+      return 'Retourné';
     } else {
-      return 'In Use';
+      return 'En Utilisation';
     }
   };
 
@@ -416,12 +416,12 @@ const Responsable = () => {
     }
   };
 
-  // If not authenticated yet, show loading
+  // Si non encore authentifié, afficher le chargement
   if (!currentUser) {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
-        <p>Verifying authentication...</p>
+        <p>Vérification de l'authentification...</p>
       </div>
     );
   }
@@ -429,7 +429,7 @@ const Responsable = () => {
   return (
     <div className={darkMode ? "dark-mode" : ""}>
       <div className="dashboard-layout">
-        {/* Sidebar */}
+        {/* Barre latérale */}
         <aside className="dashboard-sidebar">
           <div className="sidebar-header">
             <div className="logo-icon">GP<span className="accent-dot">.</span></div>
@@ -439,7 +439,7 @@ const Responsable = () => {
             <button
               className={`sidebar-nav-item ${activeView === 'reservations' ? 'active' : ''}`}
               onClick={() => setActiveView('reservations')}
-              title="Reservations"
+              title="Réservations"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -463,7 +463,7 @@ const Responsable = () => {
           </nav>
 
           <div className="sidebar-footer">
-            <button className="theme-toggle" onClick={toggleDarkMode} title={darkMode ? "Light Mode" : "Dark Mode"}>
+            <button className="theme-toggle" onClick={toggleDarkMode} title={darkMode ? "Mode Clair" : "Mode Sombre"}>
               {darkMode ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="5"></circle>
@@ -482,7 +482,7 @@ const Responsable = () => {
                 </svg>
               )}
             </button>
-            <Link to="/login" className="sidebar-logout" title="Logout" onClick={() => {
+            <Link to="/login" className="sidebar-logout" title="Déconnexion" onClick={() => {
               localStorage.removeItem('userInfo');
               sessionStorage.removeItem('userInfo');
             }}>
@@ -495,20 +495,20 @@ const Responsable = () => {
           </div>
         </aside>
 
-        {/* Main Content */}
+        {/* Contenu Principal */}
         <main className="dashboard-main">
           <header className="dashboard-header">
             <div className="dashboard-title">
-              <h1>Manager Dashboard</h1>
+              <h1>Tableau de Bord du Responsable</h1>
               <p className="dashboard-subtitle">
                 {activeView === 'reservations'
-                  ? 'Manage equipment reservations and monitor stock levels'
-                  : 'View notifications and system messages'}
+                  ? 'Gérer les réservations d\'équipement et surveiller les niveaux de stock'
+                  : 'Consulter les notifications et les messages système'}
               </p>
             </div>
             <div className="dashboard-actions">
               <div className="user-profile">
-                <span className="user-greeting">Welcome, {currentUser.prenom || 'Manager'}</span>
+                <span className="user-greeting">Bienvenue, {currentUser.prenom || 'Responsable'}</span>
                 <div className="user-avatar">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -519,11 +519,11 @@ const Responsable = () => {
             </div>
           </header>
 
-          {/* Success and error messages */}
+          {/* Messages de succès et d'erreur */}
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
 
-          {/* Reservations View */}
+          {/* Vue des Réservations */}
           {activeView === 'reservations' && (
             <div className="dashboard-content reservations-view">
               <div className="dashboard-tabs">
@@ -535,7 +535,7 @@ const Responsable = () => {
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
-                  Pending Requests
+                  Demandes en Attente
                 </button>
                 <button
                   className={`dashboard-tab ${activeTab === 'stock' ? 'active' : ''}`}
@@ -545,7 +545,7 @@ const Responsable = () => {
                     <polyline points="9 11 12 14 22 4"></polyline>
                     <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
                   </svg>
-                  Stock Monitoring
+                  Surveillance des Stocks
                 </button>
                 <button
                   className={`dashboard-tab ${activeTab === 'history' ? 'active' : ''}`}
@@ -555,65 +555,65 @@ const Responsable = () => {
                     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
                     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
                   </svg>
-                  Usage History
+                  Historique d'Utilisation
                 </button>
               </div>
 
               <div className="dashboard-sections">
-                {/* Pending Reservations Section */}
+                {/* Section des Réservations en Attente */}
                 {activeTab === 'pending' && (
                   <section id="pending" className="dashboard-section active-section">
                     <div className="section-header">
-                      <h2 className="section-title">Pending Reservations</h2>
+                      <h2 className="section-title">Réservations en Attente</h2>
                       <div className="section-divider"></div>
                       <p className="section-description">
-                        Review and approve or refuse equipment reservation requests
+                        Examiner et approuver ou refuser les demandes de réservation d'équipement
                       </p>
                     </div>
 
                     <div className="filter-section">
-                      <h3>Filter Reservations</h3>
+                      <h3>Filtrer les Réservations</h3>
                       <div className="filter-controls">
                         <div className="form-group">
-                          <label htmlFor="filter_status">Status:</label>
+                          <label htmlFor="filter_status">Statut:</label>
                           <select
                             id="filter_status"
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                             className="form-control"
                           >
-                            <option value="attente">Pending</option>
-                            <option value="validee">Approved</option>
-                            <option value="refusee">Refused</option>
-                            <option value="all">All Reservations</option>
+                            <option value="attente">En Attente</option>
+                            <option value="validee">Approuvée</option>
+                            <option value="refusee">Refusée</option>
+                            <option value="all">Toutes les Réservations</option>
                           </select>
                         </div>
                       </div>
                     </div>
 
                     <div className="table-container glass-effect">
-                      <h3>Reservation Requests</h3>
+                      <h3>Demandes de Réservation</h3>
                       <div className="responsive-table">
                         <table>
                           <thead>
                             <tr>
                               <th>ID</th>
-                              <th>Student</th>
-                              <th>Equipment</th>
-                              <th>Start Date</th>
-                              <th>End Date</th>
-                              <th>Status</th>
+                              <th>Étudiant</th>
+                              <th>Équipement</th>
+                              <th>Date de début</th>
+                              <th>Date de fin</th>
+                              <th>Statut</th>
                               <th>Actions</th>
                             </tr>
                           </thead>
                           <tbody>
                             {isLoading ? (
                               <tr>
-                                <td colSpan="7" className="centered-cell">Loading reservations...</td>
+                                <td colSpan="7" className="centered-cell">Chargement des réservations...</td>
                               </tr>
                             ) : reservations.length === 0 ? (
                               <tr>
-                                <td colSpan="7" className="centered-cell">No reservations found</td>
+                                <td colSpan="7" className="centered-cell">Aucune réservation trouvée</td>
                               </tr>
                             ) : (
                               reservations.map(reservation => {
@@ -633,7 +633,7 @@ const Responsable = () => {
                                         <div className="equipment-list">
                                           {reservation.equipment_items.map((item, idx) => (
                                             <div key={idx} className="equipment-item">
-                                              {item.name || `Item #${item.id}`}
+                                              {item.name || `Équipement #${item.id}`}
                                               {item.quantity > 1 && <span className="quantity-badge"> x{item.quantity}</span>}
                                             </div>
                                           ))}
@@ -646,8 +646,8 @@ const Responsable = () => {
                                     <td>{moment(reservation.date_fin).format('MMM DD, YYYY')}</td>
                                     <td>
                                       <span className={`status-badge ${statusClass}`}>
-                                        {reservation.statut === 'validee' ? 'Approved' :
-                                          reservation.statut === 'attente' ? 'Pending' : 'Rejected'}
+                                        {reservation.statut === 'validee' ? 'Approuvée' :
+                                          reservation.statut === 'attente' ? 'En Attente' : 'Refusée'}
                                       </span>
                                     </td>
                                     <td>
@@ -658,20 +658,20 @@ const Responsable = () => {
                                             onClick={() => handleApproveReservation(reservation.id_reservation)}
                                             disabled={isSubmitting}
                                           >
-                                            {isSubmitting ? 'Processing...' : 'Approve'}
+                                            {isSubmitting ? 'Traitement...' : 'Approuver'}
                                           </button>
                                           <button
                                             className="reject-btn"
                                             onClick={() => handleRejectReservation(reservation.id_reservation)}
                                             disabled={isSubmitting}
                                           >
-                                            {isSubmitting ? 'Processing...' : 'Reject'}
+                                            {isSubmitting ? 'Traitement...' : 'Refuser'}
                                           </button>
                                         </div>
                                       )}
                                       {reservation.statut !== 'attente' && (
                                         <span className="status-text">
-                                          {reservation.statut === 'validee' ? 'Approved' : 'Rejected'}
+                                          {reservation.statut === 'validee' ? 'Approuvée' : 'Refusée'}
                                         </span>
                                       )}
                                     </td>
@@ -686,14 +686,14 @@ const Responsable = () => {
                   </section>
                 )}
 
-                {/* Stock Monitoring Section */}
+                {/* Section de Surveillance des Stocks */}
                 {activeTab === 'stock' && (
                   <section id="stock" className="dashboard-section active-section">
                     <div className="section-header">
-                      <h2 className="section-title">Stock Monitoring</h2>
+                      <h2 className="section-title">Surveillance des Stocks</h2>
                       <div className="section-divider"></div>
                       <p className="section-description">
-                        Monitor equipment stock levels and identify items approaching critical thresholds
+                        Surveiller les niveaux de stock d'équipement et identifier les articles approchant des seuils critiques
                       </p>
                     </div>
 
@@ -702,13 +702,13 @@ const Responsable = () => {
                         className={`equipment-tab ${activeEquipmentTab === 'stockable' ? 'active' : ''}`}
                         onClick={() => handleEquipmentTabChange('stockable')}
                       >
-                        Stockable Equipment
+                        Équipement Stockable
                       </button>
                       <button
                         className={`equipment-tab ${activeEquipmentTab === 'solo' ? 'active' : ''}`}
                         onClick={() => handleEquipmentTabChange('solo')}
                       >
-                        Solo Equipment
+                        Équipement Individuel
                       </button>
                     </div>
 
@@ -722,7 +722,7 @@ const Responsable = () => {
                               onChange={() => setShowLowStock(!showLowStock)}
                             />
                             <span className="checkmark"></span>
-                            Show only low stock items
+                            Afficher uniquement les articles à stock faible
                           </label>
                         </div>
                       </div>
@@ -730,26 +730,26 @@ const Responsable = () => {
 
                     {activeEquipmentTab === 'stockable' && (
                       <div className="table-container glass-effect">
-                        <h3>Stockable Equipment Inventory</h3>
+                        <h3>Inventaire des Équipements Stockables</h3>
                         <div className="responsive-table">
                           <table>
                             <thead>
                               <tr>
                                 <th>ID</th>
-                                <th>Name</th>
+                                <th>Nom</th>
                                 <th>Description</th>
-                                <th>Quantity</th>
-                                <th>Status</th>
+                                <th>Quantité</th>
+                                <th>Statut</th>
                               </tr>
                             </thead>
                             <tbody>
                               {isLoading ? (
                                 <tr>
-                                  <td colSpan="5" className="centered-cell">Loading equipment...</td>
+                                  <td colSpan="5" className="centered-cell">Chargement des équipements...</td>
                                 </tr>
                               ) : stockableEquipment.length === 0 ? (
                                 <tr>
-                                  <td colSpan="5" className="centered-cell">No stockable equipment found</td>
+                                  <td colSpan="5" className="centered-cell">Aucun équipement stockable trouvé</td>
                                 </tr>
                               ) : (
                                 stockableEquipment
@@ -762,7 +762,7 @@ const Responsable = () => {
                                       <td>{item.quantite}</td>
                                       <td>
                                         <span className={`stock-level ${item.quantite < 5 ? 'low' : 'normal'}`}>
-                                          {item.quantite < 5 ? 'Low Stock' : 'Normal'}
+                                          {item.quantite < 5 ? 'Stock Faible' : 'Normal'}
                                         </span>
                                       </td>
                                     </tr>
@@ -776,25 +776,25 @@ const Responsable = () => {
 
                     {activeEquipmentTab === 'solo' && (
                       <div className="table-container glass-effect">
-                        <h3>Solo Equipment Inventory</h3>
+                        <h3>Inventaire des Équipements Individuels</h3>
                         <div className="responsive-table">
                           <table>
                             <thead>
                               <tr>
                                 <th>ID</th>
-                                <th>Name</th>
+                                <th>Nom</th>
                                 <th>Description</th>
-                                <th>Status</th>
+                                <th>Statut</th>
                               </tr>
                             </thead>
                             <tbody>
                               {isLoading ? (
                                 <tr>
-                                  <td colSpan="4" className="centered-cell">Loading equipment...</td>
+                                  <td colSpan="4" className="centered-cell">Chargement des équipements...</td>
                                 </tr>
                               ) : soloEquipment.length === 0 ? (
                                 <tr>
-                                  <td colSpan="4" className="centered-cell">No solo equipment found</td>
+                                  <td colSpan="4" className="centered-cell">Aucun équipement individuel trouvé</td>
                                 </tr>
                               ) : (
                                 soloEquipment.map(item => (
@@ -804,10 +804,10 @@ const Responsable = () => {
                                     <td>{item.description}</td>
                                     <td>
                                       <span className={`status-badge status-${item.etat}`}>
-                                        {item.etat === 'disponible' ? 'Available' :
-                                          item.etat === 'en_cours' ? 'In Use' :
-                                            item.etat === 'en_reparation' ? 'In Repair' :
-                                              'Unavailable'}
+                                        {item.etat === 'disponible' ? 'Disponible' :
+                                          item.etat === 'en_cours' ? 'En Utilisation' :
+                                            item.etat === 'en_reparation' ? 'En Réparation' :
+                                              'Indisponible'}
                                       </span>
                                     </td>
                                   </tr>
@@ -821,45 +821,45 @@ const Responsable = () => {
                   </section>
                 )}
 
-                {/* History Section - UPDATED to show real data */}
+                {/* Section Historique - MISE À JOUR pour afficher des données réelles */}
                 {activeTab === 'history' && (
                   <section id="history" className="dashboard-section active-section">
                     <div className="section-header">
-                      <h2 className="section-title">Equipment Usage History</h2>
+                      <h2 className="section-title">Historique d'Utilisation des Équipements</h2>
                       <div className="section-divider"></div>
                       <p className="section-description">
-                        View historical data on equipment reservations and usage patterns
+                        Consulter les données historiques sur les réservations d'équipement et les modèles d'utilisation
                       </p>
                     </div>
 
                     <div className="chart-container glass-effect">
-                      <h3>Monthly Usage Statistics</h3>
+                      <h3>Statistiques d'Utilisation Mensuelle</h3>
                       <div className="chart-placeholder">
-                        <p>Graph will be displayed here</p>
+                        <p>Le graphique sera affiché ici</p>
                       </div>
                     </div>
 
                     <div className="table-container glass-effect">
-                      <h3>Recent Equipment Activity</h3>
+                      <h3>Activité Récente des Équipements</h3>
                       <div className="responsive-table">
                         <table>
                           <thead>
                             <tr>
-                              <th>Equipment</th>
-                              <th>Student</th>
-                              <th>Checkout Date</th>
-                              <th>Return Date</th>
-                              <th>Status</th>
+                              <th>Équipement</th>
+                              <th>Étudiant</th>
+                              <th>Date de Retrait</th>
+                              <th>Date de Retour</th>
+                              <th>Statut</th>
                             </tr>
                           </thead>
                           <tbody>
                             {isLoading ? (
                               <tr>
-                                <td colSpan="5" className="centered-cell">Loading activity history...</td>
+                                <td colSpan="5" className="centered-cell">Chargement de l'historique d'activité...</td>
                               </tr>
                             ) : activityHistory.length === 0 ? (
                               <tr>
-                                <td colSpan="5" className="centered-cell">No equipment activity found</td>
+                                <td colSpan="5" className="centered-cell">Aucune activité d'équipement trouvée</td>
                               </tr>
                             ) : (
                               activityHistory.map((activity) => (
@@ -870,7 +870,9 @@ const Responsable = () => {
                                   <td>{moment(activity.date_fin).format('MMM DD, YYYY')}</td>
                                   <td>
                                     <span className={`status-badge ${getActivityStatusClass(activity)}`}>
-                                      {getActivityStatus(activity)}
+                                      {getActivityStatus(activity) === 'En Réparation' ? 'En Réparation' :
+                                        getActivityStatus(activity) === 'Planifié' ? 'Planifié' :
+                                          getActivityStatus(activity) === 'Retourné' ? 'Retourné' : 'En Utilisation'}
                                     </span>
                                   </td>
                                 </tr>
@@ -886,19 +888,19 @@ const Responsable = () => {
             </div>
           )}
 
-          {/* Notifications View */}
+          {/* Vue des Notifications */}
           {activeView === 'notifications' && (
             <div className="dashboard-content notifications-view">
               <div className="section-header">
-                <h2 className="section-title">System Notifications</h2>
+                <h2 className="section-title">Notifications Système</h2>
                 <p className="section-description">
-                  View important alerts and messages related to equipment and reservations
+                  Consulter les alertes importantes et les messages relatifs aux équipements et réservations
                 </p>
               </div>
 
               <div className="notifications-container">
                 {notifications.length === 0 ? (
-                  <div className="no-data">No notifications available</div>
+                  <div className="no-data">Aucune notification disponible</div>
                 ) : (
                   <div className="notification-list">
                     {notifications.map(notification => (
@@ -922,7 +924,7 @@ const Responsable = () => {
                           </div>
                         </div>
                         <div className="notification-actions">
-                          <button className="mark-read-btn" title={notification.read ? "Mark as unread" : "Mark as read"}>
+                          <button className="mark-read-btn" title={notification.read ? "Marquer comme non lu" : "Marquer comme lu"}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               {notification.read ? (
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -943,10 +945,10 @@ const Responsable = () => {
         </main>
       </div>
 
-      {/* Back to top button */}
+      {/* Bouton retour en haut */}
       <button
         id="back-to-top"
-        title="Back to Top"
+        title="Retour en Haut"
         className={showBackToTop ? 'show' : ''}
         onClick={scrollToTop}
       >
