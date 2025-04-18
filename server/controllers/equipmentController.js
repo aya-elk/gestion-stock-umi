@@ -1,6 +1,6 @@
 const { pool } = require('../config/dbConfig');
 
-// @desc    Get all equipment
+// @desc    Obtenir tous les équipements
 // @route   GET /api/equipments
 // @access  Public
 const getAllEquipment = async (req, res) => {
@@ -40,12 +40,12 @@ const getAllEquipment = async (req, res) => {
     const [equipment] = await pool.execute(query, params);
     res.json(equipment);
   } catch (error) {
-    console.error('Error fetching equipment:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la récupération des équipements:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 
-// @desc    Get equipment by ID
+// @desc    Obtenir un équipement par ID
 // @route   GET /api/equipments/:id
 // @access  Public
 const getEquipmentById = async (req, res) => {
@@ -64,19 +64,19 @@ const getEquipmentById = async (req, res) => {
     );
 
     if (equipment.length === 0) {
-      return res.status(404).json({ message: 'Equipment not found' });
+      return res.status(404).json({ message: 'Équipement non trouvé' });
     }
 
     res.json(equipment[0]);
   } catch (error) {
-    console.error('Error fetching equipment details:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la récupération des détails de l\'équipement:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 
-// @desc    Create new equipment
+// @desc    Créer un nouvel équipement
 // @route   POST /api/equipments
-// @access  Private
+// @access  Privé
 const createEquipment = async (req, res) => {
   const connection = await pool.getConnection();
 
@@ -85,7 +85,7 @@ const createEquipment = async (req, res) => {
 
     const { nom, description, categorie, quantite, etat, qr_code } = req.body;
 
-    // Insert into main Equipement table first
+    // Insertion dans la table principale Equipement
     const [result] = await connection.execute(
       'INSERT INTO Equipement (nom, description, categorie, quantite) VALUES (?, ?, ?, ?)',
       [nom, description, categorie, quantite]
@@ -93,11 +93,11 @@ const createEquipment = async (req, res) => {
 
     const equipmentId = result.insertId;
 
-    // Insert into specific type table
+    // Insertion dans la table spécifique selon le type
     if (categorie === 'solo') {
       await connection.execute(
         'INSERT INTO Solo (id, etat) VALUES (?, ?)',
-        [equipmentId, etat || 'disponible']  // Use ENUM value directly, default to 'disponible'
+        [equipmentId, etat || 'disponible']  // Utiliser la valeur ENUM directement, par défaut 'disponible'
       );
     } else if (categorie === 'stockable') {
       await connection.execute(
@@ -115,20 +115,20 @@ const createEquipment = async (req, res) => {
       categorie,
       quantite,
       etat,
-      message: 'Equipment added successfully'
+      message: 'Équipement ajouté avec succès'
     });
   } catch (error) {
     await connection.rollback();
-    console.error('Error adding equipment:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de l\'ajout de l\'équipement:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   } finally {
     connection.release();
   }
 };
 
-// @desc    Update equipment
+// @desc    Mettre à jour un équipement
 // @route   PUT /api/equipments/:id
-// @access  Private
+// @access  Privé
 const updateEquipment = async (req, res) => {
   const connection = await pool.getConnection();
 
@@ -138,7 +138,7 @@ const updateEquipment = async (req, res) => {
     const { id } = req.params;
     const { nom, description, categorie, quantite, etat, qr_code, previousStatus, technicianId, technicianName } = req.body;
 
-    // Check if equipment exists
+    // Vérifier si l'équipement existe
     const [existing] = await connection.execute(
       'SELECT * FROM Equipement WHERE id = ?',
       [id]
@@ -146,16 +146,16 @@ const updateEquipment = async (req, res) => {
 
     if (existing.length === 0) {
       await connection.rollback();
-      return res.status(404).json({ message: 'Equipment not found' });
+      return res.status(404).json({ message: 'Équipement non trouvé' });
     }
 
-    // Update main Equipement table
+    // Mise à jour de la table principale Equipement
     await connection.execute(
       'UPDATE Equipement SET nom = ?, description = ?, quantite = ? WHERE id = ?',
       [nom, description, quantite, id]
     );
 
-    // Update specific type table based on category
+    // Mise à jour de la table spécifique selon la catégorie
     if (categorie === 'solo') {
       const [soloCheck] = await connection.execute(
         'SELECT * FROM Solo WHERE id = ?',
@@ -165,14 +165,14 @@ const updateEquipment = async (req, res) => {
       if (soloCheck.length > 0) {
         await connection.execute(
           'UPDATE Solo SET etat = ? WHERE id = ?',
-          [etat || 'disponible', id]  // Use ENUM value directly
+          [etat || 'disponible', id]  // Utiliser la valeur ENUM directement
         );
       } else {
-        // Handle type change if needed
+        // Gérer le changement de type si nécessaire
         await connection.execute('DELETE FROM Stockable WHERE id = ?', [id]);
         await connection.execute(
           'INSERT INTO Solo (id, etat) VALUES (?, ?)',
-          [id, etat || 'disponible']  // Use ENUM value directly
+          [id, etat || 'disponible']  // Utiliser la valeur ENUM directement
         );
         await connection.execute(
           'UPDATE Equipement SET categorie = "solo" WHERE id = ?',
@@ -191,7 +191,7 @@ const updateEquipment = async (req, res) => {
           [quantite, qr_code || null, id]
         );
       } else {
-        // Handle type change if needed
+        // Gérer le changement de type si nécessaire
         await connection.execute('DELETE FROM Solo WHERE id = ?', [id]);
         await connection.execute(
           'INSERT INTO Stockable (id, quantite, qr_code) VALUES (?, ?, ?)',
@@ -204,22 +204,22 @@ const updateEquipment = async (req, res) => {
       }
     }
 
-    // Get equipment details
+    // Récupération des détails de l'équipement
     const [equipResult] = await connection.execute(
       'SELECT nom FROM Equipement WHERE id = ?',
       [id]
     );
-    const equipmentName = equipResult[0]?.nom || `Equipment #${id}`;
+    const equipmentName = equipResult[0]?.nom || `Équipement #${id}`;
 
-    // Create notifications based on status transitions
+    // Création de notifications basées sur les transitions d'état
     if (previousStatus === 'disponible' && etat === 'indisponible') {
-      // Available to unavailable
+      // De disponible à indisponible
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-        [technicianId, `${equipmentName} #${id} is marked as unavailable`]
+        [technicianId, `${equipmentName} #${id} est marqué comme indisponible`]
       );
 
-      // Notify responsables
+      // Notification aux responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
@@ -227,18 +227,18 @@ const updateEquipment = async (req, res) => {
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-          [resp.id, `${technicianName} has marked ${equipmentName} #${id} as unavailable`]
+          [resp.id, `${technicianName} a marqué ${equipmentName} #${id} comme indisponible`]
         );
       }
     }
     else if (previousStatus === 'indisponible' && etat === 'en_reparation') {
-      // Unavailable to in repair
+      // D'indisponible à en réparation
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-        [technicianId, `${equipmentName} #${id} is now in repair`]
+        [technicianId, `${equipmentName} #${id} est maintenant en réparation`]
       );
 
-      // Notify responsables
+      // Notification aux responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
@@ -246,18 +246,18 @@ const updateEquipment = async (req, res) => {
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-          [resp.id, `${technicianName} is repairing ${equipmentName} #${id}`]
+          [resp.id, `${technicianName} est en train de réparer ${equipmentName} #${id}`]
         );
       }
     }
     else if (previousStatus === 'en_reparation' && etat === 'disponible') {
-      // In repair to available
+      // De en réparation à disponible
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-        [technicianId, `${equipmentName} #${id} has been repaired and is now available`]
+        [technicianId, `${equipmentName} #${id} a été réparé et est maintenant disponible`]
       );
 
-      // Notify responsables
+      // Notification aux responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
@@ -265,7 +265,7 @@ const updateEquipment = async (req, res) => {
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-          [resp.id, `${technicianName} has repaired ${equipmentName} #${id}`]
+          [resp.id, `${technicianName} a réparé ${equipmentName} #${id}`]
         );
       }
     }
@@ -274,20 +274,20 @@ const updateEquipment = async (req, res) => {
 
     res.json({
       id,
-      message: 'Equipment updated successfully'
+      message: 'Équipement mis à jour avec succès'
     });
   } catch (error) {
     await connection.rollback();
-    console.error('Error updating equipment:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la mise à jour de l\'équipement:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   } finally {
     connection.release();
   }
 };
 
-// @desc    Delete equipment
+// @desc    Supprimer un équipement
 // @route   DELETE /api/equipments/:id
-// @access  Private
+// @access  Privé
 const deleteEquipment = async (req, res) => {
   const connection = await pool.getConnection();
 
@@ -296,7 +296,7 @@ const deleteEquipment = async (req, res) => {
 
     const { id } = req.params;
 
-    // Check for reservations
+    // Vérifier s'il existe des réservations
     const [reservations] = await connection.execute(
       'SELECT * FROM Reservation_Equipement WHERE id_equipement = ?',
       [id]
@@ -305,30 +305,30 @@ const deleteEquipment = async (req, res) => {
     if (reservations.length > 0) {
       await connection.rollback();
       return res.status(400).json({
-        message: 'Cannot delete equipment that has reservations'
+        message: 'Impossible de supprimer un équipement qui a des réservations'
       });
     }
 
-    // Delete from specific type tables first (due to foreign key constraints)
+    // Suppression des tables spécifiques d'abord (en raison des contraintes de clé étrangère)
     await connection.execute('DELETE FROM Solo WHERE id = ?', [id]);
     await connection.execute('DELETE FROM Stockable WHERE id = ?', [id]);
 
-    // Then delete from main table
+    // Puis suppression de la table principale
     await connection.execute('DELETE FROM Equipement WHERE id = ?', [id]);
 
     await connection.commit();
 
-    res.json({ message: 'Equipment deleted successfully' });
+    res.json({ message: 'Équipement supprimé avec succès' });
   } catch (error) {
     await connection.rollback();
-    console.error('Error deleting equipment:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la suppression de l\'équipement:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   } finally {
     connection.release();
   }
 };
 
-// @desc    Get stockable equipment
+// @desc    Obtenir les équipements stockables
 // @route   GET /api/equipments/stockable
 // @access  Public
 const getStockableEquipment = async (req, res) => {
@@ -343,12 +343,12 @@ const getStockableEquipment = async (req, res) => {
 
     res.json(equipment);
   } catch (error) {
-    console.error('Error fetching stockable equipment:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la récupération des équipements stockables:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 
-// @desc    Get solo equipment
+// @desc    Obtenir les équipements solo
 // @route   GET /api/equipments/solo
 // @access  Public
 const getSoloEquipment = async (req, res) => {
@@ -362,26 +362,26 @@ const getSoloEquipment = async (req, res) => {
 
     res.json(equipment);
   } catch (error) {
-    console.error('Error fetching solo equipment:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la récupération des équipements solo:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 
-// @desc    Update equipment status
+// @desc    Mettre à jour l'état d'un équipement
 // @route   PATCH /api/equipments/:id/status
-// @access  Private
+// @access  Privé
 const updateEquipmentStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { etat } = req.body;
 
     if (!etat) {
-      return res.status(400).json({ message: 'Status is required' });
+      return res.status(400).json({ message: 'L\'état est requis' });
     }
 
-    // Validate the status is one of the allowed ENUM values
+    // Valider que l'état est l'une des valeurs ENUM autorisées
     if (!['disponible', 'en_cours', 'indisponible', 'en_reparation'].includes(etat)) {
-      return res.status(400).json({ message: 'Invalid status value' });
+      return res.status(400).json({ message: 'Valeur d\'état invalide' });
     }
 
     const [result] = await pool.execute(
@@ -390,19 +390,19 @@ const updateEquipmentStatus = async (req, res) => {
     );
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Equipment not found or not of type Solo' });
+      return res.status(404).json({ message: 'Équipement non trouvé ou pas de type Solo' });
     }
 
-    res.json({ message: 'Equipment status updated successfully' });
+    res.json({ message: 'État de l\'équipement mis à jour avec succès' });
   } catch (error) {
-    console.error('Error updating equipment status:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la mise à jour de l\'état de l\'équipement:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 
-// @desc    Update equipment state with notifications
+// @desc    Mettre à jour l'état d'un équipement avec notifications
 // @route   PATCH /api/equipments/:id
-// @access  Private
+// @access  Privé
 const updateEquipmentState = async (req, res) => {
   const { id } = req.params;
   const { etat: newState, oldState, technicianId, technicianName } = req.body;
@@ -412,13 +412,13 @@ const updateEquipmentState = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    // Update equipment state in database
+    // Mise à jour de l'état de l'équipement dans la base de données
     await connection.execute(
       'UPDATE Solo SET etat = ? WHERE id = ?',
       [newState, id]
     );
 
-    // Get equipment details
+    // Récupération des détails de l'équipement
     const [equipment] = await connection.execute(
       'SELECT nom FROM Equipement WHERE id = ?',
       [id]
@@ -426,12 +426,12 @@ const updateEquipmentState = async (req, res) => {
 
     if (equipment.length === 0) {
       await connection.rollback();
-      return res.status(404).json({ message: 'Equipment not found' });
+      return res.status(404).json({ message: 'Équipement non trouvé' });
     }
 
     const equipmentName = equipment[0].nom;
 
-    // Get technician details if not provided
+    // Récupération des détails du technicien si non fournis
     let techFullName = technicianName;
     if (!techFullName && technicianId) {
       const [techDetails] = await connection.execute(
@@ -442,19 +442,19 @@ const updateEquipmentState = async (req, res) => {
       if (techDetails.length > 0) {
         techFullName = `${techDetails[0].prenom} ${techDetails[0].nom}`;
       } else {
-        techFullName = 'A technician';
+        techFullName = 'Un technicien';
       }
     }
 
-    // Handle state transitions for notifications
+    // Gestion des transitions d'état pour les notifications
     if (oldState === 'disponible' && newState === 'indisponible') {
-      // Notification to technician
+      // Notification au technicien
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-        [technicianId, `${equipmentName} #${id} is now unavailable`]
+        [technicianId, `${equipmentName} #${id} est maintenant indisponible`]
       );
 
-      // Notification to responsables
+      // Notification aux responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
@@ -462,18 +462,18 @@ const updateEquipmentState = async (req, res) => {
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-          [resp.id, `${techFullName} has marked ${equipmentName} #${id} as unavailable`]
+          [resp.id, `${techFullName} a marqué ${equipmentName} #${id} comme indisponible`]
         );
       }
     }
     else if (oldState === 'indisponible' && newState === 'en_reparation') {
-      // Notification to technician
+      // Notification au technicien
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-        [technicianId, `${equipmentName} #${id} is now in repair`]
+        [technicianId, `${equipmentName} #${id} est maintenant en réparation`]
       );
 
-      // Notification to responsables
+      // Notification aux responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
@@ -481,18 +481,18 @@ const updateEquipmentState = async (req, res) => {
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-          [resp.id, `${techFullName} is repairing ${equipmentName} #${id}`]
+          [resp.id, `${techFullName} est en train de réparer ${equipmentName} #${id}`]
         );
       }
     }
     else if (oldState === 'en_reparation' && newState === 'disponible') {
-      // Notification to technician
+      // Notification au technicien
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-        [technicianId, `${equipmentName} #${id} has been repaired`]
+        [technicianId, `${equipmentName} #${id} a été réparé`]
       );
 
-      // Notification to responsables
+      // Notification aux responsables
       const [responsables] = await connection.execute(
         'SELECT id FROM Utilisateur WHERE role = "responsable"'
       );
@@ -500,7 +500,7 @@ const updateEquipmentState = async (req, res) => {
       for (const resp of responsables) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
-          [resp.id, `${techFullName} has repaired ${equipmentName} #${id}`]
+          [resp.id, `${techFullName} a réparé ${equipmentName} #${id}`]
         );
       }
     }
@@ -508,7 +508,7 @@ const updateEquipmentState = async (req, res) => {
     await connection.commit();
 
     res.json({
-      message: `Equipment status changed from ${oldState} to ${newState}`,
+      message: `État de l'équipement changé de ${oldState} à ${newState}`,
       equipment: {
         id,
         name: equipmentName,
@@ -517,8 +517,8 @@ const updateEquipmentState = async (req, res) => {
     });
   } catch (error) {
     await connection.rollback();
-    console.error('Error updating equipment state:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la mise à jour de l\'état de l\'équipement:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   } finally {
     connection.release();
   }

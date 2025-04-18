@@ -1,14 +1,14 @@
 const { pool } = require('../config/dbConfig');
 
-// @desc    Get notifications for a specific user
+// @desc    Récupérer les notifications pour un utilisateur spécifique
 // @route   GET /api/notifications
-// @access  Private
+// @access  Privé
 const getUserNotifications = async (req, res) => {
   try {
     const { userId } = req.query;
 
     if (!userId) {
-      return res.status(400).json({ message: 'User ID is required' });
+      return res.status(400).json({ message: 'ID utilisateur requis' });
     }
 
     const [notifications] = await pool.execute(
@@ -20,14 +20,14 @@ const getUserNotifications = async (req, res) => {
 
     res.json(notifications);
   } catch (error) {
-    console.error('Error fetching user notifications:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la récupération des notifications utilisateur:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 
-// @desc    Get notifications for admin users
+// @desc    Récupérer les notifications pour les administrateurs
 // @route   GET /api/notifications/admin
-// @access  Private (Admin/Responsible only)
+// @access  Privé (Admin/Responsable uniquement)
 const getAdminNotifications = async (req, res) => {
   try {
     const [notifications] = await pool.execute(
@@ -40,14 +40,14 @@ const getAdminNotifications = async (req, res) => {
 
     res.json(notifications);
   } catch (error) {
-    console.error('Error fetching admin notifications:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la récupération des notifications administrateur:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 
-// @desc    Get notifications for technicians
+// @desc    Récupérer les notifications pour les techniciens
 // @route   GET /api/notifications/tech
-// @access  Private (Technicians only)
+// @access  Privé (Techniciens uniquement)
 const getTechnicianNotifications = async (req, res) => {
   try {
     const [notifications] = await pool.execute(
@@ -60,14 +60,14 @@ const getTechnicianNotifications = async (req, res) => {
 
     res.json(notifications);
   } catch (error) {
-    console.error('Error fetching technician notifications:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors de la récupération des notifications technicien:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 
-// @desc    Mark a notification as read
+// @desc    Marquer une notification comme lue
 // @route   PATCH /api/notifications/:id
-// @access  Private
+// @access  Privé
 const markNotificationAsRead = async (req, res) => {
   try {
     const { id } = req.params;
@@ -77,10 +77,10 @@ const markNotificationAsRead = async (req, res) => {
       [id]
     );
 
-    res.json({ message: 'Notification marked as read' });
+    res.json({ message: 'Notification marquée comme lue' });
   } catch (error) {
-    console.error('Error marking notification as read:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur lors du marquage de la notification comme lue:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 

@@ -2,32 +2,32 @@ require('dotenv-flow').config();
 const { sendEmail } = require('../utilities/mailer');
 const { generateContactEmail } = require('../utilities/templates/contactEmail');
 
-// @desc    Send contact form email
+// @desc    Envoyer l'email du formulaire de contact
 // @route   POST /api/contact
 // @access  Public
 const sendContactForm = async (req, res) => {
   try {
     const { name, email, phone, message } = req.body;
 
-    // Generate HTML content using the template
+    // Générer le contenu HTML en utilisant le template
     const htmlContent = generateContactEmail({ name, email, phone, message });
 
     await sendEmail({
       to: process.env.EMAIL_CONTACT,
-      subject: `New Contact Message from ${name}`,
+      subject: `Nouveau message de contact de : ${name}`,
       text: `
-        Name: ${name}
+        Nom: ${name}
         Email: ${email}
-        Phone: ${phone}
+        Téléphone: ${phone}
         Message: ${message}
       `,
       html: htmlContent
     });
 
-    res.status(200).json({ success: true, message: 'Email sent successfully' });
+    res.status(200).json({ success: true, message: 'Email envoyé avec succès' });
   } catch (error) {
-    console.error('Contact form error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur du formulaire de contact:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 

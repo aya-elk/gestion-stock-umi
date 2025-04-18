@@ -1,6 +1,6 @@
 const { pool } = require('../config/dbConfig');
 
-// @desc    Auth user with email & password & get role
+// @desc    Authentifie l'utilisateur avec email & mot de passe & obtenir le rôle
 // @route   POST /api/users/login
 // @access  Public
 const authUser = async (req, res) => {
@@ -8,31 +8,31 @@ const authUser = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required' });
+      return res.status(400).json({ message: 'Email et mot de passe sont requis' });
     }
 
-    console.log('Login attempt with email:', email);
+    console.log('Tentative de connexion avec email:', email);
 
-    // SQL query to find user by email
+    // Requête SQL pour trouver l'utilisateur par email
     const [users] = await pool.execute(
       'SELECT * FROM Utilisateur WHERE email = ?',
       [email]
     );
 
-    // Check if user exists
+    // Vérifier si l'utilisateur existe
     const user = users[0];
-    console.log('User found:', user ? 'Yes' : 'No');
+    console.log('Utilisateur trouvé:', user ? 'Oui' : 'Non');
 
     if (!user) {
-      return res.status(404).json({ message: 'Invalid email or password' });
+      return res.status(404).json({ message: 'Email ou mot de passe invalide' });
     }
 
-    // Verify password (in real app, use bcrypt for hashed passwords)
+    // Vérifier le mot de passe (dans une vraie application, utiliser bcrypt pour les mots de passe hashés)
     if (user.mot_de_passe !== password) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: 'Email ou mot de passe invalide' });
     }
 
-    // Return user data including role
+    // Retourner les données de l'utilisateur incluant le rôle
     res.json({
       _id: user.id,
       nom: user.nom,
@@ -41,8 +41,8 @@ const authUser = async (req, res) => {
       role: user.role,
     });
   } catch (error) {
-    console.error('Auth error:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    console.error('Erreur d\'authentification:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
   }
 };
 

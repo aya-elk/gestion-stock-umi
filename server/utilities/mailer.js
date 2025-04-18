@@ -25,7 +25,7 @@ const sendEmail = async (options) => {
     return info;
   } catch (error) {
     console.log(process.env.EMAIL_PASSWORD);
-    console.error('Email error: ', error);
+    console.error('Erreur email: ', error);
     throw error;
   }
 };
