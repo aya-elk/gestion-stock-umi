@@ -8,7 +8,7 @@ This is a web-based project created as part of the FS/3A Project. It provides [b
 1. Clone project 
 
 ```sh
-git clone 'https://github.com/TEssarhir/gestion-stock-umi2'
+git clone 'https://github.com/aya-elk/gestion-stock-umi'
 ```
 
 2. Then start your mysql server

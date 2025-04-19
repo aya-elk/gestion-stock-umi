@@ -243,13 +243,7 @@ const Home = () => {
             </a>
           </div>
 
-          <div className="hero-stats fade-in hidden">
-            <div className="stat-item">
-              <span className="stat-number">10+</span>
-              <span className="stat-label">Années d'Expérience</span>
-            </div>
-            <div className="stat-divider"></div>
-          </div>
+         
         </div>
 
         <div className="scroll-indicator">
@@ -572,7 +566,7 @@ const Home = () => {
                   className="author-image"
                 />
                 <div className="author-details">
-                  <h4>Rachid El Ouazzani</h4>
+                  <h4>Rachida l Ouazzani</h4>
                   <p>Responsable Technique, Service Logistique</p>
                 </div>
               </div>
@@ -660,7 +654,7 @@ const Home = () => {
                   </div>
                   <div>
                     <h4>Email</h4>
-                    <p>contact@gimsolutions.com</p>
+                    <p>aya.elkart.2003@gmail.com</p>
                   </div>
                 </div>
               </div>
