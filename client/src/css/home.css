@@ -909,3 +909,83 @@ section {
 .contact-section {
   margin-top: var(--space-xxl);
 }
+
+/* Acronym definition styling - enhanced */
+.acronym-definition {
+  font-size: 1.25rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(108, 43, 217, 0.05), rgba(255, 106, 0, 0.05));
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(4px);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  animation: fadeIn 1.6s ease-out;
+  transition: all 0.3s ease;
+  color: var(--text-secondary);
+  position: relative;
+  overflow: hidden;
+}
+
+.dark-mode .acronym-definition {
+  background: linear-gradient(135deg, rgba(108, 43, 217, 0.1), rgba(255, 106, 0, 0.1));
+  border: 1px solid var(--glass-border-dark);
+}
+
+.acronym-definition::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.7s ease;
+  z-index: 1;
+}
+
+.acronym-definition:hover::before {
+  left: 100%;
+}
+
+.acronym-definition:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.acronym-definition strong {
+  font-weight: 700;
+  display: inline-block;
+  margin: 0 1px;
+  color: transparent;
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+  background-clip: text;
+  -webkit-background-clip: text;
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+}
+
+.acronym-definition:hover strong {
+  transform: translateY(-2px);
+}
+
+@media screen and (max-width: 576px) {
+  .acronym-definition {
+    font-size: 1.1rem;
+    padding: 0.6rem 1rem;
+    margin-top: 0.75rem;
+    margin-bottom: 1rem;
+  }
+}

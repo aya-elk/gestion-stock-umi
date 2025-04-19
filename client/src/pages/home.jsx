@@ -246,6 +246,9 @@ const Home = () => {
           <p className="subheading fade-in hidden">
             Gérer vos équipements universitaires n'a jamais été aussi simple.
           </p>
+          <p className="acronym-definition fade-in hidden">
+            <strong>G</strong>estion <strong>I</strong>nternet du <strong>M</strong>atériel et <strong>S</strong>tock
+          </p>
 
           <div className="hero-actions">
             <a href="#contact" className="cta-button fade-in">
