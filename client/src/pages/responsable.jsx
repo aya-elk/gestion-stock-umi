@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import moment from 'moment';
+import Logo from '../components/logo';
 import '../css/responsable.css';
 
 const Responsable = () => {
@@ -432,7 +433,7 @@ const Responsable = () => {
         {/* Barre latérale */}
         <aside className="dashboard-sidebar">
           <div className="sidebar-header">
-            <div className="logo-icon">GIMS<span className="accent-dot">.</span></div>
+            <Logo darkMode={darkMode} variant={'aside'}/>
           </div>
 
           <nav className="sidebar-nav">

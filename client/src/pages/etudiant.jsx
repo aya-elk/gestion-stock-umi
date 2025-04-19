@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
+import Logo from "../components/logo";
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import '../css/etudiant.css';
 
@@ -588,7 +589,7 @@ const Etudiant = () => {
         {/* Sidebar */}
         <aside className="dashboard-sidebar">
           <div className="sidebar-header">
-            <div className="logo-icon">GIMS<span className="accent-dot">.</span></div>
+            <Logo darkMode={darkMode} variant={'aside'}/>
           </div>
 
           <nav className="sidebar-nav">

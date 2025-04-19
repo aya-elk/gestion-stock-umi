@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { QRCodeCanvas } from 'qrcode.react';
+import Logo from '../components/logo';
 import '../css/technicien.css';
 
 const Technicien = () => {
@@ -637,7 +638,7 @@ const Technicien = () => {
         {/* Barre latérale */}
         <aside className="dashboard-sidebar">
           <div className="sidebar-header">
-            <div className="logo-icon">GIMS<span className="accent-dot">.</span></div>
+            <Logo darkMode={darkMode} variant={'aside'}/>
           </div>
 
           <nav className="sidebar-nav">
