@@ -138,7 +138,7 @@ const Home = () => {
               </svg>
             </span>
             <span className="logo-text">
-              GP<span className="accent-dot">.</span>
+              GIMS<span className="accent-dot">.</span>
             </span>
           </div>
 
@@ -233,14 +233,14 @@ const Home = () => {
 
         <div className="hero-content">
           <span className="tag-line fade-in hidden">
-            Bienvenue chez GP Solutions
+            Bienvenue chez GIMS Solutions
           </span>
           <h1 className="headline fade-in hidden">
             Solutions Digitales
             <br />
             Puissantes Avec{" "}
             <span className="highlight">
-              GP<span className="accent-dot">.</span>
+              GIMS<span className="accent-dot">.</span>
             </span>
           </h1>
           <p className="subheading fade-in hidden">
@@ -673,7 +673,7 @@ const Home = () => {
                   </div>
                   <div>
                     <h4>Email</h4>
-                    <p>contact@gpsolutions.com</p>
+                    <p>contact@gimsolutions.com</p>
                   </div>
                 </div>
               </div>
@@ -781,7 +781,7 @@ const Home = () => {
                 </svg>
               </span>
               <span className="logo-text">
-                GP<span className="accent-dot">.</span>
+                GIMS<span className="accent-dot">.</span>
               </span>
             </div>
 
@@ -834,7 +834,7 @@ const Home = () => {
           </div>
 
           <div className="footer-bottom">
-            <p>&copy; 2025 GP Solutions Digitales. Tous droits réservés.</p>
+            <p>&copy; 2025 GIMS Solutions Digitales. Tous droits réservés.</p>
             <div className="social-icons">
               <a href="#" aria-label="Twitter">
                 <svg

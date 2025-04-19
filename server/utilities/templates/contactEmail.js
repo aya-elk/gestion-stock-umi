@@ -34,8 +34,8 @@ const generateContactEmail = (data) => {
                 <tr>
                   <td style="padding: 30px 0; text-align: center; background: linear-gradient(135deg, #6c2bd9, #ff6a00);">
                     <div style="display: inline-block;">
-                      <img src="http://localhost:3000/favicon.svg" alt="Logo GP" style="vertical-align: middle; height: 32px; margin-right: 10px;">
-                      <h1 style="color: white; font-size: 28px; margin: 0; letter-spacing: -0.02em; font-weight: 800; display: inline-block; vertical-align: middle;">GP<span style="color: white; font-size: 32px;">.</span></h1>
+                      <img src="http://localhost:3000/favicon.svg" alt="Logo GIMS" style="vertical-align: middle; height: 32px; margin-right: 10px;">
+                      <h1 style="color: white; font-size: 28px; margin: 0; letter-spacing: -0.02em; font-weight: 800; display: inline-block; vertical-align: middle;">GIMS<span style="color: white; font-size: 32px;">.</span></h1>
                     </div>
                   </td>
                 </tr>
@@ -87,7 +87,7 @@ const generateContactEmail = (data) => {
               <table role="presentation" style="width: 100%; max-width: 600px; margin: 0 auto; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 30px 30px; text-align: center; color: #666; font-size: 14px;">
-                    <p style="margin: 0 0 10px 0;">© ${new Date().getFullYear()} GP Solutions. Tous droits réservés.</p>
+                    <p style="margin: 0 0 10px 0;">© ${new Date().getFullYear()} GIMS Solutions. Tous droits réservés.</p>
                     <p style="margin: 0;">Ceci est un email automatique généré par le formulaire de contact de votre site web.</p>
                   </td>
                 </tr>

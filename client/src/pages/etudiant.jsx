@@ -588,7 +588,7 @@ const Etudiant = () => {
         {/* Sidebar */}
         <aside className="dashboard-sidebar">
           <div className="sidebar-header">
-            <div className="logo-icon">GP<span className="accent-dot">.</span></div>
+            <div className="logo-icon">GIMS<span className="accent-dot">.</span></div>
           </div>
 
           <nav className="sidebar-nav">
@@ -1342,7 +1342,7 @@ const Etudiant = () => {
                   <h3>Besoin d'Aide Supplémentaire?</h3>
                   <p>Contactez l'équipe de gestion des équipements:</p>
                   <ul>
-                    <li>Email: support@gpequipment.com</li>
+                    <li>Email: support@GIMSequipment.com</li>
                     <li>Téléphone: +1 (555) 123-4567</li>
                     <li>Horaires: Lun-Ven 8h-17h</li>
                   </ul>

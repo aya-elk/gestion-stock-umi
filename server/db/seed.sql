@@ -13,7 +13,7 @@ INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
   ('Kit Raspberry',
     'Raspberry Pi 5 – 4GB RAM 
     2.4GHz quad-core 64-bit Arm Cortex-A76 CPU  
-    GPU VideoCore VII 
+    GIMSU VideoCore VII 
     802.11ac Wi-Fi + Bluetooth 5.0  
     Interface PCIe 2.0 x1  
     4 × Ports USB (2 x 3.0 & 2 x 2.0) Gigabit Ethernet 
@@ -130,8 +130,8 @@ INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
   ('NVIDIA Jetson Nano',
     'Memory: 4GB 64-bit LPDDR4 25.6GB/s 
     AI Performance: 472 GFLOPS 
-    GPU: 128-core NVIDIA Maxwell architecture GPU 
-    GPU Max Frequency: 921MHz 
+    GIMSU: 128-core NVIDIA Maxwell architecture GIMSU 
+    GIMSU Max Frequency: 921MHz 
     CPU: Quad-core ARM Cortex-A57 MPCore processor 
     Storage: 16GB eMMC 5.1 
     Sortie vidéo 1 x DisplayPort 
@@ -179,13 +179,13 @@ INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
     RAM 520KB SRAM + 4M PSRAM 
     Bluetooth 4.2 BR/ Wi-Fi 802.11 b/g/n/ 
     Support interface UART/SPI/I2C/PWM 
-    GPIO pin soudés  
+    GIMSIO pin soudés  
     Security WPA/WPA2/WPA2-Enterprise/WPS 
     MicroSD card slot 
     Module Caméra ESP OV2640, 160 Degree 850nm 
     1GB Memory Card 
     USB cable program,  
-    Carte de développement GPIO femelles',
+    Carte de développement GIMSIO femelles',
     'stockable', 10),
 
   ('ESP32-WROVER seul',
@@ -193,7 +193,7 @@ INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
     Bluetooth 4.2 BR/EDR and BLE standards 
     Wi-Fi 802.11 b/g/n/ 
     Support interface UART/SPI/I2C/PWM 
-    GPIO pin soudés  
+    GIMSIO pin soudés  
     Security WPA/WPA2/WPA2-Enterprise/WPS 
     MicroSD card slot',
     'stockable', 10);

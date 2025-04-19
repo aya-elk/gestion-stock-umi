@@ -89,7 +89,7 @@ const Login = () => {
                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
               </svg>
             </span>
-            <span className="logo-text">GP<span className="accent-dot">.</span></span>
+            <span className="logo-text">GIMS<span className="accent-dot">.</span></span>
           </div>
 
           <nav>
