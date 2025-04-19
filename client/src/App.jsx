@@ -5,6 +5,7 @@ import Login from './pages/login'; // Import the Login component
 import Etudiant from './pages/etudiant';
 import Technicien from './pages/technicien';
 import Responsable from './pages/responsable';
+import Chatbot from './components/chatbot';
 
 // ScrollToTop component for smooth navigation
 const ScrollToTop = () => {
@@ -28,6 +29,7 @@ const App = () => {
         <Route path="/technicien" element={<Technicien />} />
         <Route path="/responsable" element={<Responsable />} />
       </Routes>
+      <Chatbot />
     </Router>
   );
 };
