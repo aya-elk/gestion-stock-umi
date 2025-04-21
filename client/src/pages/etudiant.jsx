@@ -1343,8 +1343,8 @@ const Etudiant = () => {
                   <h3>Besoin d'Aide Supplémentaire?</h3>
                   <p>Contactez l'équipe de gestion des équipements:</p>
                   <ul>
-                    <li>Email: support@GIMSequipment.com</li>
-                    <li>Téléphone: +1 (555) 123-4567</li>
+                    <li>Email: support@gimsequipment.com</li>
+                    <li>Téléphone: +212 5 35 53 73 21</li>
                     <li>Horaires: Lun-Ven 8h-17h</li>
                   </ul>
                 </div>
