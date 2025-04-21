@@ -51,6 +51,17 @@ const Technicien = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Add to the state variables
+  const [users, setUsers] = useState([]);
+  const [userFormData, setUserFormData] = useState({
+    nom: '',
+    prenom: '',
+    email: '',
+    role: 'etudiant',
+    mot_de_passe: ''
+  });
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+
   // Références pour les sections et modales
   const equipmentRef = useRef(null);
   const reservationsRef = useRef(null);
@@ -193,9 +204,14 @@ const Technicien = () => {
       const isDarkMode = document.body.classList.contains('dark-mode');
       setDarkMode(isDarkMode);
 
+      // Fetch data based on active view
       fetchEquipments();
       fetchReservations();
       fetchNotifications();
+      
+      if (activeView === 'users') {
+        fetchUsers();
+      }
 
       return () => {
         document.querySelectorAll('.hidden').forEach(el => {
@@ -203,7 +219,7 @@ const Technicien = () => {
         });
       };
     }
-  }, [filterCategory, filterStatus, currentUser]);
+  }, [filterCategory, filterStatus, currentUser, activeView]);
 
   // Récupérer les données d'équipement avec les filtres appliqués
   const fetchEquipments = async () => {
@@ -326,6 +342,26 @@ const Technicien = () => {
     }
   };
 
+  // Add this function after other fetch functions
+  const fetchUsers = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('http://localhost:8080/api/users');
+      
+      if (!response.ok) {
+        throw new Error(`Échec de récupération des utilisateurs: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      setUsers(data);
+    } catch (err) {
+      console.error('Erreur lors du chargement des utilisateurs:', err);
+      setError("Échec de chargement des utilisateurs. Veuillez réessayer plus tard.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Gérer les changements dans les entrées du formulaire
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -333,6 +369,93 @@ const Technicien = () => {
       ...prevState,
       [name]: value
     }));
+  };
+
+  // Add after other handlers
+  const handleUserInputChange = (e) => {
+    const { name, value } = e.target;
+    setUserFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const response = await fetch('http://localhost:8080/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userFormData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Réponse d\'erreur API:', errorText);
+        throw new Error('Échec d\'ajout d\'utilisateur');
+      }
+
+      setSuccess('Utilisateur ajouté avec succès');
+      fetchUsers();
+
+      // Close modal after success
+      setTimeout(() => {
+        setShowAddUserModal(false);
+        setUserFormData({
+          nom: '',
+          prenom: '',
+          email: '',
+          role: 'etudiant',
+          mot_de_passe: ''
+        });
+      }, 1500);
+    } catch (err) {
+      setError('Erreur lors de l\'ajout d\'utilisateur: ' + err.message);
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (id) => {
+    if (!id) {
+      setError('Aucun utilisateur sélectionné pour la suppression');
+      return;
+    }
+
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur?')) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+    
+    try {
+      const response = await fetch(`http://localhost:8080/api/users/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Réponse d\'erreur API:', errorText);
+        throw new Error('Échec de suppression de l\'utilisateur');
+      }
+
+      setSuccess('Utilisateur supprimé avec succès');
+      fetchUsers();
+    } catch (err) {
+      setError('Erreur lors de la suppression de l\'utilisateur: ' + err.message);
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Ouvrir la modale d'ajout avec un formulaire vide
@@ -678,6 +801,19 @@ const Technicien = () => {
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
               </svg>
               {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+            </button>
+
+            <button
+              className={`sidebar-nav-item ${activeView === 'users' ? 'active' : ''}`}
+              onClick={() => setActiveView('users')}
+              title="Gestion des Utilisateurs"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
             </button>
           </nav>
 
@@ -1349,6 +1485,89 @@ const Technicien = () => {
                     ))}
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Vue de Gestion des Utilisateurs */}
+          {activeView === 'users' && (
+            <div className="dashboard-content users-view">
+              <div className="section-header">
+                <h2 className="section-title">Gestion des Utilisateurs</h2>
+                <div className="section-divider"></div>
+                <p className="section-description">
+                  Gérer les comptes utilisateurs du système
+                </p>
+              </div>
+
+              <div className="table-container glass-effect">
+                <div className="table-header">
+                  <h3>Liste des Utilisateurs</h3>
+                  <button
+                    className="add-button"
+                    onClick={() => setShowAddUserModal(true)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Ajouter un Utilisateur
+                  </button>
+                </div>
+
+                <div className="responsive-table">
+                  {isLoading ? (
+                    <div className="loading-spinner"></div>
+                  ) : (
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Nom</th>
+                          <th>Prénom</th>
+                          <th>Email</th>
+                          <th>Rôle</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.length === 0 ? (
+                          <tr>
+                            <td colSpan="6" className="centered-cell">Aucun utilisateur trouvé</td>
+                          </tr>
+                        ) : (
+                          users.map(user => (
+                            <tr key={user.id}>
+                              <td>{user.id}</td>
+                              <td>{user.nom}</td>
+                              <td>{user.prenom}</td>
+                              <td>{user.email}</td>
+                              <td>
+                                <span className={`role-badge role-${user.role}`}>
+                                  {user.role === 'etudiant' ? 'Étudiant' :
+                                   user.role === 'technicien' ? 'Technicien' :
+                                   user.role === 'responsable' ? 'Responsable' : 'Autre'}
+                                </span>
+                              </td>
+                              <td className="action-buttons">
+                                <button
+                                  onClick={() => handleDeleteUser(user.id)}
+                                  className="delete-button-small"
+                                  title="Supprimer"
+                                >
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                  </svg>
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
               </div>
             </div>
           )}

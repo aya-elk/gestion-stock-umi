@@ -1047,3 +1047,27 @@ button:disabled {
     word-break: break-word;
   }
 }
+
+/* Add this to your CSS file (technicien.css) */
+.role-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.role-etudiant {
+  background-color: rgba(52, 152, 219, 0.15);
+  color: #3498db;
+}
+
+.role-technicien {
+  background-color: rgba(46, 204, 113, 0.15);
+  color: #2ecc71;
+}
+
+.role-responsable {
+  background-color: rgba(155, 89, 182, 0.15);
+  color: #9b59b6;
+}

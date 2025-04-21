@@ -46,4 +46,88 @@ const authUser = async (req, res) => {
   }
 };
 
-module.exports = { authUser };
+// @desc    Récupérer tous les utilisateurs
+// @route   GET /api/users
+// @access  Privé (Admin/Technicien seulement)
+const getUsers = async (req, res) => {
+  try {
+    const [users] = await pool.execute(
+      'SELECT id, nom, prenom, email, role FROM Utilisateur ORDER BY id DESC'
+    );
+    
+    // Ne jamais renvoyer les mots de passe dans la réponse
+    res.json(users);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des utilisateurs:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
+// @desc    Créer un nouvel utilisateur
+// @route   POST /api/users
+// @access  Privé (Admin/Technicien seulement)
+const createUser = async (req, res) => {
+  try {
+    const { nom, prenom, email, role, mot_de_passe } = req.body;
+    
+    if (!nom || !prenom || !email || !role || !mot_de_passe) {
+      return res.status(400).json({ message: 'Tous les champs sont requis' });
+    }
+    
+    // Vérifier si l'email existe déjà
+    const [existingUsers] = await pool.execute(
+      'SELECT * FROM Utilisateur WHERE email = ?',
+      [email]
+    );
+    
+    if (existingUsers.length > 0) {
+      return res.status(400).json({ message: 'Cet email est déjà utilisé' });
+    }
+    
+    // Insérer le nouvel utilisateur
+    const [result] = await pool.execute(
+      'INSERT INTO Utilisateur (nom, prenom, email, role, mot_de_passe) VALUES (?, ?, ?, ?, ?)',
+      [nom, prenom, email, role, mot_de_passe] // Dans une vraie application, hasher le mot de passe
+    );
+    
+    res.status(201).json({ 
+      id: result.insertId,
+      message: 'Utilisateur créé avec succès' 
+    });
+  } catch (error) {
+    console.error('Erreur lors de la création d\'un utilisateur:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
+// @desc    Supprimer un utilisateur
+// @route   DELETE /api/users/:id
+// @access  Privé (Admin/Technicien seulement)
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Vérifier si l'utilisateur existe
+    const [existingUsers] = await pool.execute(
+      'SELECT * FROM Utilisateur WHERE id = ?',
+      [id]
+    );
+    
+    if (existingUsers.length === 0) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+    
+    // Supprimer l'utilisateur
+    await pool.execute(
+      'DELETE FROM Utilisateur WHERE id = ?',
+      [id]
+    );
+    
+    res.json({ message: 'Utilisateur supprimé avec succès' });
+  } catch (error) {
+    console.error('Erreur lors de la suppression d\'un utilisateur:', error);
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
+module.exports = { authUser, getUsers, createUser, deleteUser };
