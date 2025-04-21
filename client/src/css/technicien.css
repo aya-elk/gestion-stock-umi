@@ -1048,7 +1048,6 @@ button:disabled {
   }
 }
 
-/* Add this to your CSS file (technicien.css) */
 .role-badge {
   padding: 0.35rem 0.75rem;
   border-radius: var(--radius-full);
