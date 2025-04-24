@@ -1332,6 +1332,7 @@ const Technicien = () => {
                         <tr>
                           <th>ID</th>
                           <th>Étudiant</th>
+                          <th>Équipement Réservé</th>
                           <th>Date de Début</th>
                           <th>Date de Fin</th>
                           <th>Statut</th>
@@ -1341,7 +1342,7 @@ const Technicien = () => {
                       <tbody>
                         {reservations.length === 0 ? (
                           <tr>
-                            <td colSpan="6" className="centered-cell">Aucune réservation trouvée</td>
+                            <td colSpan="7" className="centered-cell">Aucune réservation trouvée</td>
                           </tr>
                         ) : (
                           reservations.map(reservation => {
@@ -1355,6 +1356,20 @@ const Technicien = () => {
                                 <td>#{reservation.id_reservation}</td>
                                 <td>
                                   {reservation.nom_utilisateur} {reservation.prenom_utilisateur}
+                                </td>
+                                <td>
+                                  {reservation.equipment_items ? (
+                                    <div className="equipment-list">
+                                      {reservation.equipment_items.map((item, idx) => (
+                                        <div key={idx} className="equipment-item">
+                                          {item.name || `Équipement #${item.id}`}
+                                          <span className="quantity-badge">x{item.quantity}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    reservation.nom_equipement || `Équipement #${reservation.id_equipement}`
+                                  )}
                                 </td>
                                 <td>{new Date(reservation.date_debut).toLocaleDateString('fr-FR', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
                                 <td>{new Date(reservation.date_fin).toLocaleDateString('fr-FR', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
