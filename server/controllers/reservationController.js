@@ -400,7 +400,7 @@ const updateReservationStatus = async (req, res) => {
     await connection.beginTransaction();
 
     const { id } = req.params;
-    const { statut, responsable_id } = req.body; // Ajouter responsable_id au corps de la requête
+    const { statut, responsable_id, technicien_id, technicien_name } = req.body; // Ajouter responsable_id au corps de la requête
 
     if (!statut) {
       return res.status(400).json({ message: 'Le statut est requis' });
@@ -671,14 +671,12 @@ const updateReservationStatus = async (req, res) => {
       // For each equipment in this reservation
       for (const item of reservationItems) {
         if (item.categorie === 'solo') {
-          // Update solo equipment status to available
           console.log(`Returning solo equipment ${item.id_equipement} to disponible`);
           await connection.execute(
             'UPDATE Solo SET etat = "disponible" WHERE id = ?',
             [item.id_equipement]
           );
         } else if (item.categorie === 'stockable') {
-          // Return stockable equipment quantity to inventory
           console.log(`Returning ${item.quantite_reservee} units of stockable equipment ${item.id_equipement} to inventory`);
           await connection.execute(
             'UPDATE Equipement SET quantite = quantite + ? WHERE id = ?',
@@ -686,23 +684,51 @@ const updateReservationStatus = async (req, res) => {
           );
         }
       }
-
-      // Create notification for student
+      
+      // Initialize variables with safe defaults first
+      let technicienName = "Un technicien";
+      let technicienId = null;
+      
+      // Then try to get the values from the request body
+      if (req.body && typeof req.body.technicien_name !== 'undefined') {
+        technicienName = req.body.technicien_name;
+      }
+      
+      if (req.body && typeof req.body.technicien_id !== 'undefined') {
+        technicienId = req.body.technicien_id;
+      }
+      
+      // Create notification for student with equipment details
       await connection.execute(
         'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
         [
           userId,
-          `Votre réservation #${id} a été marquée comme retournée.`
+          `Votre réservation #${id} pour ${equipmentList} a été marquée comme retournée par ${technicienName}.`
         ]
       );
 
-      // Create notification for technician
-      if (respId) {
+      // Create notification for technician with equipment details
+      if (technicienId) {
         await connection.execute(
           'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
           [
-            respId,
-            `La réservation #${id} de ${studentFullName} a été marquée comme retournée.`
+            technicienId,
+            `Vous avez marqué la réservation #${id} de ${studentFullName} pour ${equipmentList} comme retournée.`
+          ]
+        );
+      }
+
+      // Create notification for all responsables with equipment details
+      const [responsables] = await connection.execute(
+        'SELECT id FROM Utilisateur WHERE role = "responsable"'
+      );
+
+      for (const resp of responsables) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [
+            resp.id,
+            `${technicienName} a marqué la réservation #${id} de ${studentFullName} pour ${equipmentList} comme retournée.`
           ]
         );
       }

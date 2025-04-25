@@ -648,7 +648,11 @@ const Technicien = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ statut: status }),
+        body: JSON.stringify({ 
+          statut: status,
+          technicien_id: currentUser.id, // Add technician ID
+          technicien_name: `${currentUser.prenom} ${currentUser.nom}` // Add technician name
+        }),
       });
 
       if (!response.ok) {
@@ -658,11 +662,11 @@ const Technicien = () => {
 
       setSuccess(`Statut de réservation mis à jour en ${status}`);
 
-      // Rafraîchir la liste des réservations après un court délai
+      // Refresh data after a short delay
       setTimeout(() => {
         fetchReservations();
-        fetchEquipments(); // Rafraîchir l'équipement car le statut a pu changer
-        fetchNotifications(); // Vérifier les nouvelles notifications système
+        fetchEquipments(); // Equipment status might have changed
+        fetchNotifications(); // Check for new system notifications
       }, 1000);
 
     } catch (err) {
