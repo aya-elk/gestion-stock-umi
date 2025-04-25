@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS `Reservation` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `date_debut` DATETIME NOT NULL,
   `date_fin` DATETIME NOT NULL,
-  `etat` ENUM('attente', 'validee', 'refusee') NOT NULL,
+  `etat` ENUM('attente', 'validee', 'refusee', 'retournee') NOT NULL,
   `id_utilisateur` INT,
   FOREIGN KEY (`id_utilisateur`) REFERENCES `Utilisateur`(`id`)
 );

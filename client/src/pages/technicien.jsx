@@ -1377,7 +1377,8 @@ const Technicien = () => {
                                   <span className={`status-badge ${statusClass}`}>
                                     {reservation.statut === 'confirmé' || reservation.statut === 'validee' ? 'Confirmé' :
                                       reservation.statut === 'en_cours' ? 'En Cours' :
-                                        reservation.statut === 'attente' ? 'En Attente' : 'Rejetée'}
+                                        reservation.statut === 'attente' ? 'En Attente' :
+                                          reservation.statut === 'retournee' ? 'Retourné' : 'Rejetée'}
                                   </span>
                                 </td>
                                 <td className="action-buttons">
@@ -1386,41 +1387,44 @@ const Technicien = () => {
                                       <button
                                         onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'confirmé')}
                                         className="approve-btn"
-                                        title="Confirmer"
+                                        title="Approuver"
                                       >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                                           <polyline points="22 4 12 14.01 9 11.01"></polyline>
                                         </svg>
-                                        Confirmer
+                                        Approuver
                                       </button>
                                       <button
-                                        onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'en_cours')}
-                                        className="progress-btn"
-                                        title="Marquer En Cours"
+                                        onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'refusee')}
+                                        className="reject-btn"
+                                        title="Refuser"
                                       >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                           <circle cx="12" cy="12" r="10"></circle>
-                                          <polyline points="12 6 12 12 16 14"></polyline>
+                                          <line x1="15" y1="9" x2="9" y2="15"></line>
+                                          <line x1="9" y1="9" x2="15" y2="15"></line>
                                         </svg>
-                                        En Cours
+                                        Refuser
                                       </button>
                                     </>
                                   )}
-                                  {reservation.statut === 'en_cours' && (
+                                  {(reservation.statut === 'confirmé' || reservation.statut === 'validee') && (
                                     <button
-                                      onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'confirmé')}
-                                      className="approve-btn"
-                                      title="Marquer Terminée"
+                                      onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'retournee')}
+                                      className="return-btn"
+                                      title="Marquer comme Retourné"
                                     >
                                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                        <polyline points="17 1 21 5 17 9"></polyline>
+                                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                                        <polyline points="7 23 3 19 7 15"></polyline>
+                                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
                                       </svg>
-                                      Terminer
+                                      Marquer comme Retourné
                                     </button>
                                   )}
-                                  {reservation.statut === 'confirmé' || reservation.statut === 'validee' && (
+                                  {reservation.statut === 'retournee' && (
                                     <span className="status-text">Terminée</span>
                                   )}
                                 </td>
