@@ -1870,6 +1870,115 @@ const Technicien = () => {
         </div>
       )}
 
+      {/* Modale d'Ajout d'Utilisateur */}
+      {showAddUserModal && (
+        <div className="modal-overlay">
+          <div className="modal-container" ref={modalRef}>
+            <div className="modal-header">
+              <h3>Ajouter un Nouvel Utilisateur</h3>
+              <button className="modal-close" onClick={() => setShowAddUserModal(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              {error && <div className="error-message">{error}</div>}
+              {success && <div className="success-message">{success}</div>}
+
+              <form className="user-form" onSubmit={handleAddUser}>
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="nom">Nom:</label>
+                    <input
+                      type="text"
+                      name="nom"
+                      id="nom"
+                      placeholder="Nom de famille"
+                      required
+                      value={userFormData.nom}
+                      onChange={handleUserInputChange}
+                      className="form-control"
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="prenom">Prénom:</label>
+                    <input
+                      type="text"
+                      name="prenom"
+                      id="prenom"
+                      placeholder="Prénom"
+                      required
+                      value={userFormData.prenom}
+                      onChange={handleUserInputChange}
+                      className="form-control"
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="email">Email:</label>
+                  <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    placeholder="adresse@email.com"
+                    required
+                    value={userFormData.email}
+                    onChange={handleUserInputChange}
+                    className="form-control"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="role">Rôle:</label>
+                  <select
+                    name="role"
+                    id="role"
+                    required
+                    value={userFormData.role}
+                    onChange={handleUserInputChange}
+                    className="form-control"
+                  >
+                    <option value="etudiant">Étudiant</option>
+                    <option value="technicien">Technicien</option>
+                    <option value="responsable">Responsable</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="mot_de_passe">Mot de passe:</label>
+                  <input
+                    type="password"
+                    name="mot_de_passe"
+                    id="mot_de_passe"
+                    placeholder="Mot de passe"
+                    required
+                    value={userFormData.mot_de_passe}
+                    onChange={handleUserInputChange}
+                    className="form-control"
+                  />
+                </div>
+
+                <div className="modal-actions">
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="submit-button"
+                  >
+                    {isLoading ? 'Traitement en cours...' : 'Ajouter l\'utilisateur'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddUserModal(false)}
+                    className="cancel-button"
+                  >
+                    Annuler
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
