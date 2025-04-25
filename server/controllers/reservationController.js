@@ -407,7 +407,7 @@ const updateReservationStatus = async (req, res) => {
     }
 
     // Valider que le statut est l'une des valeurs ENUM autorisées
-    if (!['attente', 'validee', 'refusee'].includes(statut)) {
+    if (!['attente', 'validee', 'refusee', 'retournee'].includes(statut)) {
       return res.status(400).json({ message: 'Valeur de statut invalide' });
     }
 
@@ -666,6 +666,45 @@ const updateReservationStatus = async (req, res) => {
           console.error('Échec de l\'envoi de l\'email de confirmation au responsable:', emailError);
           // Ne pas arrêter le processus si l'envoi d'email échoue
         }
+      }
+    } else if (statut === 'retournee') {
+      // For each equipment in this reservation
+      for (const item of reservationItems) {
+        if (item.categorie === 'solo') {
+          // Update solo equipment status to available
+          console.log(`Returning solo equipment ${item.id_equipement} to disponible`);
+          await connection.execute(
+            'UPDATE Solo SET etat = "disponible" WHERE id = ?',
+            [item.id_equipement]
+          );
+        } else if (item.categorie === 'stockable') {
+          // Return stockable equipment quantity to inventory
+          console.log(`Returning ${item.quantite_reservee} units of stockable equipment ${item.id_equipement} to inventory`);
+          await connection.execute(
+            'UPDATE Equipement SET quantite = quantite + ? WHERE id = ?',
+            [item.quantite_reservee, item.id_equipement]
+          );
+        }
+      }
+
+      // Create notification for student
+      await connection.execute(
+        'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+        [
+          userId,
+          `Votre réservation #${id} a été marquée comme retournée.`
+        ]
+      );
+
+      // Create notification for technician
+      if (respId) {
+        await connection.execute(
+          'INSERT INTO Notification (id_utilisateur, message, date_envoi, statut) VALUES (?, ?, NOW(), "envoye")',
+          [
+            respId,
+            `La réservation #${id} de ${studentFullName} a été marquée comme retournée.`
+          ]
+        );
       }
     }
 
