@@ -67,6 +67,15 @@
   color: #f39c12;
 }
 
+.status-returned {
+  background-color: rgba(41, 128, 185, 0.15); /* Light blue background */
+  color: #2980b9; /* Blue text color */
+}
+
+.status-returned:before {
+  background-color: #2980b9; /* Blue dot indicator */
+}
+
 .category-badge {
   background-color: rgba(155, 89, 182, 0.15);
   color: #8e44ad;

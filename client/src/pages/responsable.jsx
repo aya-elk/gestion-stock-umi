@@ -586,6 +586,7 @@ const Responsable = () => {
                             <option value="attente">En Attente</option>
                             <option value="validee">Approuvée</option>
                             <option value="refusee">Refusée</option>
+                            <option value="retournee">Retournée</option>
                             <option value="all">Toutes les Réservations</option>
                           </select>
                         </div>
@@ -622,6 +623,7 @@ const Responsable = () => {
                                 if (reservation.statut === 'validee') statusClass = 'status-confirmed';
                                 else if (reservation.statut === 'attente') statusClass = 'status-pending';
                                 else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
+                                else if (reservation.statut === 'retournee') statusClass = 'status-returned';
 
                                 return (
                                   <tr key={reservation.id_reservation}>
@@ -648,7 +650,8 @@ const Responsable = () => {
                                     <td>
                                       <span className={`status-badge ${statusClass}`}>
                                         {reservation.statut === 'validee' ? 'Approuvée' :
-                                          reservation.statut === 'attente' ? 'En Attente' : 'Refusée'}
+                                          reservation.statut === 'attente' ? 'En Attente' :
+                                            reservation.statut === 'retournee' ? 'Retournée' : 'Refusée'}
                                       </span>
                                     </td>
                                     <td>
@@ -672,7 +675,8 @@ const Responsable = () => {
                                       )}
                                       {reservation.statut !== 'attente' && (
                                         <span className="status-text">
-                                          {reservation.statut === 'validee' ? 'Approuvée' : 'Refusée'}
+                                          {reservation.statut === 'validee' ? 'Approuvée' : 
+                                           reservation.statut === 'retournee' ? 'Retournée' : 'Refusée'}
                                         </span>
                                       )}
                                     </td>
