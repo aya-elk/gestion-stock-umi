@@ -10,6 +10,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [showForgotPopup, setShowForgotPopup] = useState(false);
 
   const navigate = useNavigate();
 
@@ -78,6 +79,11 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    setShowForgotPopup(true);
   };
 
   return (
@@ -157,7 +163,7 @@ const Login = () => {
                   onChange={(e) => setRememberMe(e.target.checked)}
                 /> Se souvenir de moi
               </label>
-              <a href="#" className="forgot-link">Mot de pass oublié?</a>
+              <a href="#" className="forgot-link" onClick={handleForgotPassword}>Mot de pass oublié?</a>
             </div>
             <button type="submit" disabled={loading} className="login-button">
               {loading ? 'Authentification en cours...' : 'Login'}
@@ -165,6 +171,15 @@ const Login = () => {
           </form>
         </div>
       </section>
+      
+      {showForgotPopup && (
+        <div className="popup-overlay" onClick={() => setShowForgotPopup(false)}>
+          <div className="popup-content" onClick={e => e.stopPropagation()}>
+            <p>Veuillez contacter un technicien</p>
+            <button onClick={() => setShowForgotPopup(false)}>Fermer</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
