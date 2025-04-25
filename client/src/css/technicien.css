@@ -1098,10 +1098,10 @@ button:disabled {
 }
 
 .status-returned {
-  background-color: rgba(39, 174, 96, 0.15);
-  color: #27ae60;
+  background-color: rgba(41, 128, 185, 0.15); /* Light blue background */
+  color: #2980b9; /* Blue text color */
 }
 
 .status-returned:before {
-  background-color: #27ae60;
+  background-color: #2980b9; /* Blue dot indicator */
 }

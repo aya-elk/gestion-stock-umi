@@ -1311,13 +1311,18 @@ const Technicien = () => {
                       className="form-control"
                     >
                       <option value="">Tous les Statuts</option>
-                      <option value="disponible">Disponible</option>
-                      <option value="en_cours">En Utilisation</option>
-                      <option value="en_reparation">En Réparation</option>
-                      <option value="indisponible">Indisponible</option>
+                      <option value="validee">Confirmé</option>
+                      <option value="attente">En Attente</option>
+                      <option value="refusee">Rejeté</option>
+                      <option value="retournee">Retourné</option>
                     </select>
                   </div>
-                  <button className="secondary-button">Effacer les Filtres</button>
+                  <button 
+                    className="secondary-button"
+                    onClick={() => setFilterStatus('')}
+                  >
+                    Effacer les Filtres
+                  </button>
                 </div>
               </div>
 
@@ -1345,92 +1350,83 @@ const Technicien = () => {
                             <td colSpan="7" className="centered-cell">Aucune réservation trouvée</td>
                           </tr>
                         ) : (
-                          reservations.map(reservation => {
-                            let statusClass = '';
-                            if (reservation.statut === 'confirmé' || reservation.statut === 'validee') statusClass = 'status-confirmed';
-                            else if (reservation.statut === 'en_cours' || reservation.statut === 'attente') statusClass = 'status-pending';
-                            else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
-
-                            return (
-                              <tr key={reservation.id_reservation}>
-                                <td>#{reservation.id_reservation}</td>
-                                <td>
-                                  {reservation.nom_utilisateur} {reservation.prenom_utilisateur}
-                                </td>
-                                <td>
-                                  {reservation.equipment_items ? (
-                                    <div className="equipment-list">
-                                      {reservation.equipment_items.map((item, idx) => (
-                                        <div key={idx} className="equipment-item">
-                                          {item.name || `Équipement #${item.id}`}
-                                          <span className="quantity-badge">x{item.quantity}</span>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  ) : (
-                                    reservation.nom_equipement || `Équipement #${reservation.id_equipement}`
-                                  )}
-                                </td>
-                                <td>{new Date(reservation.date_debut).toLocaleDateString('fr-FR', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
-                                <td>{new Date(reservation.date_fin).toLocaleDateString('fr-FR', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
-                                <td>
-                                  <span className={`status-badge ${statusClass}`}>
-                                    {reservation.statut === 'confirmé' || reservation.statut === 'validee' ? 'Confirmé' :
-                                      reservation.statut === 'en_cours' ? 'En Cours' :
-                                        reservation.statut === 'attente' ? 'En Attente' :
-                                          reservation.statut === 'retournee' ? 'Retourné' : 'Rejetée'}
-                                  </span>
-                                </td>
-                                <td className="action-buttons">
-                                  {(reservation.statut === 'en_attente' || reservation.statut === 'attente') && (
-                                    <>
+                          reservations
+                            .filter(reservation => filterStatus === '' || reservation.statut === filterStatus)
+                            .map(reservation => {
+                              let statusClass = '';
+                              if (reservation.statut === 'confirmé' || reservation.statut === 'validee') statusClass = 'status-confirmed';
+                              else if (reservation.statut === 'en_cours' || reservation.statut === 'attente') statusClass = 'status-pending';
+                              else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
+                              else if (reservation.statut === 'retournee') statusClass = 'status-returned';
+                              
+                              // Rest of your rendering code remains the same
+                              return (
+                                <tr key={reservation.id_reservation}>
+                                  <td>#{reservation.id_reservation}</td>
+                                  <td>
+                                    {reservation.nom_utilisateur} {reservation.prenom_utilisateur}
+                                  </td>
+                                  <td>
+                                    {reservation.equipment_items ? (
+                                      <div className="equipment-list">
+                                        {reservation.equipment_items.map((item, idx) => (
+                                          <div key={idx} className="equipment-item">
+                                            {item.name || `Équipement #${item.id}`}
+                                            <span className="quantity-badge">x{item.quantity}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    ) : (
+                                      reservation.nom_equipement || `Équipement #${reservation.id_equipement}`
+                                    )}
+                                  </td>
+                                  <td>{new Date(reservation.date_debut).toLocaleDateString('fr-FR', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
+                                  <td>{new Date(reservation.date_fin).toLocaleDateString('fr-FR', { month: 'short', day: '2-digit', year: 'numeric' })}</td>
+                                  <td>
+                                    <span className={`status-badge ${statusClass}`}>
+                                      {reservation.statut === 'confirmé' || reservation.statut === 'validee' ? 'Confirmé' :
+                                        reservation.statut === 'en_cours' ? 'En Cours' :
+                                          reservation.statut === 'attente' ? 'En Attente' :
+                                            reservation.statut === 'retournee' ? 'Retourné' : 'Rejetée'}
+                                    </span>
+                                  </td>
+                                  <td className="action-buttons">
+                                    {/* Remove approval/rejection buttons - technicians should not have this permission */}
+                                    
+                                    {/* Keep only the "Mark as Returned" button for confirmed reservations */}
+                                    {(reservation.statut === 'confirmé' || reservation.statut === 'validee') && (
                                       <button
-                                        onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'confirmé')}
-                                        className="approve-btn"
-                                        title="Approuver"
+                                        onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'retournee')}
+                                        className="return-btn"
+                                        title="Marquer comme Retourné"
                                       >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                          <polyline points="17 1 21 5 17 9"></polyline>
+                                          <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                                          <polyline points="7 23 3 19 7 15"></polyline>
+                                          <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
                                         </svg>
-                                        Approuver
+                                        Marquer comme Retourné
                                       </button>
-                                      <button
-                                        onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'refusee')}
-                                        className="reject-btn"
-                                        title="Refuser"
-                                      >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <circle cx="12" cy="12" r="10"></circle>
-                                          <line x1="15" y1="9" x2="9" y2="15"></line>
-                                          <line x1="9" y1="9" x2="15" y2="15"></line>
-                                        </svg>
-                                        Refuser
-                                      </button>
-                                    </>
-                                  )}
-                                  {(reservation.statut === 'confirmé' || reservation.statut === 'validee') && (
-                                    <button
-                                      onClick={() => handleUpdateReservationStatus(reservation.id_reservation, 'retournee')}
-                                      className="return-btn"
-                                      title="Marquer comme Retourné"
-                                    >
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="17 1 21 5 17 9"></polyline>
-                                        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
-                                        <polyline points="7 23 3 19 7 15"></polyline>
-                                        <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
-                                      </svg>
-                                      Marquer comme Retourné
-                                    </button>
-                                  )}
-                                  {reservation.statut === 'retournee' && (
-                                    <span className="status-text">Terminée</span>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })
+                                    )}
+                                    
+                                    {/* Keep the "Terminée" status display for returned reservations */}
+                                    {reservation.statut === 'retournee' && (
+                                      <span className="status-text">Terminée</span>
+                                    )}
+                                    
+                                    {/* For pending/rejected reservations, show informational text */}
+                                    {(reservation.statut === 'attente' || reservation.statut === 'en_attente') && (
+                                      <span className="status-text">En attente d'approbation</span>
+                                    )}
+                                    
+                                    {reservation.statut === 'refusee' && (
+                                      <span className="status-text">Rejetée par responsable</span>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })
                         )}
                       </tbody>
                     </table>
