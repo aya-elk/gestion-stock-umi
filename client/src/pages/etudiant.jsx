@@ -566,6 +566,8 @@ const Etudiant = () => {
       style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
     } else if (event.status === 'refusee') {
       style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+    } else if (event.status === 'retournee') {
+      style.background = 'linear-gradient(135deg, #3498db, #2980b9)';
     } else {
       style.background = 'linear-gradient(135deg, #f39c12, #e67e22)';
     }
@@ -1156,6 +1158,7 @@ const Etudiant = () => {
                       <option value="attente">En Attente</option>
                       <option value="validee">Approuvée</option>
                       <option value="refusee">Refusée</option>
+                      <option value="retournee">Retournée</option>
                     </select>
                   </div>
                 </div>
@@ -1187,6 +1190,7 @@ const Etudiant = () => {
                               if (reservation.statut === 'validee') statusClass = 'status-confirmed';
                               else if (reservation.statut === 'attente') statusClass = 'status-pending';
                               else if (reservation.statut === 'refusee') statusClass = 'status-rejected';
+                              else if (reservation.statut === 'retournee') statusClass = 'status-returned';
 
                               return (
                                 <tr key={reservation.id_reservation}>
@@ -1210,7 +1214,8 @@ const Etudiant = () => {
                                   <td>
                                     <span className={`status-badge ${statusClass}`}>
                                       {reservation.statut === 'validee' ? 'Confirmée' :
-                                        reservation.statut === 'attente' ? 'En Attente' : 'Refusée'}
+                                        reservation.statut === 'attente' ? 'En Attente' :
+                                          reservation.statut === 'retournee' ? 'Retournée' : 'Refusée'}
                                     </span>
                                   </td>
                                 </tr>
