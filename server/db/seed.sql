@@ -204,3 +204,49 @@ SELECT id, quantite FROM Equipement WHERE categorie = 'stockable';
 
 INSERT INTO `Solo` (id, etat)
 SELECT id, TRUE FROM Equipement WHERE categorie = 'solo';
+
+-- Insertion dans Reservation
+INSERT INTO Reservation (date_debut, date_fin, etat, id_utilisateur) VALUES
+
+  ('2024-11-15', '2024-11-25', 'retournee', 123),
+  ('2024-12-10', '2024-12-20', 'retournee', 456),
+  ('2025-01-05', '2025-01-15', 'retournee', 123),
+  ('2025-02-10', '2025-02-20', 'retournee', 456),
+  ('2025-03-12', '2025-03-22', 'retournee', 123),
+  ('2025-04-01', '2025-04-10', 'retournee', 456),
+  ('2025-04-15', '2025-04-25', 'retournee', 123),
+  ('2025-04-20', '2025-04-30', 'retournee', 456),
+
+  ('2025-04-25', '2025-05-05', 'validee', 123),
+  ('2025-04-28', '2025-05-08', 'validee', 456),
+  ('2025-05-01', '2025-05-10', 'validee', 123),
+  ('2025-05-02', '2025-05-12', 'validee', 456),
+
+  ('2025-05-15', '2025-05-25', 'validee', 123),
+  ('2025-06-01', '2025-06-10', 'validee', 456),
+
+  ('2025-05-10', '2025-05-20', 'attente', 123),
+  ('2025-05-25', '2025-06-05', 'attente', 456),
+  ('2025-05-05', '2025-05-15', 'refusee', 123),
+  ('2025-05-20', '2025-06-01', 'refusee', 456);
+
+-- Insertion dans Reservation_Equipement
+INSERT INTO Reservation_Equipement (id_reservation, id_equipement, quantite_reservee) VALUES
+  (1, 1, 1),
+  (2, 2, 2),
+  (3, 3, 1),
+  (4, 4, 1),
+  (5, 5, 2),
+  (6, 6, 1),
+  (7, 7, 1),
+  (8, 8, 3),
+  (9, 9, 2),
+  (10, 10, 1),
+  (11, 1, 2),
+  (12, 2, 1),
+  (13, 3, 1),
+  (14, 4, 2),
+  (15, 5, 1),
+  (16, 6, 1),
+  (17, 7, 2),
+  (18, 8, 1);

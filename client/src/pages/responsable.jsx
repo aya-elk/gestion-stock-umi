@@ -3,6 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import Logo from '../components/logo';
 import '../css/responsable.css';
+// Add these imports for the chart
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const Responsable = () => {
   // Navigation pour les redirections
@@ -29,6 +35,8 @@ const Responsable = () => {
   const [notifications, setNotifications] = useState([]);
   const [activityHistory, setActivityHistory] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  // Add this new state variable to store processed chart data
+  const [chartData, setChartData] = useState(null);
 
   // Vérification d'authentification au montage du composant
   useEffect(() => {
@@ -188,6 +196,9 @@ const Responsable = () => {
 
       // Définir les données d'activité dans l'état
       setActivityHistory(data);
+      
+      // Process chart data
+      processChartData(data);
     } catch (err) {
       console.error('Erreur lors de la récupération de l\'historique des activités:', err);
       setActivityHistory([]);
@@ -415,6 +426,44 @@ const Responsable = () => {
     } else {
       return 'status-current';
     }
+  };
+
+  // Add a function to process activity history into monthly data
+  const processChartData = (activities) => {
+    // Group activities by month
+    const monthlyUsage = {};
+    const monthNames = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+
+    // Initialize all months with zero count
+    monthNames.forEach((month, index) => {
+      monthlyUsage[index] = {
+        label: month,
+        count: 0
+      };
+    });
+
+    // Count equipment usage by month
+    activities.forEach(activity => {
+      const startDate = new Date(activity.date_debut);
+      const month = startDate.getMonth();
+      monthlyUsage[month].count += 1;
+    });
+
+    // Format data for Chart.js
+    const data = {
+      labels: monthNames,
+      datasets: [
+        {
+          label: 'Réservations d\'équipement',
+          data: Object.values(monthlyUsage).map(m => m.count),
+          backgroundColor: 'rgba(108, 43, 217, 0.7)',
+          borderColor: 'rgba(108, 43, 217, 1)',
+          borderWidth: 1
+        }
+      ]
+    };
+
+    setChartData(data);
   };
 
   // Si non encore authentifié, afficher le chargement
@@ -839,9 +888,30 @@ const Responsable = () => {
 
                     <div className="chart-container glass-effect">
                       <h3>Statistiques d'Utilisation Mensuelle</h3>
-                      <div className="chart-placeholder">
-                        <p>Le graphique sera affiché ici</p>
-                      </div>
+                      {isLoading ? (
+                        <div className="loading-spinner"></div>
+                      ) : chartData ? (
+                        <div className="chart-wrapper">
+                          <Bar 
+                            data={chartData} 
+                            options={{
+                              responsive: true,
+                              maintainAspectRatio: false,
+                              plugins: {
+                                legend: {
+                                  position: 'top',
+                                },
+                                title: {
+                                  display: true,
+                                  text: 'Utilisation d\'équipement par mois'
+                                },
+                              },
+                            }} 
+                          />
+                        </div>
+                      ) : (
+                        <div className="no-data">Aucune donnée disponible pour le graphique</div>
+                      )}
                     </div>
 
                     <div className="table-container glass-effect">

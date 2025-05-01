@@ -137,6 +137,29 @@
   background-color: rgba(108, 43, 217, 0.15);
 }
 
+/* Chart styles */
+.chart-wrapper {
+  height: 300px;
+  padding: var(--space-md);
+  margin-bottom: var(--space-lg);
+  position: relative;
+}
+
+.chart-container {
+  padding: var(--space-lg);
+  background: var(--glass-bg-light);
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border-light);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--space-lg);
+}
+
+.dark-mode .chart-container {
+  background: var(--glass-bg-dark);
+  border-color: var(--glass-border-dark);
+}
+
 /* Checkbox styling unique to responsable */
 .checkbox-container {
   display: flex;
