@@ -68,10 +68,20 @@ const getUsers = async (req, res) => {
 // @access  Privé (Admin/Technicien seulement)
 const createUser = async (req, res) => {
   try {
-    const { nom, prenom, email, role, mot_de_passe } = req.body;
+    const { id, nom, prenom, email, role, mot_de_passe } = req.body;
     
-    if (!nom || !prenom || !email || !role || !mot_de_passe) {
+    if (!id || !nom || !prenom || !email || !role || !mot_de_passe) {
       return res.status(400).json({ message: 'Tous les champs sont requis' });
+    }
+    
+    // Vérifier si l'ID existe déjà
+    const [existingUsersById] = await pool.execute(
+      'SELECT * FROM Utilisateur WHERE id = ?',
+      [id]
+    );
+    
+    if (existingUsersById.length > 0) {
+      return res.status(400).json({ message: 'Cet ID est déjà utilisé' });
     }
     
     // Vérifier si l'email existe déjà
@@ -86,12 +96,12 @@ const createUser = async (req, res) => {
     
     // Insérer le nouvel utilisateur
     const [result] = await pool.execute(
-      'INSERT INTO Utilisateur (nom, prenom, email, role, mot_de_passe) VALUES (?, ?, ?, ?, ?)',
-      [nom, prenom, email, role, mot_de_passe] // Dans une vraie application, hasher le mot de passe
+      'INSERT INTO Utilisateur (id, nom, prenom, email, role, mot_de_passe) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, nom, prenom, email, role, mot_de_passe] // Dans une vraie application, hasher le mot de passe
     );
     
     res.status(201).json({ 
-      id: result.insertId,
+      id: id,
       message: 'Utilisateur créé avec succès' 
     });
   } catch (error) {

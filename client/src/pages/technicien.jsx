@@ -54,6 +54,7 @@ const Technicien = () => {
   // Add to the state variables
   const [users, setUsers] = useState([]);
   const [userFormData, setUserFormData] = useState({
+    id: '',
     nom: '',
     prenom: '',
     email: '',
@@ -408,6 +409,7 @@ const Technicien = () => {
       setTimeout(() => {
         setShowAddUserModal(false);
         setUserFormData({
+          id: '',
           nom: '',
           prenom: '',
           email: '',
@@ -1956,6 +1958,20 @@ const Technicien = () => {
                     placeholder="Mot de passe"
                     required
                     value={userFormData.mot_de_passe}
+                    onChange={handleUserInputChange}
+                    className="form-control"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="user_id">ID:</label>
+                  <input
+                    type="number"
+                    name="id"
+                    id="user_id"
+                    placeholder="Identifiant unique"
+                    required
+                    value={userFormData.id}
                     onChange={handleUserInputChange}
                     className="form-control"
                   />

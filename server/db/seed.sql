@@ -1,11 +1,11 @@
 USE GESTION_STOCK;
 
 -- Insertion dans Utilisateur
-INSERT INTO Utilisateur (nom, prenom, email, mot_de_passe, role) VALUES
-  ('El Amrani', 'Yassine', 'yassine.elamrani@umi.ac.ma', 'pass123', 'etudiant'),
-  ('Bennani', 'Fatima', 'fatima.bennani@umi.ac.ma', 'pass456', 'etudiant'),
-  ('Touhami', 'Hamza', 'hamza.touhami@umi.ac.ma', 'pass789', 'technicien'),
-  ('Zerouali', 'Naima', 'naima.zerouali@umi.ac.ma', 'pass999', 'responsable');
+INSERT INTO Utilisateur (id, nom, prenom, email, mot_de_passe, role) VALUES
+  (123,'El Amrani', 'Yassine', 'yassine.elamrani@umi.ac.ma', 'pass123', 'etudiant'),
+  (456,'Bennani', 'Fatima', 'fatima.bennani@umi.ac.ma', 'pass456', 'etudiant'),
+  (789,'Touhami', 'Hamza', 'hamza.touhami@umi.ac.ma', 'pass789', 'technicien'),
+  (999,'Zerouali', 'Naima', 'naima.zerouali@umi.ac.ma', 'pass999', 'responsable');
 
 -- Insertion dans Equipement
 INSERT INTO Equipement (nom, description, categorie, quantite) VALUES
