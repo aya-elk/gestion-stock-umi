@@ -175,17 +175,6 @@
   accent-color: var(--primary-color);
 }
 
-.login-options .forgot-link {
-  color: var(--primary-color);
-  text-decoration: none;
-  transition: var(--transition);
-}
-
-.login-options .forgot-link:hover {
-  color: var(--primary-dark);
-  text-decoration: underline;
-}
-
 /* Login button to match cta-button */
 .login-button {
   display: inline-flex;
