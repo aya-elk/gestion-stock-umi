@@ -163,7 +163,7 @@ const Login = () => {
                   onChange={(e) => setRememberMe(e.target.checked)}
                 /> Se souvenir de moi
               </label>
-              <a href="#" className="forgot-link" onClick={handleForgotPassword}>Mot de pass oublié?</a>
+              <button className="forgot-link" onClick={handleForgotPassword}>Mot de pass oublié?</button>
             </div>
             <button type="submit" disabled={loading} className="login-button">
               {loading ? 'Authentification en cours...' : 'Login'}

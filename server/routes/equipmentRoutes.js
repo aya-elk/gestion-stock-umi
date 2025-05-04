@@ -5,7 +5,6 @@ const {
   getEquipmentById,
   createEquipment,
   updateEquipment,
-  updateEquipmentStatus, // Add the new handler
   deleteEquipment,
   getStockableEquipment,
   getSoloEquipment,
@@ -24,7 +23,6 @@ router.route('/')
 router.route('/:id')
   .get(getEquipmentById)
   .put(updateEquipment)
-  .patch(updateEquipmentStatus) // Add PATCH endpoint for status updates
   .delete(deleteEquipment);
 
 // Make sure this route exists

@@ -43,7 +43,7 @@ const Technicien = () => {
 
   // Variables d'état pour l'interface utilisateur
   const [darkMode, setDarkMode] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [, setShowBackToTop] = useState(false);
   const [activeView, setActiveView] = useState('equipment');
   const [activeTab, setActiveTab] = useState('inventory');
   const [activeEquipmentTab, setActiveEquipmentTab] = useState('stockable');
@@ -64,8 +64,6 @@ const Technicien = () => {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
 
   // Références pour les sections et modales
-  const equipmentRef = useRef(null);
-  const reservationsRef = useRef(null);
   const modalRef = useRef(null);
 
   // Vérification d'authentification au montage du composant
@@ -103,27 +101,6 @@ const Technicien = () => {
     // L'utilisateur est authentifié et a le bon rôle
     setCurrentUser(userFromStorage);
   }, [navigate]);
-
-  // Gestionnaire de clic en dehors de la modale
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setShowAddModal(false);
-        setShowUpdateModal(false);
-        setShowQRModal(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [modalRef]);
-
-  useEffect(() => {
-    const count = notifications.filter(n => !n.read).length;
-    setUnreadCount(count);
-  }, [notifications]);
 
   // Basculer le mode sombre
   const toggleDarkMode = () => {
@@ -175,14 +152,6 @@ const Technicien = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-
-  // Défiler vers le haut
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
 
   // Charger les données d'équipement lors du montage du composant ou du changement de filtres
   useEffect(() => {
@@ -750,6 +719,27 @@ const Technicien = () => {
       setIsLoading(false);
     }
   };
+
+  // Gestionnaire de clic en dehors de la modale
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setShowAddModal(false);
+        setShowUpdateModal(false);
+        setShowQRModal(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [modalRef]);
+
+  useEffect(() => {
+    const count = notifications.filter(n => !n.read).length;
+    setUnreadCount(count);
+  }, [notifications]);
 
   // Si pas encore authentifié, afficher le chargement
   if (!currentUser) {

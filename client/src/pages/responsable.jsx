@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import Logo from '../components/logo';
@@ -26,7 +26,6 @@ const Responsable = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
   const [activeTab, setActiveTab] = useState('pending');
   const [activeEquipmentTab, setActiveEquipmentTab] = useState('stockable');
   const [filterStatus, setFilterStatus] = useState('attente');
@@ -38,87 +37,12 @@ const Responsable = () => {
   // Add this new state variable to store processed chart data
   const [chartData, setChartData] = useState(null);
 
-  // Vérification d'authentification au montage du composant
-  useEffect(() => {
-    // Vérifier si l'utilisateur est connecté et a le rôle 'responsable'
-    let userFromStorage;
-    try {
-      const localData = localStorage.getItem('userInfo');
-      const sessionData = sessionStorage.getItem('userInfo');
-
-      if (localData) {
-        userFromStorage = JSON.parse(localData);
-      } else if (sessionData) {
-        userFromStorage = JSON.parse(sessionData);
-      }
-    } catch (parseErr) {
-      console.error("Erreur d'analyse des données stockées:", parseErr);
-      navigate('/login');
-      return;
-    }
-
-    // Si aucune donnée utilisateur ou mauvais rôle, rediriger vers la page de connexion
-    if (!userFromStorage) {
-      navigate('/login');
-      return;
-    }
-
-    // Vérifier si le rôle de l'utilisateur est 'responsable'
-    if (userFromStorage.role !== 'responsable') {
-      // Mauvais rôle, rediriger vers la page de connexion
-      navigate('/login');
-      return;
-    }
-
-    // L'utilisateur est authentifié et a le bon rôle
-    setCurrentUser(userFromStorage);
-  }, [navigate]);
-
-  // Chargement initial des données
-  useEffect(() => {
-    fetchStocks();
-    fetchNotifications();
-    fetchRecentActivity();
-  }, []);
-
   // Basculer le mode sombre
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
 
-  // Gérer le défilement pour le bouton retour en haut
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 300) {
-        setShowBackToTop(true);
-      } else {
-        setShowBackToTop(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Récupérer les données lorsque l'utilisateur est authentifié et lorsque le filtre change
-  useEffect(() => {
-    if (currentUser) {
-      fetchReservations();
-      fetchStocks();
-      fetchNotifications();
-      if (activeTab === 'history') {
-        fetchRecentActivity();
-      }
-    }
-  }, [filterStatus, currentUser, activeTab]);
-
-  // Défiler vers le haut
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Récupérer les données de réservation depuis l'API avec un regroupement approprié
-  const fetchReservations = async () => {
+  const fetchReservations = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -177,10 +101,9 @@ const Responsable = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filterStatus]); // Add filterStatus as a dependency
 
-  // Mettre à jour la fonction fetchRecentActivity pour obtenir toutes les réservations validées, pas seulement les récentes
-  const fetchRecentActivity = async () => {
+  const fetchRecentActivity = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -205,7 +128,7 @@ const Responsable = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []); // Empty dependency array since it doesn't depend on any state or props
 
   // Fonction de récupération des stocks mise à jour 
   const fetchStocks = async () => {
@@ -465,6 +388,61 @@ const Responsable = () => {
 
     setChartData(data);
   };
+
+  // Récupérer les données lorsque l'utilisateur est authentifié et lorsque le filtre change
+  useEffect(() => {
+    if (currentUser) {
+      fetchReservations();
+      fetchStocks();
+      fetchNotifications();
+      if (activeTab === 'history') {
+        fetchRecentActivity();
+      }
+    }
+  }, [filterStatus, currentUser, activeTab, fetchReservations, fetchRecentActivity]); // Add the callbacks
+
+  // Vérification d'authentification au montage du composant
+  useEffect(() => {
+    // Vérifier si l'utilisateur est connecté et a le rôle 'responsable'
+    let userFromStorage;
+    try {
+      const localData = localStorage.getItem('userInfo');
+      const sessionData = sessionStorage.getItem('userInfo');
+
+      if (localData) {
+        userFromStorage = JSON.parse(localData);
+      } else if (sessionData) {
+        userFromStorage = JSON.parse(sessionData);
+      }
+    } catch (parseErr) {
+      console.error("Erreur d'analyse des données stockées:", parseErr);
+      navigate('/login');
+      return;
+    }
+
+    // Si aucune donnée utilisateur ou mauvais rôle, rediriger vers la page de connexion
+    if (!userFromStorage) {
+      navigate('/login');
+      return;
+    }
+
+    // Vérifier si le rôle de l'utilisateur est 'responsable'
+    if (userFromStorage.role !== 'responsable') {
+      // Mauvais rôle, rediriger vers la page de connexion
+      navigate('/login');
+      return;
+    }
+
+    // L'utilisateur est authentifié et a le bon rôle
+    setCurrentUser(userFromStorage);
+  }, [navigate]);
+
+  // Chargement initial des données
+  useEffect(() => {
+    fetchStocks();
+    fetchNotifications();
+    fetchRecentActivity();
+  }, [fetchRecentActivity]); // Add fetchRecentActivity
 
   // Si non encore authentifié, afficher le chargement
   if (!currentUser) {

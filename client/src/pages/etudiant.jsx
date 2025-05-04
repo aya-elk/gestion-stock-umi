@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
@@ -23,7 +23,7 @@ const Etudiant = () => {
   const [success, setSuccess] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [, setShowBackToTop] = useState(false);
 
   // Variables d'état du tableau de bord
   const [activeView, setActiveView] = useState('browse');
@@ -40,50 +40,6 @@ const Etudiant = () => {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const [filterStatus, setFilterStatus] = useState('all');
-
-  // Vérifier l'authentification au montage du composant
-  useEffect(() => {
-    // Vérifier la présence de l'utilisateur dans localStorage ou sessionStorage
-    const userFromStorage = JSON.parse(localStorage.getItem('userInfo')) ||
-      JSON.parse(sessionStorage.getItem('userInfo'));
-
-    if (!userFromStorage) {
-      // Aucun utilisateur trouvé, rediriger vers la connexion
-      navigate('/login');
-      return;
-    }
-
-    // Vérifier si le rôle de l'utilisateur est 'etudiant'
-    if (userFromStorage.role !== 'etudiant') {
-      // Mauvais rôle, rediriger vers la connexion
-      navigate('/login');
-      return;
-    }
-
-    // L'utilisateur est authentifié et a le rôle correct
-    setCurrentUser(userFromStorage);
-
-    // Définir l'ID utilisateur dans les données du formulaire - gère les champs id et _id
-    setFormData(prev => ({
-      ...prev,
-      id_utilisateur: userFromStorage.id || userFromStorage._id
-    }));
-
-  }, [navigate]);
-
-  // Récupérer les données d'équipement indépendamment (non dépendant de l'authentification)
-  useEffect(() => {
-    // Toujours récupérer les données d'équipement indépendamment du statut d'authentification
-    fetchEquipments();
-  }, []); // Un tableau de dépendances vide signifie que cela s'exécute une seule fois au montage du composant
-
-  // Récupérer les données spécifiques à l'utilisateur lorsque celui-ci est authentifié
-  useEffect(() => {
-    if (currentUser && formData.id_utilisateur) {
-      fetchReservations();
-      fetchNotifications();
-    }
-  }, [currentUser, formData.id_utilisateur]);
 
   // Localisateur de calendrier et événements
   const localizer = momentLocalizer(moment);
@@ -115,11 +71,6 @@ const Etudiant = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Défiler vers le haut
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   // Gérer les changements d'onglet
   const handleTabChange = (tab) => {
@@ -254,7 +205,7 @@ const Etudiant = () => {
   });
 
   // Récupérer les données de réservation depuis le backend
-  const fetchReservations = async () => {
+  const fetchReservations = useCallback(async () => {
     try {
       // Obtenir l'ID utilisateur avec plusieurs solutions de secours - similaire à handleReservationSubmit
       let userFromStorage;
@@ -337,10 +288,10 @@ const Etudiant = () => {
       console.error('Erreur de récupération des réservations:', err);
       setReservations([]);
     }
-  };
+  }, [currentUser]);
 
   // Récupérer les notifications
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       // Obtenir l'ID utilisateur avec plusieurs solutions de secours - similaire à fetchReservations
       let userId = formData.id_utilisateur;
@@ -392,7 +343,7 @@ const Etudiant = () => {
       setNotifications([]);
       setUnreadCount(0);
     }
-  };
+  }, [formData.id_utilisateur, currentUser]);
 
   // Marquer une notification comme lue
   const markAsRead = async (id) => {
@@ -574,6 +525,50 @@ const Etudiant = () => {
 
     return { style };
   };
+
+  // Vérifier l'authentification au montage du composant
+  useEffect(() => {
+    // Vérifier la présence de l'utilisateur dans localStorage ou sessionStorage
+    const userFromStorage = JSON.parse(localStorage.getItem('userInfo')) ||
+      JSON.parse(sessionStorage.getItem('userInfo'));
+
+    if (!userFromStorage) {
+      // Aucun utilisateur trouvé, rediriger vers la connexion
+      navigate('/login');
+      return;
+    }
+
+    // Vérifier si le rôle de l'utilisateur est 'etudiant'
+    if (userFromStorage.role !== 'etudiant') {
+      // Mauvais rôle, rediriger vers la connexion
+      navigate('/login');
+      return;
+    }
+
+    // L'utilisateur est authentifié et a le rôle correct
+    setCurrentUser(userFromStorage);
+
+    // Définir l'ID utilisateur dans les données du formulaire - gère les champs id et _id
+    setFormData(prev => ({
+      ...prev,
+      id_utilisateur: userFromStorage.id || userFromStorage._id
+    }));
+
+  }, [navigate]);
+
+  // Récupérer les données d'équipement indépendamment (non dépendant de l'authentification)
+  useEffect(() => {
+    // Toujours récupérer les données d'équipement indépendamment du statut d'authentification
+    fetchEquipments();
+  }, []); // Un tableau de dépendances vide signifie que cela s'exécute une seule fois au montage du composant
+
+  // Récupérer les données spécifiques à l'utilisateur lorsque celui-ci est authentifié
+  useEffect(() => {
+    if (currentUser && formData.id_utilisateur) {
+      fetchReservations();
+      fetchNotifications();
+    }
+  }, [currentUser, formData.id_utilisateur, fetchReservations, fetchNotifications]);
 
   // Si pas encore authentifié, afficher le chargement
   if (!currentUser) {

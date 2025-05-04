@@ -367,39 +367,6 @@ const getSoloEquipment = async (req, res) => {
   }
 };
 
-// @desc    Mettre à jour l'état d'un équipement
-// @route   PATCH /api/equipments/:id/status
-// @access  Privé
-const updateEquipmentStatus = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { etat } = req.body;
-
-    if (!etat) {
-      return res.status(400).json({ message: 'L\'état est requis' });
-    }
-
-    // Valider que l'état est l'une des valeurs ENUM autorisées
-    if (!['disponible', 'en_cours', 'indisponible', 'en_reparation'].includes(etat)) {
-      return res.status(400).json({ message: 'Valeur d\'état invalide' });
-    }
-
-    const [result] = await pool.execute(
-      'UPDATE Solo SET etat = ? WHERE id = ?',
-      [etat, id]
-    );
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Équipement non trouvé ou pas de type Solo' });
-    }
-
-    res.json({ message: 'État de l\'équipement mis à jour avec succès' });
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour de l\'état de l\'équipement:', error);
-    res.status(500).json({ message: 'Erreur serveur', error: error.message });
-  }
-};
-
 // @desc    Mettre à jour l'état d'un équipement avec notifications
 // @route   PATCH /api/equipments/:id
 // @access  Privé
@@ -529,7 +496,6 @@ module.exports = {
   getEquipmentById,
   createEquipment,
   updateEquipment,
-  updateEquipmentStatus,
   deleteEquipment,
   getStockableEquipment,
   getSoloEquipment,
